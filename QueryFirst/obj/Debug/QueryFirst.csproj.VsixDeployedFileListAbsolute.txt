@@ -1,0 +1,7 @@
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\\QueryFirst.dll
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\\QueryFirst.pdb
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\\ADOHelper.dll
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\\QueryFirst.pkgdef
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\\extension.vsixmanifest
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\\ADOHelper.pdb
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\1.0\ItemTemplates\CSharp\\1033\QueryFirstQueryTemplate.zip
