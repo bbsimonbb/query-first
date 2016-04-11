@@ -1,0 +1,5 @@
+C:\mydev\QueryFirstV\QueryFirstQueryTemplate\bin\Release\ItemTemplates\CSharp\1033\QueryFirstQueryTemplate.zip
+C:\mydev\QueryFirstV\QueryFirstQueryTemplate\obj\Release\QueryFirstQueryTemplate.csprojResolveAssemblyReference.cache
+C:\mydev\QueryFirstV\QueryFirstQueryTemplate\obj\Release\CSharp\1033\QueryFirstQueryTemplate.zip
+C:\mydev\QueryFirstV\QueryFirstQueryTemplate\obj\Release\QueryFirstQueryTemplate.dll
+C:\mydev\QueryFirstV\QueryFirstQueryTemplate\obj\Release\QueryFirstQueryTemplate.pdb

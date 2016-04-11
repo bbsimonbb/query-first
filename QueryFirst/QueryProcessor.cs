@@ -3,7 +3,6 @@ using System.IO;
 using System;
 using System.Data;
 using System.Data.SqlClient;
-//using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.CommandBars;
@@ -150,7 +149,7 @@ namespace QueryFirst
             codeLines[codeLinesI++] = "using System.Data;";
             codeLines[codeLinesI++] = "using System.Data.SqlClient;";
             codeLines[codeLinesI++] = "using System.IO;";
-            codeLines[codeLinesI++] = "using System.Reflection;";
+            codeLines[codeLinesI++] = "//using System.Reflection;";
             codeLines[codeLinesI++] = "using System.Collections.Generic;";
             codeLines[codeLinesI++] = "using System.Configuration;";
             if (!string.IsNullOrEmpty(myNamespace))
@@ -257,7 +256,7 @@ namespace QueryFirst
             // private load command text
             codeLines[codeLinesI++] = "private static void loadCommandText(SqlCommand cmd){";
             //codeLines[codeLinesI++] = "Stream strm = Assembly.GetExecutingAssembly().GetManifestResourceStream(MethodBase.GetCurrentMethod().DeclaringType.Namespace + \"." + classFilename + ".sql\");";
-            codeLines[codeLinesI++] = "Stream strm = Assembly.GetExecutingAssembly().GetManifestResourceStream(\"" + GetPathForManifestStream(QueryDoc) + classFilename + ".sql\");";
+            codeLines[codeLinesI++] = "Stream strm = typeof("+ myResultsClass +").Assembly.GetManifestResourceStream(\"" + GetPathForManifestStream(QueryDoc) + classFilename + ".sql\");";
             codeLines[codeLinesI++] = "string queryText = new StreamReader(strm).ReadToEnd();";
             codeLines[codeLinesI++] = "queryText = queryText.Replace(\"--designTime\", \"/*designTime\");";
             codeLines[codeLinesI++] = "queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");";
