@@ -19,7 +19,7 @@
       <CustomParameter Name="$ChildExtension$" Value=".cs"/>
     </CustomParameters>
     <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource">Query.sql</ProjectItem>
-    <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$.cs">Query.cs</ProjectItem>
+    <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$.gen.cs">Query.gen.cs</ProjectItem>
     <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$Results.cs">QueryResults.cs</ProjectItem>
   </TemplateContent>
   <WizardExtension>

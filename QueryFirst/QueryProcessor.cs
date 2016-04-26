@@ -20,12 +20,9 @@ namespace QueryFirst
         DTE dte;
         Document QueryDoc;
         string query;
-        string classFilename;
-        string QfClassName;
-        string QfNamespace;
-        string myResultsClass;
-        string myNamespace;
-        string codeFile;
+        string BaseFilename;
+        string genCsPathAndFilename;
+        Tuple<string, string, string> NamespaceAndClassNames;
         string DBConnectionString;
         string[] codeLines;
         int codeLinesI;
@@ -42,42 +39,66 @@ namespace QueryFirst
             QueryDoc = queryDoc;
             dte = queryDoc.DTE;
             query = File.ReadAllText(queryDoc.FullName);
-            WriteToOutput("processing " + queryDoc.FullName + "\n");
-            QfClassName = Regex.Match(query, "(?im)^--QfClassName\\s*=\\s*(\\S+)").Groups[1].Value;
-            QfNamespace = Regex.Match(query, "(?im)^--QfNamespace\\s*=\\s*(\\S+)").Groups[1].Value;
-            classFilename = Path.GetFileNameWithoutExtension(queryDoc.FullName);
+            query = query.Replace("/*designTime", "--designTime");
+            query = query.Replace("endDesignTime*/", "--endDesignTime");
+            //WriteToOutput("\nprocessing " + queryDoc.FullName );
+            // class name and namespace read from user's half of partial class.
+            //QfClassName = Regex.Match(query, "(?im)^--QfClassName\\s*=\\s*(\\S+)").Groups[1].Value;
+            //QfNamespace = Regex.Match(query, "(?im)^--QfNamespace\\s*=\\s*(\\S+)").Groups[1].Value;
+            // doc.fullname started being lowercase ??
+            BaseFilename = Path.GetFileNameWithoutExtension((string)queryDoc.ProjectItem.Properties.Item("FullPath").Value);
             string currDir = Path.GetDirectoryName(queryDoc.FullName);
 
+
             // leaving for now, but the template should have taken care of this.
-            codeFile = currDir + "\\" + classFilename + ".cs";
-            if (!File.Exists(codeFile))
-                File.Create(codeFile);
-            if (GetItemByFilename(queryDoc.ProjectItem.Collection, codeFile) != null)
-                queryDoc.ProjectItem.Collection.AddFromFile(codeFile);
+            genCsPathAndFilename = currDir + "\\" + BaseFilename + ".gen.cs";
+            if (!File.Exists(genCsPathAndFilename))
+                File.Create(genCsPathAndFilename);
+            if (GetItemByFilename(queryDoc.ProjectItem.Collection, genCsPathAndFilename) != null)
+                queryDoc.ProjectItem.Collection.AddFromFile(genCsPathAndFilename);
             // copy namespace of generated partial class from user partial class
-            var resultsClass = queryDoc.ProjectItem.ProjectItems.Item(classFilename + "Results.cs");
-            myNamespace = GetTopLevelNamespace(resultsClass).FullName;
+            var resultsClass = queryDoc.ProjectItem.ProjectItems.Item(BaseFilename + "Results.cs");
+            NamespaceAndClassNames = GetNamespaceAndClassNames(resultsClass);
             hlpr = new ADOHelper();
             DBConnectionString = GetConnectionString();
         }
 
-
-        public CodeElement GetTopLevelNamespace(ProjectItem item)
+        static Tuple<string, string, string> GetNamespaceAndClassNames(ProjectItem item)
         {
+            string _namespace = null;
+            string _loaderClass = null;
+            string _resultsClass = null;
             FileCodeModel model = item.FileCodeModel;
             foreach (CodeElement element in model.CodeElements)
             {
                 if (element.Kind == vsCMElement.vsCMElementNamespace)
                 {
-                    return element;
+                    _namespace = element.FullName;
+                    foreach (CodeElement child in element.Children)
+                    {
+                        if (child.Kind == vsCMElement.vsCMElementClass)
+                        {
+                            // a bit complicated but here we go. If partial class name finishes with "Results",
+                            // derive the loader class name by trimming "Results". Else derive the loader class name
+                            // by adding "Request".
+                            _resultsClass = child.Name;
+                            if (_resultsClass.Length > 7 && _resultsClass.Substring(_resultsClass.Length - 7) == "Results")
+                                _loaderClass = _resultsClass.Substring(0, _resultsClass.Length - 7);
+                            else
+                                _loaderClass = _resultsClass + "Request";
+                            return new Tuple<string, string, string>(_namespace, _loaderClass, _resultsClass);
+                        }
+                    }
                 }
             }
             return null;
+
         }
-        string GetPathForManifestStream(Document doc)
+        string GetNameAndPathForManifestStream(Document doc)
         {
+            string fullNameAndPath = (string)doc.ProjectItem.Properties.Item("FullPath").Value;
             EnvDTE.Project vsProject = doc.ProjectItem.ContainingProject;
-            string QueryFilePath = doc.Path.Substring(vsProject.Properties.Item("FullPath").Value.ToString().Length);
+            string QueryFilePath = fullNameAndPath.Substring(vsProject.Properties.Item("FullPath").Value.ToString().Length);
             return vsProject.Properties.Item("DefaultNamespace").Value.ToString() + '.' + QueryFilePath.Replace('\\', '.');
         }
         static string GetAssemblyPath(EnvDTE.Project vsProject)
@@ -89,6 +110,7 @@ namespace QueryFirst
             string assemblyPath = Path.Combine(outputDir, outputFileName);
             return assemblyPath;
         }
+
         public void Process()
         {
             try
@@ -113,7 +135,7 @@ namespace QueryFirst
                     bldr.AppendLine("-----------------------------------------------------------");
                     bldr.AppendLine(ex.StackTrace);
                     bldr.AppendLine("*/");
-                    File.AppendAllText(codeFile, bldr.ToString());
+                    File.AppendAllText(genCsPathAndFilename, bldr.ToString());
                     throw;
                 }
                 queryHasRun = true;
@@ -122,9 +144,9 @@ namespace QueryFirst
                     string Code;
                     //generate the class
                     Code = GenerateClass();
-                    File.WriteAllText(codeFile, Code);
+                    File.WriteAllText(genCsPathAndFilename, Code);
                 }
-                WriteToOutput(Environment.NewLine + "QueryFirst generated wrapper class for " + classFilename + ".sql");
+                WriteToOutput(Environment.NewLine + "QueryFirst generated wrapper class for " + BaseFilename + ".sql");
             }
             catch (Exception ex)
             {
@@ -140,8 +162,7 @@ namespace QueryFirst
         }
         private string GenerateClass()
         {
-            myResultsClass = QfClassName + "Results";
-            string[] properties = hlpr.GenerateCodeCS(ref Columns, myResultsClass);
+            string[] properties = hlpr.GenerateCodeCS(ref Columns, NamespaceAndClassNames.Item3);
 
             //codeLines = new string[properties.Length + linesAbove + linesBelow];
             codeLines = new string[1000];
@@ -149,15 +170,15 @@ namespace QueryFirst
             codeLines[codeLinesI++] = "using System.Data;";
             codeLines[codeLinesI++] = "using System.Data.SqlClient;";
             codeLines[codeLinesI++] = "using System.IO;";
-            codeLines[codeLinesI++] = "//using System.Reflection;";
             codeLines[codeLinesI++] = "using System.Collections.Generic;";
             codeLines[codeLinesI++] = "using System.Configuration;";
-            if (!string.IsNullOrEmpty(myNamespace))
+            codeLines[codeLinesI++] = "using System.Linq;";
+            if (!string.IsNullOrEmpty(NamespaceAndClassNames.Item1))
             {
-                codeLines[codeLinesI++] = "namespace " + myNamespace + "{";
+                codeLines[codeLinesI++] = "namespace " + NamespaceAndClassNames.Item1 + "{";
             }
             else codeLines[codeLinesI++] = "";
-            codeLines[codeLinesI++] = "public class " + QfClassName + "{";
+            codeLines[codeLinesI++] = "public class " + NamespaceAndClassNames.Item2 + "{";
             paramNamesAndTypes = extractParamNamesAndTypes(query);
             signatureAndCallingArgs(paramNamesAndTypes);
             // GetOne method definition
@@ -170,8 +191,8 @@ namespace QueryFirst
             {
                 codeLines[codeLinesI++] = properties[j];
             }
-
-            codeLines[codeLinesI++] = "}"; // Close namespace
+            if (!string.IsNullOrEmpty(NamespaceAndClassNames.Item1))
+                codeLines[codeLinesI++] = "}"; // Close namespace
             string Code = hlpr.StringArrayToText(codeLines);
             return Code;
         }
@@ -181,15 +202,15 @@ namespace QueryFirst
         {
             char[] spaceComma = new char[] { ',', ' ' };
             // Execute method, without connection
-            codeLines[codeLinesI++] = "public static IEnumerable<" + myResultsClass + "> Execute(" + methodSignature.Trim(spaceComma) + "){";
+            codeLines[codeLinesI++] = "public static List<" + NamespaceAndClassNames.Item3 + "> Execute(" + methodSignature.Trim(spaceComma) + "){";
             codeLines[codeLinesI++] = "using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings[\"QfDefaultConnection\"].ConnectionString))";
             codeLines[codeLinesI++] = "{";
             codeLines[codeLinesI++] = "conn.Open();";
-            codeLines[codeLinesI++] = "return Execute(" + callingArgs + ");";
+            codeLines[codeLinesI++] = "return Execute(" + callingArgs + ").ToList();";
             codeLines[codeLinesI++] = "}";
             codeLines[codeLinesI++] = "}";
             // Execute method with connection
-            codeLines[codeLinesI++] = "public static IEnumerable<" + myResultsClass + "> Execute(" + methodSignature + "SqlConnection conn){";
+            codeLines[codeLinesI++] = "public static IEnumerable<" + NamespaceAndClassNames.Item3 + "> Execute(" + methodSignature + "SqlConnection conn){";
             codeLines[codeLinesI++] = "SqlCommand cmd = conn.CreateCommand();";
             codeLines[codeLinesI++] = "loadCommandText(cmd);";
             //string[,] paramNamesAndTypes = { { "fraisId", "int" }, { "myString", "string" } };
@@ -208,7 +229,7 @@ namespace QueryFirst
             codeLines[codeLinesI++] = "}";
             codeLines[codeLinesI++] = "}"; //close Execute() method
                                            // GetOne without connection
-            codeLines[codeLinesI++] = "public static " + myResultsClass + " GetOne(" + methodSignature.Trim(spaceComma) + "){";
+            codeLines[codeLinesI++] = "public static " + NamespaceAndClassNames.Item3 + " GetOne(" + methodSignature.Trim(spaceComma) + "){";
             codeLines[codeLinesI++] = "using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings[\"QfDefaultConnection\"].ConnectionString))";
             codeLines[codeLinesI++] = "{";
             codeLines[codeLinesI++] = "conn.Open();";
@@ -216,10 +237,10 @@ namespace QueryFirst
             codeLines[codeLinesI++] = "}";
             codeLines[codeLinesI++] = "}";
             // GetOne() with connection
-            codeLines[codeLinesI++] = "public static " + myResultsClass + " GetOne(" + methodSignature + "SqlConnection conn)";
+            codeLines[codeLinesI++] = "public static " + NamespaceAndClassNames.Item3 + " GetOne(" + methodSignature + "SqlConnection conn)";
             codeLines[codeLinesI++] = "{";
             codeLines[codeLinesI++] = "var all = Execute(" + callingArgs + ");";
-            codeLines[codeLinesI++] = "using (IEnumerator<" + myResultsClass + "> iter = all.GetEnumerator())";
+            codeLines[codeLinesI++] = "using (IEnumerator<" + NamespaceAndClassNames.Item3 + "> iter = all.GetEnumerator())";
             codeLines[codeLinesI++] = "{";
             codeLines[codeLinesI++] = "iter.MoveNext();";
             codeLines[codeLinesI++] = "return iter.Current;";
@@ -240,26 +261,25 @@ namespace QueryFirst
             codeLines[codeLinesI++] = "return (" + Columns[0].DataType + ")cmd.ExecuteScalar();";
             codeLines[codeLinesI++] = "}";
             // close ExecuteScalar()
-            // Create() method called by RuntimeLoader
-            codeLines[codeLinesI++] = "public static " + myResultsClass + " Create(IDataRecord record)";
+            // Create() method
+            codeLines[codeLinesI++] = "public static " + NamespaceAndClassNames.Item3 + " Create(IDataRecord record)";
             codeLines[codeLinesI++] = "{";
-            codeLines[codeLinesI++] = "var returnVal = new " + myResultsClass + "();";
+            codeLines[codeLinesI++] = "var returnVal = new " + NamespaceAndClassNames.Item3 + "();";
             int j = 0;
             foreach (var col in Columns)
             {
                 codeLines[codeLinesI++] = "if(! (record[" + j + "] == null) && !( record[" + j + "] == DBNull.Value ))";
                 codeLines[codeLinesI++] = "returnVal." + col.ColumnName + " =  (" + col.DataType + ")record[" + j++ + "];";
             }
+            // call OnLoad method in user's half of partial class
+            codeLines[codeLinesI++] = "returnVal.OnLoad();";
             codeLines[codeLinesI++] = "return returnVal;";
 
             codeLines[codeLinesI++] = "}"; // close method;
-            // private load command text
+                                           // private load command text
             codeLines[codeLinesI++] = "private static void loadCommandText(SqlCommand cmd){";
-            //codeLines[codeLinesI++] = "Stream strm = Assembly.GetExecutingAssembly().GetManifestResourceStream(MethodBase.GetCurrentMethod().DeclaringType.Namespace + \"." + classFilename + ".sql\");";
-            codeLines[codeLinesI++] = "Stream strm = typeof("+ myResultsClass +").Assembly.GetManifestResourceStream(\"" + GetPathForManifestStream(QueryDoc) + classFilename + ".sql\");";
+            codeLines[codeLinesI++] = "Stream strm = typeof(" + NamespaceAndClassNames.Item3 + ").Assembly.GetManifestResourceStream(\"" + GetNameAndPathForManifestStream(QueryDoc) + "\");";
             codeLines[codeLinesI++] = "string queryText = new StreamReader(strm).ReadToEnd();";
-            codeLines[codeLinesI++] = "queryText = queryText.Replace(\"--designTime\", \"/*designTime\");";
-            codeLines[codeLinesI++] = "queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");";
             codeLines[codeLinesI++] = "cmd.CommandText = queryText;";
             codeLines[codeLinesI++] = "}"; // close method;
 
@@ -281,18 +301,7 @@ namespace QueryFirst
             methodSignature = sig.ToString();
             callingArgs = call.ToString();
         }
-        //private static string buildExecuteCall(string[,] namesAndTypes)
-        //{
-        //    StringBuilder bldr = new StringBuilder("conn, ");
-        //    int i = 0;
-        //    while (!string.IsNullOrEmpty(namesAndTypes[i, 0]))
-        //    {
-        //        bldr.Append(namesAndTypes[i, 0] + ", ");
-        //        i++;
-        //    }
-        //    bldr.Length = bldr.Length - 2; // trim trailing comma and space.
-        //    return bldr.ToString();
-        //}
+
         private static string[,] extractParamNamesAndTypes(string query)
         {
             if (Regex.IsMatch(query, "^\\s*select", RegexOptions.IgnoreCase | RegexOptions.Multiline))

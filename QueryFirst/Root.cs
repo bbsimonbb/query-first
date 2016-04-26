@@ -55,9 +55,9 @@ namespace QueryFirst
                     string folder = Path.GetDirectoryName((string)renamedQuery.Properties.Item("FullPath").Value);
                     if (((string)item.Properties.Item("FullPath").Value).StartsWith(folder))
                     {
-                        if (item.Name == OldName.Replace(".sql", ".cs"))
+                        if (item.Name == OldName.Replace(".sql", ".gen.cs"))
                         {
-                            item.Name = renamedQuery.Name.Replace(".sql", ".cs");
+                            item.Name = renamedQuery.Name.Replace(".sql", ".gen.cs");
                             fuxed++;
                         }
                         if (item.Name == OldName.Replace(".sql", "Results.cs"))

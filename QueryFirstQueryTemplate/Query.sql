@@ -1,17 +1,8 @@
 ﻿/* .sql query managed by QueryFirst add-in */
 
 
---designTime - put parameter declarations and design time initialization here
+/*designTime - put parameter declarations and design time initialization here
 
 
---endDesignTime
+endDesignTime*/
 
-
-
-
-
-
-
-
---QfNamespace = $rootnamespace$
---QfClassName = $safeitemrootname$
