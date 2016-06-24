@@ -8,3 +8,8 @@ C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon
 C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.1\\QueryFirst.pkgdef
 C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.1\\extension.vsixmanifest
 C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.1\ItemTemplates\CSharp\\1033\QueryFirstQueryTemplate.zip
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.2\\QueryFirst.dll
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.2\\QueryFirst.pdb
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.2\\QueryFirst.pkgdef
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.2\\extension.vsixmanifest
+C:\Users\sby\AppData\Local\Microsoft\VisualStudio\14.0Exp\Extensions\Boddy Simon\QueryFirst\0.2\ItemTemplates\CSharp\\1033\QueryFirstQueryTemplate.zip

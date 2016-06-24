@@ -11,6 +11,8 @@ using System.Resources;
 using System.Reflection;
 using System.Globalization;
 using System.Drawing;
+using TinyIoC;
+using System.Timers;
 
 namespace QueryFirst
 {
@@ -39,8 +41,99 @@ namespace QueryFirst
             myEvents = dte.Events;
             myDocumentEvents = dte.Events.DocumentEvents;
             myDocumentEvents.DocumentSaved += myDocumentEvents_DocumentSaved;
+            myDocumentEvents.DocumentOpened += MyDocumentEvents_DocumentOpened;
             CSharpProjectItemsEvents = (ProjectItemsEvents)dte.Events.GetObject("CSharpProjectItemsEvents");
             CSharpProjectItemsEvents.ItemRenamed += CSharpItemRenamed;
+            myEvents.SolutionEvents.Opened += SolutionEvents_Opened;
+            myEvents.BuildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+
+        }
+
+        private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
+        {
+            if (_dte.Solution.SolutionBuild.ActiveConfiguration.Name != "Debug")
+            {
+                foreach (Project proj in _dte.Solution.Projects)
+                {
+                    SetCommentsForProd(proj.ProjectItems);
+                }
+            }
+        }
+        private void SetCommentsForProd(ProjectItems items)
+        {
+            foreach (ProjectItem item in items)
+            {
+                try
+                {
+                    if (item.FileNames[1].EndsWith(".sql"))
+                    {
+                        var queryText = File.ReadAllText(item.FileNames[1]);
+                        queryText = queryText.Replace("--designTime", "/*designTime");
+                        queryText = queryText.Replace("--endDesignTime", "endDesignTime*/");
+                        File.WriteAllText(item.FileNames[1], queryText);
+                    }
+                    if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
+                        SetCommentsForProd(item.ProjectItems);
+                }
+                catch (Exception ex) { }
+            }
+        }
+
+        private void MyDocumentEvents_DocumentOpened(Document Document)
+        {
+            if (Document.FullName.EndsWith(".sql"))
+            {
+                var textDoc = ((TextDocument)Document.Object());
+                textDoc.ReplacePattern("/*designTime", "--designTime");
+                textDoc.ReplacePattern("endDesignTime*/", "--endDesignTime");
+
+                // never got close to working. cost me 50 points on stack. just saw it open the window????
+                //try
+                //{
+                //    if (_dte.Commands.Item("SQL.TSqlEditorConnect") != null && _dte.Commands.Item("SQL.TSqlEditorConnect").IsAvailable)
+                //    {
+                //        _dte.ExecuteCommand("SQL.TSqlEditorConnect");
+                //    }
+                //    //_dte.ExecuteCommand("SQL.TSqlEditorConnect", "Data Source=not-mobility;Initial Catalog=NORTHWND;Integrated Security=SSPI;");
+                //}
+                //catch (Exception ex) { }
+
+
+            }
+            if (Document.FullName.EndsWith(".gen.cs"))
+            {
+                var textDoc = ((TextDocument)Document.Object());
+                // format the whole document !
+                textDoc.StartPoint.CreateEditPoint().SmartFormat(textDoc.EndPoint);
+            }
+
+
+        }
+        private void HandleTimer(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            //try
+            //{
+            //    if(_dte.Commands.Item("SQL.TSqlEditorNewQueryConnection") != null && _dte.Commands.Item("SQL.TSqlEditorNewQueryConnection").IsAvailable)
+            //        _dte.ExecuteCommand("SQL.TSqlEditorNewQueryConnection", "Data Source=not-mobility;Initial Catalog=NORTHWND;Integrated Security=SSPI;");
+            //}
+            //catch (Exception ex) { }           
+        }
+        private void SolutionEvents_Opened()
+        {
+            RegisterTypes();
+        }
+        private void RegisterTypes()
+        {
+            ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
+            var helperAssembly = config.AppSettings["QfHelperAssembly"];
+            if (helperAssembly != null && !string.IsNullOrEmpty(helperAssembly.Value))
+            {
+                IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.LoadFrom(helperAssembly.Value), Assembly.GetExecutingAssembly() };
+                //IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.GetExecutingAssembly(), Assembly.LoadFrom(helperAssembly.Value) };
+                TinyIoCContainer.Current.AutoRegister(assemblies);
+            }
+            else
+                TinyIoCContainer.Current.AutoRegister();
         }
 
         #region methods
@@ -73,14 +166,42 @@ namespace QueryFirst
         }
         void myDocumentEvents_DocumentSaved(Document Document)
         {
+            //kludge
+            if (!TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
+                RegisterTypes();
             if (Document.FullName.EndsWith(".sql"))
                 try
                 {
-                    new QueryProcessor(Document).Process();
-                }
-                catch (Exception ex) { }
-        }
+                    var cdctr = new Conductor(Document);
+                    if (cdctr.IsQFQuery())
+                        cdctr.Process();
 
+                }
+                catch (Exception ex)
+                {
+                    LogToVSOutputWindow(ex.Message + ex.StackTrace);
+                }
+        }
+        public void LogToVSOutputWindow(string message)
+        {
+            Window window = _dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+            OutputWindow outputWindow = (OutputWindow)window.Object;
+            OutputWindowPane outputWindowPane = null;
+
+            for (uint i = 1; i <= outputWindow.OutputWindowPanes.Count; i++)
+            {
+                if (outputWindow.OutputWindowPanes.Item(i).Name.Equals("QueryFirst", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    outputWindowPane = outputWindow.OutputWindowPanes.Item(i);
+                    break;
+                }
+            }
+
+            if (outputWindowPane == null)
+                outputWindowPane = outputWindow.OutputWindowPanes.Add("QueryFirst");
+
+            outputWindowPane.OutputString(message);
+        }
         #endregion
     }
 }

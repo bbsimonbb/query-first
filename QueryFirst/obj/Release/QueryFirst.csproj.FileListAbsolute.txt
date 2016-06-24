@@ -62,3 +62,4 @@ C:\mydev\QueryFirstV\QueryFirst\obj\Release\QueryFirst.pdb
 C:\mydev\QueryFirstV\QueryFirst\obj\Release\QueryFirst.pkgdef
 C:\mydev\QueryFirstV\QueryFirst\obj\Release\QueryFirst.latest.pkgdef
 C:\mydev\QueryFirstV\QueryFirst\obj\Release\extension.vsixmanifest
+C:\mydev\QueryFirstV\QueryFirst\bin\Release\Microsoft.VisualStudio.TemplateWizardInterface.dll
