@@ -1,3 +1,6 @@
 *.suo
 QueryFirst/bin
 QueryFirst/obj
+QueryFirstQueryTemplate/bin
+QueryFirstQueryTemplate/obj
+.vs/
