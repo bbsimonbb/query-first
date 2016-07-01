@@ -1,5 +1,0 @@
-C:\mydev\QueryFirstV\ItemTemplate1\bin\Debug\ItemTemplates\CSharp\1033\ItemTemplate1.zip
-C:\mydev\QueryFirstV\ItemTemplate1\obj\Debug\ItemTemplate1.csprojResolveAssemblyReference.cache
-C:\mydev\QueryFirstV\ItemTemplate1\obj\Debug\CSharp\1033\ItemTemplate1.zip
-C:\mydev\QueryFirstV\ItemTemplate1\obj\Debug\ItemTemplate1.dll
-C:\mydev\QueryFirstV\ItemTemplate1\obj\Debug\ItemTemplate1.pdb

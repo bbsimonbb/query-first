@@ -1,5 +1,0 @@
-C:\mydev\QueryFirstV\QueryFirstRuntime\bin\Debug\QueryFirstRuntime.dll
-C:\mydev\QueryFirstV\QueryFirstRuntime\bin\Debug\QueryFirstRuntime.pdb
-C:\mydev\QueryFirstV\QueryFirstRuntime\obj\Debug\QueryFirstRuntime.csprojResolveAssemblyReference.cache
-C:\mydev\QueryFirstV\QueryFirstRuntime\obj\Debug\QueryFirstRuntime.dll
-C:\mydev\QueryFirstV\QueryFirstRuntime\obj\Debug\QueryFirstRuntime.pdb

@@ -29,8 +29,6 @@ namespace QueryFirst
         /// </summary>
         private readonly Package package;
 
-        private Root root;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryFirstCmd"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
@@ -107,7 +105,7 @@ namespace QueryFirst
                     if (item.FileNames[1].EndsWith(".sql"))
                     {
                         item.Open();
-                        new QueryProcessor(item.Document).Process();
+                        new Conductor(item.Document).Process();
                     }
                     if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                         ProcessAllItems(item.ProjectItems);

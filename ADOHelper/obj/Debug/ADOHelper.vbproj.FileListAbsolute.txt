@@ -1,8 +1,0 @@
-C:\mydev\QueryFirstV\ADOHelper\bin\Debug\ADOHelper.dll
-C:\mydev\QueryFirstV\ADOHelper\bin\Debug\ADOHelper.pdb
-C:\mydev\QueryFirstV\ADOHelper\bin\Debug\ADOHelper.xml
-C:\mydev\QueryFirstV\ADOHelper\obj\Debug\SQLQueryResults_CodeGen.Resources.resources
-C:\mydev\QueryFirstV\ADOHelper\obj\Debug\ADOHelper.vbproj.GenerateResource.Cache
-C:\mydev\QueryFirstV\ADOHelper\obj\Debug\ADOHelper.dll
-C:\mydev\QueryFirstV\ADOHelper\obj\Debug\ADOHelper.xml
-C:\mydev\QueryFirstV\ADOHelper\obj\Debug\ADOHelper.pdb
