@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ namespace QueryFirst
         public string Text { get { return text; } }
         public bool IsQFQuery()
         {
-            return true;
+            return Text.Contains("managed by QueryFirst");
         }
         public void ConvertForDesignDebug()
         {
