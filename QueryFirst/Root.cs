@@ -51,7 +51,14 @@ namespace QueryFirst
 
         private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
         {
-            if (_dte.Solution.SolutionBuild.ActiveConfiguration.Name != "Debug")
+            if (_dte.Solution.SolutionBuild.ActiveConfiguration.Name.Contains("Debug"))
+            {
+                foreach (Project proj in _dte.Solution.Projects)
+                {
+                    SetCommentsForDebug(proj.ProjectItems);
+                }
+            }
+            else
             {
                 foreach (Project proj in _dte.Solution.Projects)
                 {
@@ -74,6 +81,26 @@ namespace QueryFirst
                     }
                     if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                         SetCommentsForProd(item.ProjectItems);
+                }
+                catch (Exception ex) { }
+            }
+        }
+
+        private void SetCommentsForDebug(ProjectItems items)
+        {
+            foreach (ProjectItem item in items)
+            {
+                try
+                {
+                    if (item.FileNames[1].EndsWith(".sql"))
+                    {
+                        var queryText = File.ReadAllText(item.FileNames[1]);
+                        queryText = queryText.Replace("/*designTime", "--designTime");
+                        queryText = queryText.Replace("endDesignTime*/", "--endDesignTime");
+                        File.WriteAllText(item.FileNames[1], queryText);
+                    }
+                    if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
+                        SetCommentsForDebug(item.ProjectItems);
                 }
                 catch (Exception ex) { }
             }
@@ -124,16 +151,38 @@ namespace QueryFirst
         }
         private void RegisterTypes()
         {
+            LogToVSOutputWindow("Registering types...\n");
+            //kludge
+            if (TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
+            {
+                LogToVSOutputWindow("Already registered\n");
+                return;
+            }
             ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
             var helperAssembly = config.AppSettings["QfHelperAssembly"];
             if (helperAssembly != null && !string.IsNullOrEmpty(helperAssembly.Value))
             {
-                IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.LoadFrom(helperAssembly.Value), Assembly.GetExecutingAssembly() };
+                IEnumerable<Assembly> assemblies = new Assembly[]
+                {Assembly.LoadFrom(helperAssembly.Value), Assembly.GetExecutingAssembly()};
                 //IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.GetExecutingAssembly(), Assembly.LoadFrom(helperAssembly.Value) };
-                TinyIoCContainer.Current.AutoRegister(assemblies);
+
+                // Don't use AutoRegister(), it registers thousands of types and we only use four.
+                //TinyIoCContainer.Current.AutoRegister(assemblies);
+                TinyIoCContainer.Current.Register<IMap>(new Map());
+                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker));
+                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker));
+                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker));
             }
             else
-                TinyIoCContainer.Current.AutoRegister();
+            {
+                // Don't use AutoRegister(), it registers thousands of types and we only use four.
+                //TinyIoCContainer.Current.AutoRegister();
+                TinyIoCContainer.Current.Register<IMap>(new Map());
+                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker));
+                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker));
+                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker));
+            }
+            LogToVSOutputWindow("Registered types...\n");
         }
 
         #region methods

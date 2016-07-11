@@ -170,8 +170,8 @@ using System.Linq;";
             int j = 0;
             foreach (var col in ctx.QueryFields)
             {
-                code.AppendLine("if(! (record[" + j + "] == null) && !( record[" + j + "] == DBNull.Value ))");
-                code.AppendLine("returnVal." + col.ColumnName + " =  (" + col.DataType + ")record[" + j++ + "];");
+                code.AppendLine("if(record[" + j + "] != null && record[" + j + "] != DBNull.Value)");
+                code.AppendLine("returnVal." + col.ColumnName + " =  (" + col.CSType + ")record[" + j++ + "];");
             }
             // call OnLoad method in user's half of partial class
             code.AppendLine("returnVal.OnLoad();");

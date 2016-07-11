@@ -11,6 +11,6 @@
         /// </summary>
         /// <param name="p">The Transact SQL type name.</param>
         /// <returns>The C# type name.</returns>
-        string DBType2CSType(string p);
+        string DBType2CSType(string p, bool nullable=true);
     }
 }
