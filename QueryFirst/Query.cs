@@ -87,13 +87,18 @@ namespace QueryFirst
                 bldr.Length = 0; // reuse
                 while (rdr.Read())
                 {
-                    // build declaration.
-                    bldr.AppendLine("declare " + rdr.GetString(1) + " " + rdr.GetString(3) + ";");
-                    queryParams = null; // reset the list, they will be re-read from the updated text.
+                    // ignore global variables
+                    if (rdr.GetString(1).Substring(0, 2) != "@@")
+                    {
+                        // build declaration.
+                        bldr.AppendLine("declare " + rdr.GetString(1) + " " + rdr.GetString(3) + ";");
+                        queryParams = null; // reset the list, they will be re-read from the updated text.
+                    }
+
 
                 }
                 //inject discovered params
-                if(bldr.Length > 0)
+                if (bldr.Length > 0)
                 {
                     int insertHere = text.IndexOf("endDesignTime") - 2;
                     text = text.Substring(0, insertHere) + bldr.ToString() + text.Substring(insertHere);
