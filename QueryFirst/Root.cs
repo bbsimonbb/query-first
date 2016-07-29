@@ -51,17 +51,15 @@ namespace QueryFirst
 
         private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
         {
-            if (_dte.Solution.SolutionBuild.ActiveConfiguration.Name.Contains("Debug"))
+            if (!_dte.Solution.SolutionBuild.ActiveConfiguration.Name.Contains("Debug"))
             {
                 foreach (Project proj in _dte.Solution.Projects)
                 {
-                    SetCommentsForDebug(proj.ProjectItems);
-                }
-            }
-            else
-            {
-                foreach (Project proj in _dte.Solution.Projects)
-                {
+                    // Comments !
+                    // On opening a query to edit, we "open" the design time comments.
+                    // In debug builds, the comment may be compiled "open", and closed by the generated code prior to running the query.
+                    // In production builds, to save this step, we verify and "close" all comments section before the build, and 
+                    // the generated code runs the query as found.
                     SetCommentsForProd(proj.ProjectItems);
                 }
             }
@@ -75,9 +73,13 @@ namespace QueryFirst
                     if (item.FileNames[1].EndsWith(".sql"))
                     {
                         var queryText = File.ReadAllText(item.FileNames[1]);
-                        queryText = queryText.Replace("--designTime", "/*designTime");
-                        queryText = queryText.Replace("--endDesignTime", "endDesignTime*/");
-                        File.WriteAllText(item.FileNames[1], queryText);
+                        if (queryText.IndexOf("--designTime") >= 0)
+                        {
+                            queryText = queryText.Replace("--designTime", "/*designTime");
+                            queryText = queryText.Replace("--endDesignTime", "endDesignTime*/");
+                            File.WriteAllText(item.FileNames[1], queryText);
+                        }
+
                     }
                     if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                         SetCommentsForProd(item.ProjectItems);
@@ -95,9 +97,13 @@ namespace QueryFirst
                     if (item.FileNames[1].EndsWith(".sql"))
                     {
                         var queryText = File.ReadAllText(item.FileNames[1]);
-                        queryText = queryText.Replace("/*designTime", "--designTime");
-                        queryText = queryText.Replace("endDesignTime*/", "--endDesignTime");
-                        File.WriteAllText(item.FileNames[1], queryText);
+                        if (queryText.IndexOf("/*designTime") >= 0)
+                        {
+                            queryText = queryText.Replace("/*designTime", "--designTime");
+                            queryText = queryText.Replace("endDesignTime*/", "--endDesignTime");
+                            File.WriteAllText(item.FileNames[1], queryText);
+                        }
+
                     }
                     if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                         SetCommentsForDebug(item.ProjectItems);

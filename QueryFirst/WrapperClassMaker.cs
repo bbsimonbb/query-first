@@ -28,7 +28,7 @@ using System.Linq;";
         }
         public virtual string StartClass(CodeGenerationContext ctx)
         {
-            return "public class " + ctx.BaseName + "{";
+            return "public class " + ctx.BaseName + "{" + Environment.NewLine;
 
         }
         public virtual string MakeExecuteWithoutConn(CodeGenerationContext ctx)
@@ -36,7 +36,7 @@ using System.Linq;";
             StringBuilder code = new StringBuilder();
             char[] spaceComma = new char[] { ',', ' ' };
             // Execute method, without connection
-            code.AppendLine("public static List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (SqlConnection conn = new SqlConnection(QfRuntimeConnection.GetConnectionString()))");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
@@ -49,7 +49,7 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // Execute method with connection
-            code.AppendLine("public static IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "SqlConnection conn){");
+            code.AppendLine("public virtual IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
             code.AppendLine("loadCommandText(cmd);");
             code.Append(MakeParamLoadingCode(ctx));
@@ -68,7 +68,7 @@ using System.Linq;";
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             // GetOne without connection
-            code.AppendLine("public static " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (SqlConnection conn = new SqlConnection(QfRuntimeConnection.GetConnectionString()))");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
@@ -82,7 +82,7 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // GetOne() with connection
-            code.AppendLine("public static " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "SqlConnection conn)");
+            code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "SqlConnection conn)");
             code.AppendLine("{");
             code.AppendLine("var all = Execute(" + ctx.CallingArgs + ");");
             code.AppendLine("using (IEnumerator<" + ctx.ResultClassName + "> iter = all.GetEnumerator())");
@@ -99,7 +99,7 @@ using System.Linq;";
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             //ExecuteScalar without connection
-            code.AppendLine("public static " + ctx.QueryFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual " + ctx.QueryFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (SqlConnection conn = new SqlConnection(QfRuntimeConnection.GetConnectionString()))");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
@@ -112,7 +112,7 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public static " + ctx.QueryFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature + "SqlConnection conn){");
+            code.AppendLine("public virtual " + ctx.QueryFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
             code.AppendLine("loadCommandText(cmd);");
             code.Append(MakeParamLoadingCode(ctx));
@@ -127,7 +127,7 @@ using System.Linq;";
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             //ExecuteScalar without connection
-            code.AppendLine("public static int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (SqlConnection conn = new SqlConnection(QfRuntimeConnection.GetConnectionString()))");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
@@ -140,7 +140,7 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public static int ExecuteNonQuery(" + ctx.MethodSignature + "SqlConnection conn){");
+            code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
             code.AppendLine("loadCommandText(cmd);");
             code.Append(MakeParamLoadingCode(ctx));
@@ -164,7 +164,7 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // Create() method
-            code.AppendLine("public static " + ctx.ResultClassName + " Create(IDataRecord record)");
+            code.AppendLine("public virtual " + ctx.ResultClassName + " Create(IDataRecord record)");
             code.AppendLine("{");
             code.AppendLine("var returnVal = new " + ctx.ResultClassName + "();");
             int j = 0;
@@ -185,7 +185,7 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // private load command text
-            code.AppendLine("private static void loadCommandText(SqlCommand cmd){");
+            code.AppendLine("private void loadCommandText(SqlCommand cmd){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
             code.AppendLine("#if DEBUG");
