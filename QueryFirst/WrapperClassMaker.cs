@@ -155,7 +155,7 @@ using System.Linq;";
             StringBuilder code = new StringBuilder();
             foreach (var qp in ctx.Query.QueryParams)
             {
-                code.AppendLine("cmd.Parameters.AddWithValue(\"@" + qp.Name + "\", " + qp.Name + ");");
+                code.AppendLine("cmd.Parameters.AddWithValue(\"@" + qp.Name + "\", " + qp.Name + " != null ? (object)" + qp.Name + " :DBNull.Value);");
             }
             return code.ToString();
 

@@ -126,45 +126,19 @@ namespace QueryFirst
             //Function returns the count of records in the datatable
             //----- dt (datatable) needs to be empty & no schema defined
 
-            SqlConnection sconQuery = new SqlConnection();
-            SqlCommand scmdQuery = new SqlCommand();
-            SqlDataReader srdrQuery = null;
-            int intRowsCount = 0;
-            DataTable dtSchema = new DataTable();
-
-
-            try
+            using (var connection = new SqlConnection(strconn))
             {
-                //Open the SQL connnection to the SWO database
-                sconQuery.ConnectionString = strconn;
-                sconQuery.Open();
-
-                //Execute the SQL command against the database & return a resultset
-                scmdQuery.Connection = sconQuery;
-                scmdQuery.CommandText = strSQL;
-                // https://msdn.microsoft.com/en-us/library/ms173839.aspx
-                srdrQuery = scmdQuery.ExecuteReader(CommandBehavior.SchemaOnly);
-
-                dtSchema = srdrQuery.GetSchemaTable();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error = '" + ex.Message + " ': sql = " + strSQL);
-            }
-            finally
-            {
-                if ((srdrQuery != null))
+                connection.Open();
+                using (var command = connection.CreateCommand())
                 {
-                    if (!srdrQuery.IsClosed)
-                        srdrQuery.Close();
+                    command.CommandText = strSQL;
+                    using (var srdrQuery = command.ExecuteReader(CommandBehavior.SchemaOnly))
+                    {
+                        var dtSchema = srdrQuery.GetSchemaTable();
+                        return dtSchema;
+                    }
                 }
-                scmdQuery.Dispose();
-                sconQuery.Close();
-                sconQuery.Dispose();
-            }
-
-            return dtSchema;
+            }  // the connection will be closed & disposed here
         }
-
     }
 }
