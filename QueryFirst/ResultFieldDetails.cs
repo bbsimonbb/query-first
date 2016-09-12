@@ -39,7 +39,8 @@ namespace QueryFirst
         {
             get
             {
-                return TinyIoCContainer.Current.Resolve<IMap>().DBType2CSType(DataTypeName, AllowDBNull);
+                string notUsed;
+                return TinyIoCContainer.Current.Resolve<ITypeMapping>().DBType2CSType(DataTypeName, out notUsed , AllowDBNull);
             }
         }
         public string CSColumnName

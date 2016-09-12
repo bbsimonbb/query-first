@@ -18,9 +18,11 @@ namespace QueryFirst
         public List<ResultFieldDetails> GetFields(string ConnectionString, string Query)
         {
             DataTable dt = new DataTable();
-            var SchemaTable = GetQuerySchema(ConnectionString, Query);
+             var SchemaTable = GetQuerySchema(ConnectionString, Query);
 
             List<ResultFieldDetails> result = new List<ResultFieldDetails>();
+            if (SchemaTable == null)
+                return result;
 
             for (int i = 0; i <= SchemaTable.Rows.Count - 1; i++)
             {

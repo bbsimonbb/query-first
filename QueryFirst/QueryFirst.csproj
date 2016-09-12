@@ -61,6 +61,7 @@
     <Compile Include="CodeGenerationContext.cs" />
     <Compile Include="ConfigurationAccessor.cs" />
     <Compile Include="IMap.cs" />
+    <Compile Include="IQueryParam.cs" />
     <Compile Include="ISignatureMaker.cs" />
     <Compile Include="IWrapperClassMaker.cs" />
     <Compile Include="Map.cs" />
@@ -69,7 +70,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="QueryParams.cs" />
+    <Compile Include="QueryParam.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="SignatureMaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

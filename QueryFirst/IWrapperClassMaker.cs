@@ -37,5 +37,6 @@
         string StartClass(CodeGenerationContext ctx);
         string StartNamespace(CodeGenerationContext ctx);
         string Usings(CodeGenerationContext ctx);
+        string MakeInterface(CodeGenerationContext ctx);
     }
 }

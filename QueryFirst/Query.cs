@@ -15,29 +15,31 @@ namespace QueryFirst
     {
         private CodeGenerationContext ctx;
         private string text;
-        private IMap map;
-        private List<QueryParam> queryParams;
+        private ITypeMapping map;
+        private List<IQueryParam> queryParams;
         /// <summary>
         /// List of param names and types, parsed from declare statements anywhere in the sql query 
         /// or recovered with sp_describe_undeclared_parameters.
         /// Names are as declared, with leading @. The portion following the @ must be a valid C# identifier.
         /// Types are C# types that map to the sql type in the declare statement.
         /// </summary>
-        public List<QueryParam> QueryParams
+        public List<IQueryParam> QueryParams
         {
             get
             {
                 if (queryParams == null)
                 {
                     int i = 0;
-                    queryParams = new List<QueryParam>();
+                    queryParams = new List<IQueryParam>();
                     // extract declared parameters
                     string pattern = "declare[^;]*";
                     Match m = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
                     while (m.Success)
                     {
                         string[] parts = m.Value.Split(' ');
-                        queryParams.Add(QueryParam.Create(parts[1].Substring(1), parts[2], true, map));
+                        var qp = TinyIoC.TinyIoCContainer.Current.Resolve<IQueryParam>();
+                        qp.Populate(parts[1].Substring(1), parts[2], true);
+                        queryParams.Add(qp);
                         m = m.NextMatch();
                         i++;
                     }

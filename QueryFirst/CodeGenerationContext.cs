@@ -17,8 +17,8 @@ namespace QueryFirst
         public DTE Dte { get { return dte; } }
         protected Document queryDoc;
         public Document QueryDoc { get { return queryDoc; } }
-        protected IMap map;
-        public IMap Map { get { return map; } }
+        protected ITypeMapping map;
+        public ITypeMapping Map { get { return map; } }
         protected Query query;
         public Query Query { get { return query; } }
         protected string baseName;
@@ -167,14 +167,14 @@ namespace QueryFirst
                 return callingArgs;
             }
         }
-        protected List<ResultFieldDetails> queryFields;
+        protected List<ResultFieldDetails> resultFields;
         /// <summary>
         /// The schema table returned from the dummy run of the query.
         /// </summary>
-        public List<ResultFieldDetails> QueryFields
+        public List<ResultFieldDetails> ResultFields
         {
-            get { return queryFields; }
-            set { queryFields = value; }
+            get { return resultFields; }
+            set { resultFields = value; }
         }
 
         protected bool queryHasRun;
@@ -194,7 +194,7 @@ namespace QueryFirst
         public CodeGenerationContext(Document queryDoc)
         {
             tiny = TinyIoCContainer.Current;
-            map = tiny.Resolve<IMap>();
+            map = tiny.Resolve<ITypeMapping>();
             queryHasRun = false;
             this.queryDoc = queryDoc;
             dte = queryDoc.DTE;

@@ -28,7 +28,7 @@ using System.Linq;";
         }
         public virtual string StartClass(CodeGenerationContext ctx)
         {
-            return "public class " + ctx.BaseName + "{" + Environment.NewLine;
+            return "public class " + ctx.BaseName + " : I" + ctx.BaseName + "{" + Environment.NewLine;
 
         }
         public virtual string MakeExecuteWithoutConn(CodeGenerationContext ctx)
@@ -99,7 +99,7 @@ using System.Linq;";
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             //ExecuteScalar without connection
-            code.AppendLine("public virtual " + ctx.QueryFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual " + ctx.ResultFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (SqlConnection conn = new SqlConnection(QfRuntimeConnection.GetConnectionString()))");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
@@ -112,11 +112,11 @@ using System.Linq;";
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public virtual " + ctx.QueryFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature + "SqlConnection conn){");
+            code.AppendLine("public virtual " + ctx.ResultFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
             code.AppendLine("loadCommandText(cmd);");
             code.Append(MakeParamLoadingCode(ctx));
-            code.AppendLine("return (" + ctx.QueryFields[0].DataType + ")cmd.ExecuteScalar();");
+            code.AppendLine("return (" + ctx.ResultFields[0].DataType + ")cmd.ExecuteScalar();");
             code.AppendLine("}");
             // close ExecuteScalar()
             return code.ToString();
@@ -155,7 +155,7 @@ using System.Linq;";
             StringBuilder code = new StringBuilder();
             foreach (var qp in ctx.Query.QueryParams)
             {
-                code.AppendLine("cmd.Parameters.AddWithValue(\"@" + qp.Name + "\", " + qp.Name + " != null ? (object)" + qp.Name + " :DBNull.Value);");
+                code.AppendLine("cmd.Parameters.Add(\"@" + qp.Name + "\", SqlDbType." + qp.SqlDbType + "," + qp.Length + ").Value = " + qp.Name + " != null ? (object)" + qp.Name + " :DBNull.Value;");
             }
             return code.ToString();
 
@@ -168,7 +168,7 @@ using System.Linq;";
             code.AppendLine("{");
             code.AppendLine("var returnVal = new " + ctx.ResultClassName + "();");
             int j = 0;
-            foreach (var col in ctx.QueryFields)
+            foreach (var col in ctx.ResultFields)
             {
                 code.AppendLine("if(record[" + j + "] != null && record[" + j + "] != DBNull.Value)");
                 code.AppendLine("returnVal." + col.ColumnName + " =  (" + col.CSType + ")record[" + j++ + "];");
@@ -209,9 +209,31 @@ using System.Linq;";
         public virtual string CloseNamespace(CodeGenerationContext ctx)
         {
             if (!string.IsNullOrEmpty(ctx.Namespace))
-                return "}"+ Environment.NewLine;
+                return "}" + Environment.NewLine;
             else
                 return "";
+        }
+
+        public string MakeInterface(CodeGenerationContext ctx)
+        {
+            char[] spaceComma = new char[] { ',', ' ' };
+            StringBuilder code = new StringBuilder();
+            code.AppendLine("public interface I" + ctx.BaseName + "{" + Environment.NewLine);
+            if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+            {
+                code.AppendLine("List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "SqlConnection conn);");
+                code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "SqlConnection conn);");
+                code.AppendLine("" + ctx.ResultFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("" + ctx.ResultFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature + "SqlConnection conn);");
+                code.AppendLine("" + ctx.ResultClassName + " Create(IDataRecord record);");
+            }
+            code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + ");");
+            code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature + "SqlConnection conn);");
+            code.AppendLine("}"); // close interface;
+
+            return code.ToString();
         }
     }
 }

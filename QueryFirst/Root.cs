@@ -174,19 +174,21 @@ namespace QueryFirst
 
                 // Don't use AutoRegister(), it registers thousands of types and we only use four.
                 //TinyIoCContainer.Current.AutoRegister(assemblies);
-                TinyIoCContainer.Current.Register<IMap>(new Map());
-                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker));
-                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker));
-                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker));
+                TinyIoCContainer.Current.Register<ITypeMapping>(new TypeMapping());
+                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
+                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
+                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
+                TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
             }
             else
             {
                 // Don't use AutoRegister(), it registers thousands of types and we only use four.
                 //TinyIoCContainer.Current.AutoRegister();
-                TinyIoCContainer.Current.Register<IMap>(new Map());
-                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker));
-                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker));
-                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker));
+                TinyIoCContainer.Current.Register<ITypeMapping,TypeMapping>();
+                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
+                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
+                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
+                TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
             }
             LogToVSOutputWindow("Registered types...\n");
         }

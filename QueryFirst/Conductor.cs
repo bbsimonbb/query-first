@@ -53,7 +53,7 @@ namespace QueryFirst
                 {
                     ctx.Query.DiscoverParams();
 
-                    ctx.QueryFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString, ctx.Query.Text);
+                    ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString, ctx.Query.Text);
                 }
                 catch (Exception ex)
                 {
@@ -71,37 +71,39 @@ namespace QueryFirst
                     throw;
                 }
                 ctx.QueryHasRun = true;
-                if (ctx.QueryFields != null && ctx.QueryFields.Count > 0)
-                {
-                    StringBuilder Code = new StringBuilder();
-                    var wrapper = _tiny.Resolve<IWrapperClassMaker>();
-                    var results = _tiny.Resolve<IResultClassMaker>();
-
-                    Code.Append(wrapper.StartNamespace(ctx));
-                    Code.Append(wrapper.Usings(ctx));
+                StringBuilder Code = new StringBuilder();
+                var wrapper = _tiny.Resolve<IWrapperClassMaker>();
+                var results = _tiny.Resolve<IResultClassMaker>();
+                Code.Append(wrapper.StartNamespace(ctx));
+                Code.Append(wrapper.Usings(ctx));
+                if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
                     Code.Append(results.Usings());
-                    Code.Append(wrapper.StartClass(ctx));
+                Code.Append(wrapper.MakeInterface(ctx));
+                Code.Append(wrapper.StartClass(ctx));
+                Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
+                Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
+                Code.Append(wrapper.MakeLoadCommandTextMethod(ctx));
+                if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+                {
                     Code.Append(wrapper.MakeExecuteWithoutConn(ctx));
                     Code.Append(wrapper.MakeExecuteWithConn(ctx));
                     Code.Append(wrapper.MakeGetOneWithoutConn(ctx));
                     Code.Append(wrapper.MakeGetOneWithConn(ctx));
                     Code.Append(wrapper.MakeExecuteScalarWithoutConn(ctx));
                     Code.Append(wrapper.MakeExecuteScalarWithConn(ctx));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
-                    Code.Append(wrapper.MakeLoadCommandTextMethod(ctx));
+
                     Code.Append(wrapper.MakeCreateMethod(ctx));
                     Code.Append(wrapper.MakeOtherMethods(ctx));
                     Code.Append(wrapper.CloseClass(ctx));
                     Code.Append(results.StartClass(ctx));
-                    foreach (var fld in ctx.QueryFields)
+                    foreach (var fld in ctx.ResultFields)
                     {
                         Code.Append(results.MakeProperty(fld));
                     }
-                    Code.Append(results.CloseClass());
-                    Code.Append(wrapper.CloseNamespace(ctx));
-                    File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
                 }
+                Code.Append(results.CloseClass()); // closes wrapper class if no results !
+                Code.Append(wrapper.CloseNamespace(ctx));
+                File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
                 LogToVSOutputWindow(Environment.NewLine + "QueryFirst generated wrapper class for " + ctx.BaseName + ".sql");
             }
             catch (Exception ex)
