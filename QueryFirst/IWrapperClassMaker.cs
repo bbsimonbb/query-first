@@ -32,11 +32,13 @@
         string MakeExecuteWithoutConn(CodeGenerationContext ctx);
         string MakeGetOneWithConn(CodeGenerationContext ctx);
         string MakeGetOneWithoutConn(CodeGenerationContext ctx);
-        string MakeLoadCommandTextMethod(CodeGenerationContext ctx);
+        string MakeGetCommandTextMethod(CodeGenerationContext ctx);
         string MakeOtherMethods(CodeGenerationContext ctx);
         string StartClass(CodeGenerationContext ctx);
         string StartNamespace(CodeGenerationContext ctx);
         string Usings(CodeGenerationContext ctx);
         string MakeInterface(CodeGenerationContext ctx);
+        string SelfTestUsings(CodeGenerationContext ctx);
+        string MakeSelfTestMethod(CodeGenerationContext ctx);
     }
 }

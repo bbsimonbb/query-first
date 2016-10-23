@@ -47,7 +47,23 @@ namespace QueryFirst
             try
             {
                 if (ctx.DesignTimeConnectionString == null)
+                {
+                    LogToVSOutputWindow(@"QueryFirst would like to help you, but you need to tell it where your DB is.
+    Add these lines to your app or web.config. The name QfDefaultConnection and SqlClient are important. The rest is up to you.
+    <connectionStrings>
+        <add name=""QfDefaultConnection"" connectionString=""Data Source = localhost; Initial Catalog = NORTHWND; Integrated Security = SSPI; "" providerName=""System.Data.SqlClient"" />
+    </ connectionStrings >
+");
                     return; // nothing to be done
+
+                }
+                var makeSelfTest = ctx.ProjectConfig.AppSettings["QfMakeSelfTest"] != null && bool.Parse(ctx.ProjectConfig.AppSettings["QfMakeSelfTest"].Value);
+                if (!makeSelfTest)
+                    LogToVSOutputWindow(@"If you would like QueryFirst to generate SelfTest() methods for your queries, add the following in your app settings...
+    <add key=""QfMakeSelfTest"" value=""true"" />
+    You will also need to add project references for QfSchemaTools and Xunit.
+");
+
                 // Execute query
                 try
                 {
@@ -76,13 +92,17 @@ namespace QueryFirst
                 var results = _tiny.Resolve<IResultClassMaker>();
                 Code.Append(wrapper.StartNamespace(ctx));
                 Code.Append(wrapper.Usings(ctx));
+                if (makeSelfTest)
+                    Code.Append(wrapper.SelfTestUsings(ctx));
                 if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
                     Code.Append(results.Usings());
                 Code.Append(wrapper.MakeInterface(ctx));
                 Code.Append(wrapper.StartClass(ctx));
                 Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
                 Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
-                Code.Append(wrapper.MakeLoadCommandTextMethod(ctx));
+                Code.Append(wrapper.MakeGetCommandTextMethod(ctx));
+                if (makeSelfTest)
+                    Code.Append(wrapper.MakeSelfTestMethod(ctx));
                 if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
                 {
                     Code.Append(wrapper.MakeExecuteWithoutConn(ctx));

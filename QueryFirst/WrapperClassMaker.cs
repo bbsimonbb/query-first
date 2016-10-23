@@ -51,7 +51,7 @@ using System.Linq;";
             // Execute method with connection
             code.AppendLine("public virtual IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
-            code.AppendLine("loadCommandText(cmd);");
+            code.AppendLine("cmd.CommandText = getCommandText();");
             code.Append(MakeParamLoadingCode(ctx));
             code.AppendLine("using (var reader = cmd.ExecuteReader())");
             code.AppendLine("{");
@@ -114,7 +114,7 @@ using System.Linq;";
             // ExecuteScalar() with connection
             code.AppendLine("public virtual " + ctx.ResultFields[0].DataType + " ExecuteScalar(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
-            code.AppendLine("loadCommandText(cmd);");
+            code.AppendLine("cmd.CommandText = getCommandText();");
             code.Append(MakeParamLoadingCode(ctx));
             code.AppendLine("return (" + ctx.ResultFields[0].DataType + ")cmd.ExecuteScalar();");
             code.AppendLine("}");
@@ -142,7 +142,7 @@ using System.Linq;";
             // ExecuteScalar() with connection
             code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature + "SqlConnection conn){");
             code.AppendLine("SqlCommand cmd = conn.CreateCommand();");
-            code.AppendLine("loadCommandText(cmd);");
+            code.AppendLine("cmd.CommandText = getCommandText();");
             code.Append(MakeParamLoadingCode(ctx));
             code.AppendLine("return cmd.ExecuteNonQuery();");
             code.AppendLine("}");
@@ -171,7 +171,7 @@ using System.Linq;";
             foreach (var col in ctx.ResultFields)
             {
                 code.AppendLine("if(record[" + j + "] != null && record[" + j + "] != DBNull.Value)");
-                code.AppendLine("returnVal." + col.ColumnName + " =  (" + col.CSType + ")record[" + j++ + "];");
+                code.AppendLine("returnVal." + col.CSColumnName + " =  (" + col.CSType + ")record[" + j++ + "];");
             }
             // call OnLoad method in user's half of partial class
             code.AppendLine("returnVal.OnLoad();");
@@ -181,11 +181,11 @@ using System.Linq;";
 
             return code.ToString();
         }
-        public virtual string MakeLoadCommandTextMethod(CodeGenerationContext ctx)
+        public virtual string MakeGetCommandTextMethod(CodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // private load command text
-            code.AppendLine("private void loadCommandText(SqlCommand cmd){");
+            code.AppendLine("private string getCommandText(){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
             code.AppendLine("#if DEBUG");
@@ -193,7 +193,7 @@ using System.Linq;";
             code.AppendLine("queryText = queryText.Replace(\"--designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");");
             code.AppendLine("#endif");
-            code.AppendLine("cmd.CommandText = queryText;");
+            code.AppendLine("return queryText;");
             code.AppendLine("}"); // close method;
             return code.ToString();
 
@@ -233,6 +233,39 @@ using System.Linq;";
             code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature + "SqlConnection conn);");
             code.AppendLine("}"); // close interface;
 
+            return code.ToString();
+        }
+
+        public string SelfTestUsings(CodeGenerationContext ctx)
+        {
+            StringBuilder code = new StringBuilder();
+            code.AppendLine("using QueryFirst;");
+            code.AppendLine("using Xunit;");
+            return code.ToString();
+        }
+
+        public string MakeSelfTestMethod(CodeGenerationContext ctx)
+        {
+            char[] spaceComma = new char[] { ',', ' ' };
+            StringBuilder code = new StringBuilder();
+
+            code.AppendLine("[Fact]");
+            code.AppendLine("public void SelfTest()");
+            code.AppendLine("{");
+            code.AppendLine("var errors = new List<string>();");
+            code.AppendLine("var queryText = getCommandText();");
+            code.AppendLine("// we'll be getting a runtime version with the comments section closed. To run without parameters, open it.");
+            code.AppendLine("queryText = queryText.Replace(\"/*designTime\", \"--designTime\");");
+            code.AppendLine("queryText = queryText.Replace(\"endDesignTime*/\", \"--endDesignTime\");");
+            code.AppendLine("var schema = new ADOHelper().GetFields(QfRuntimeConnection.GetConnectionString(), queryText);");
+            for (int i = 0; i < ctx.ResultFields.Count; i++)
+            {
+                var col = ctx.ResultFields[i];
+                code.AppendLine("if (schema[" + i.ToString() + "].DataTypeName != \"" + col.DataTypeName + "\")");
+                code.AppendLine("errors.Add(string.Format(\"Col " + i.ToString() + " (ColName) DB datatype has changed! Was " + col.DataTypeName + ". Now {1}\", schema[" + i.ToString() + "].DataTypeName));");
+            }
+            code.AppendLine("Assert.Empty(errors);");
+            code.AppendLine("}");
             return code.ToString();
         }
     }

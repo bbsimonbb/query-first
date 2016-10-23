@@ -22,6 +22,16 @@ namespace QueryFirst
         protected Query query;
         public Query Query { get { return query; } }
         protected string baseName;
+        private ConfigurationAccessor config;
+        public ConfigurationAccessor ProjectConfig
+        {
+            get
+            {
+                if (config == null)
+                    config = new ConfigurationAccessor(dte, null);
+                return config;
+            }
+        }
         /// <summary>
         /// The name of the query file, without extension. Used to infer the filenames of code classes, and to generate the wrapper class name.
         /// </summary>
@@ -110,8 +120,7 @@ namespace QueryFirst
             {
                 if (string.IsNullOrEmpty(designTimeConnectionString))
                 {
-                    ConfigurationAccessor config = new ConfigurationAccessor(dte, null);
-                    designTimeConnectionString = config.ConnectionStrings["QfDefaultConnection"].ConnectionString;
+                    designTimeConnectionString = ProjectConfig.ConnectionStrings["QfDefaultConnection"].ConnectionString;
                 }
                 return designTimeConnectionString;
             }
