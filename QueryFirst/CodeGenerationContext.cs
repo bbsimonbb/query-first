@@ -13,6 +13,8 @@ namespace QueryFirst
     public class CodeGenerationContext
     {
         protected TinyIoCContainer tiny;
+        private PutCodeHere _putCodeHere;
+        public PutCodeHere PutCodeHere { get { return _putCodeHere; } }
         protected DTE dte;
         public DTE Dte { get { return dte; } }
         protected Document queryDoc;
@@ -28,7 +30,17 @@ namespace QueryFirst
             get
             {
                 if (config == null)
-                    config = new ConfigurationAccessor(dte, null);
+                {
+                    try
+                    {
+                        config = new ConfigurationAccessor(dte, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        // will throw if there's no configuration file
+                        return null;
+                    }
+                }
                 return config;
             }
         }
@@ -120,7 +132,16 @@ namespace QueryFirst
             {
                 if (string.IsNullOrEmpty(designTimeConnectionString))
                 {
-                    designTimeConnectionString = ProjectConfig.ConnectionStrings["QfDefaultConnection"].ConnectionString;
+                    var match = Regex.Match(Query.Text, "--QfDefaultConnection(=|:)(?<cstr>.*)$");
+                    //var match = Regex.Match(Query.Text, "--QfDefaultConnectionString ?(=|:)? ?\"?(?<cstr>[^ \"]*)\" ? $");
+                    if (match.Success)
+                    {
+                        designTimeConnectionString = match.Groups["cstr"].Value;
+                    }
+                    else if(ProjectConfig != null)
+                    {
+                        designTimeConnectionString = ProjectConfig.ConnectionStrings["QfDefaultConnection"]?.ConnectionString;
+                    }
                 }
                 return designTimeConnectionString;
             }
@@ -138,7 +159,7 @@ namespace QueryFirst
                 {
                     StringBuilder sig = new StringBuilder();
                     int i = 0;
-                    foreach(var qp in Query.QueryParams)
+                    foreach (var qp in Query.QueryParams)
                     {
                         sig.Append(qp.CSType + ' ' + qp.Name + ", ");
                         i++;
@@ -150,8 +171,8 @@ namespace QueryFirst
             }
         }
         //taken out of constructor, we don't need this anymore????
-    //                ((ISignatureMaker)TinyIoCContainer.Current.Resolve(typeof(ISignatureMaker)))
-    //.MakeMethodAndCallingSignatures(ctx.Query.QueryParams, out methodSignature, out callingArgs);
+        //                ((ISignatureMaker)TinyIoCContainer.Current.Resolve(typeof(ISignatureMaker)))
+        //.MakeMethodAndCallingSignatures(ctx.Query.QueryParams, out methodSignature, out callingArgs);
         protected string callingArgs;
         /// <summary>
         /// Parameter names, if any, with trailing "conn". String used by connectionless methods to call their connectionful overloads.
@@ -209,6 +230,9 @@ namespace QueryFirst
             dte = queryDoc.DTE;
             query = new Query(this);
 
+            // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
+            _putCodeHere = new PutCodeHere(Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename));
+
 
             string currDir = Path.GetDirectoryName(queryDoc.FullName);
             //WriteToOutput("\nprocessing " + queryDoc.FullName );
@@ -220,47 +244,6 @@ namespace QueryFirst
 
             hlpr = new ADOHelper();
         }
-        //public Tuple<string, string, string> GetNamespaceAndClassNames(ProjectItem userPartialClass)
-        //{
-        //    string _namespace = null;
-        //    string _loaderClass = null;
-        //    string _resultsClass = null;
-        //    FileCodeModel model = userPartialClass.FileCodeModel;
-        //    foreach (CodeElement element in model.CodeElements)
-        //    {
-        //        if (element.Kind == vsCMElement.vsCMElementNamespace)
-        //        {
-        //            _namespace = element.FullName;
-        //            foreach (CodeElement child in element.Children)
-        //            {
-        //                if (child.Kind == vsCMElement.vsCMElementClass)
-        //                {
-        //                    // a bit complicated but here we go. If partial class name finishes with "Results",
-        //                    // derive the loader class name by trimming "Results". Else derive the loader class name
-        //                    // by adding "Request".
-        //                    _resultsClass = child.Name;
-        //                    if (_resultsClass.Length > 7 && _resultsClass.Substring(_resultsClass.Length - 7) == "Results")
-        //                        _loaderClass = _resultsClass.Substring(0, _resultsClass.Length - 7);
-        //                    else
-        //                        _loaderClass = _resultsClass + "Request";
-        //                    return new Tuple<string, string, string>(_namespace, _loaderClass, _resultsClass);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return null;
-        //}
-
-        //static string GetAssemblyPath(EnvDTE.Project vsProject)
-        //{
-        //    string fullPath = vsProject.Properties.Item("FullPath").Value.ToString();
-        //    string outputPath = vsProject.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
-        //    string outputDir = Path.Combine(fullPath, outputPath);
-        //    string outputFileName = vsProject.Properties.Item("OutputFileName").Value.ToString();
-        //    string assemblyPath = Path.Combine(outputDir, outputFileName);
-        //    return assemblyPath;
-        //}
-
 
     }
 }

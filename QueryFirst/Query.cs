@@ -31,9 +31,11 @@ namespace QueryFirst
                 {
                     int i = 0;
                     queryParams = new List<IQueryParam>();
+                    // get design time section
+                    var dt = Regex.Match(Text, "--designTime(?<designTime>.*)--endDesignTime", RegexOptions.Singleline).Value;
                     // extract declared parameters
                     string pattern = "declare[^;]*";
-                    Match m = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
+                    Match m = Regex.Match(dt, pattern, RegexOptions.IgnoreCase);
                     while (m.Success)
                     {
                         string[] parts = m.Value.Split(' ');

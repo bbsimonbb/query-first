@@ -61,6 +61,18 @@
     <Compile Include="CodeGenerationContext.cs" />
     <Compile Include="ConfigurationAccessor.cs" />
     <Compile Include="IMap.cs" />
+    <Compile Include="InsertsAndUpdates\ScaffoldUpdate.gen.cs">
+      <DependentUpon>ScaffoldUpdate.sql</DependentUpon>
+    </Compile>
+    <Compile Include="InsertsAndUpdates\ScaffoldUpdateResults.cs">
+      <DependentUpon>ScaffoldUpdate.sql</DependentUpon>
+    </Compile>
+    <Compile Include="Inserts\GenerateInsert.gen.cs">
+      <DependentUpon>GenerateInsert.sql</DependentUpon>
+    </Compile>
+    <Compile Include="Inserts\GenerateInsertResults.cs">
+      <DependentUpon>GenerateInsert.sql</DependentUpon>
+    </Compile>
     <Compile Include="IQueryParam.cs" />
     <Compile Include="ISignatureMaker.cs" />
     <Compile Include="IWrapperClassMaker.cs" />
@@ -70,8 +82,16 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="PutCodeHere.cs" />
+    <Compile Include="QfRuntimeConnection.cs" />
     <Compile Include="QueryParam.cs" />
     <Compile Include="Query.cs" />
+    <Compile Include="InsertsAndUpdates\ScaffoldInsert.gen.cs">
+      <DependentUpon>ScaffoldInsert.sql</DependentUpon>
+    </Compile>
+    <Compile Include="InsertsAndUpdates\ScaffoldInsertResults.cs">
+      <DependentUpon>ScaffoldInsert.sql</DependentUpon>
+    </Compile>
     <Compile Include="SignatureMaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultFieldDetails.cs" />
@@ -100,9 +120,12 @@
     <VSCTCompile Include="QueryFirstCmdPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
+    <EmbeddedResource Include="Inserts\GenerateInsert.sql" />
+    <EmbeddedResource Include="InsertsAndUpdates\ScaffoldUpdate.sql" />
     <Content Include="Resources\16.bmp" />
     <Content Include="Resources\QueryFirstCmd.png" />
     <Content Include="Resources\QueryFirstCmdPackage.ico" />
+    <EmbeddedResource Include="InsertsAndUpdates\ScaffoldInsert.sql" />
     <Content Include="stylesheet.css" />
   </ItemGroup>
   <ItemGroup>

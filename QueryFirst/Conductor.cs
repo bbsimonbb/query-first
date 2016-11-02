@@ -49,82 +49,106 @@ namespace QueryFirst
                 if (ctx.DesignTimeConnectionString == null)
                 {
                     LogToVSOutputWindow(@"QueryFirst would like to help you, but you need to tell it where your DB is.
+    You can specify the design time connection string in your app or web.config or directly in the query file.
     Add these lines to your app or web.config. The name QfDefaultConnection and SqlClient are important. The rest is up to you.
     <connectionStrings>
         <add name=""QfDefaultConnection"" connectionString=""Data Source = localhost; Initial Catalog = NORTHWND; Integrated Security = SSPI; "" providerName=""System.Data.SqlClient"" />
     </ connectionStrings >
+    or put --QfDefaultConnection=myConnectionString somewhere in your query file.
 ");
                     return; // nothing to be done
 
                 }
-                var makeSelfTest = ctx.ProjectConfig.AppSettings["QfMakeSelfTest"] != null && bool.Parse(ctx.ProjectConfig.AppSettings["QfMakeSelfTest"].Value);
-                if (!makeSelfTest)
-                    LogToVSOutputWindow(@"If you would like QueryFirst to generate SelfTest() methods for your queries, add the following in your app settings...
-    <add key=""QfMakeSelfTest"" value=""true"" />
-    You will also need to add project references for QfSchemaTools and Xunit.
-");
-
-                // Execute query
-                try
+                else
                 {
-                    ctx.Query.DiscoverParams();
-
-                    ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString, ctx.Query.Text);
+                    // Use QueryFirst within QueryFirst !
+                    QfRuntimeConnection.CurrentConnectionString = ctx.DesignTimeConnectionString;
                 }
-                catch (Exception ex)
-                {
-                    StringBuilder bldr = new StringBuilder();
-                    bldr.AppendLine("Error running query.");
-                    bldr.AppendLine();
-                    bldr.AppendLine("/*The last attempt to run this query failed with the following error. This class is no longer synced with the query");
-                    bldr.AppendLine("You can compile the class by deleting this error information, but it will likely generate runtime errors.");
-                    bldr.AppendLine("-----------------------------------------------------------");
-                    bldr.AppendLine(ex.Message);
-                    bldr.AppendLine("-----------------------------------------------------------");
-                    bldr.AppendLine(ex.StackTrace);
-                    bldr.AppendLine("*/");
-                    File.AppendAllText(ctx.GeneratedClassFullFilename, bldr.ToString());
-                    throw;
-                }
-                ctx.QueryHasRun = true;
-                StringBuilder Code = new StringBuilder();
-                var wrapper = _tiny.Resolve<IWrapperClassMaker>();
-                var results = _tiny.Resolve<IResultClassMaker>();
-                Code.Append(wrapper.StartNamespace(ctx));
-                Code.Append(wrapper.Usings(ctx));
-                if (makeSelfTest)
-                    Code.Append(wrapper.SelfTestUsings(ctx));
-                if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
-                    Code.Append(results.Usings());
-                Code.Append(wrapper.MakeInterface(ctx));
-                Code.Append(wrapper.StartClass(ctx));
-                Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
-                Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
-                Code.Append(wrapper.MakeGetCommandTextMethod(ctx));
-                if (makeSelfTest)
-                    Code.Append(wrapper.MakeSelfTestMethod(ctx));
-                if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
-                {
-                    Code.Append(wrapper.MakeExecuteWithoutConn(ctx));
-                    Code.Append(wrapper.MakeExecuteWithConn(ctx));
-                    Code.Append(wrapper.MakeGetOneWithoutConn(ctx));
-                    Code.Append(wrapper.MakeGetOneWithConn(ctx));
-                    Code.Append(wrapper.MakeExecuteScalarWithoutConn(ctx));
-                    Code.Append(wrapper.MakeExecuteScalarWithConn(ctx));
+                var makeSelfTest = ctx.ProjectConfig?.AppSettings["QfMakeSelfTest"] != null && bool.Parse(ctx.ProjectConfig.AppSettings["QfMakeSelfTest"].Value);
 
-                    Code.Append(wrapper.MakeCreateMethod(ctx));
-                    Code.Append(wrapper.MakeOtherMethods(ctx));
-                    Code.Append(wrapper.CloseClass(ctx));
-                    Code.Append(results.StartClass(ctx));
-                    foreach (var fld in ctx.ResultFields)
+                var matchInsert = Regex.Match(ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.",RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var matchUpdate = Regex.Match(ctx.Query.Text, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                if (matchInsert.Success)
+                {
+                    var statement = new ScaffoldInsert().ExecuteScalar(matchInsert.Groups["tableName"].Value);
+                    var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+                    var ep = textDoc.CreateEditPoint();
+                    ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
+                }
+                else if (matchUpdate.Success)
+                {
+                    var statement = new ScaffoldUpdate().ExecuteScalar(matchUpdate.Groups["tableName"].Value);
+                    var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+                    var ep = textDoc.CreateEditPoint();
+                    ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
+                }
+                else
+                {
+
+                    // Execute query
+                    try
                     {
-                        Code.Append(results.MakeProperty(fld));
+                        ctx.Query.DiscoverParams();
+
+                        ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString, ctx.Query.Text);
                     }
+                    catch (Exception ex)
+                    {
+                        StringBuilder bldr = new StringBuilder();
+                        bldr.AppendLine("Error running query.");
+                        bldr.AppendLine();
+                        bldr.AppendLine("/*The last attempt to run this query failed with the following error. This class is no longer synced with the query");
+                        bldr.AppendLine("You can compile the class by deleting this error information, but it will likely generate runtime errors.");
+                        bldr.AppendLine("-----------------------------------------------------------");
+                        bldr.AppendLine(ex.Message);
+                        bldr.AppendLine("-----------------------------------------------------------");
+                        bldr.AppendLine(ex.StackTrace);
+                        bldr.AppendLine("*/");
+                        File.AppendAllText(ctx.GeneratedClassFullFilename, bldr.ToString());
+                        throw;
+                    }
+                    ctx.QueryHasRun = true;
+                    StringBuilder Code = new StringBuilder();
+                    var wrapper = _tiny.Resolve<IWrapperClassMaker>();
+                    var results = _tiny.Resolve<IResultClassMaker>();
+                    Code.Append(wrapper.StartNamespace(ctx));
+                    Code.Append(wrapper.Usings(ctx));
+                    if (makeSelfTest)
+                        Code.Append(wrapper.SelfTestUsings(ctx));
+                    if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+                        Code.Append(results.Usings());
+                    Code.Append(wrapper.MakeInterface(ctx));
+                    Code.Append(wrapper.StartClass(ctx));
+                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
+                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
+                    Code.Append(wrapper.MakeGetCommandTextMethod(ctx));
+                    if (makeSelfTest)
+                        Code.Append(wrapper.MakeSelfTestMethod(ctx));
+                    if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+                    {
+                        Code.Append(wrapper.MakeExecuteWithoutConn(ctx));
+                        Code.Append(wrapper.MakeExecuteWithConn(ctx));
+                        Code.Append(wrapper.MakeGetOneWithoutConn(ctx));
+                        Code.Append(wrapper.MakeGetOneWithConn(ctx));
+                        Code.Append(wrapper.MakeExecuteScalarWithoutConn(ctx));
+                        Code.Append(wrapper.MakeExecuteScalarWithConn(ctx));
+
+                        Code.Append(wrapper.MakeCreateMethod(ctx));
+                        Code.Append(wrapper.MakeOtherMethods(ctx));
+                        Code.Append(wrapper.CloseClass(ctx));
+                        Code.Append(results.StartClass(ctx));
+                        foreach (var fld in ctx.ResultFields)
+                        {
+                            Code.Append(results.MakeProperty(fld));
+                        }
+                    }
+                    Code.Append(results.CloseClass()); // closes wrapper class if no results !
+                    Code.Append(wrapper.CloseNamespace(ctx));
+                    //File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
+                    ctx.PutCodeHere.WriteAndFormat(Code.ToString());
+                    LogToVSOutputWindow(Environment.NewLine + "QueryFirst generated wrapper class for " + ctx.BaseName + ".sql");
                 }
-                Code.Append(results.CloseClass()); // closes wrapper class if no results !
-                Code.Append(wrapper.CloseNamespace(ctx));
-                File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
-                LogToVSOutputWindow(Environment.NewLine + "QueryFirst generated wrapper class for " + ctx.BaseName + ".sql");
+
             }
             catch (Exception ex)
             {
@@ -133,14 +157,14 @@ namespace QueryFirst
         }
 
         // Doesn't recurse into folders. Prefer items.Item("")
-        private static ProjectItem GetItemByFilename(ProjectItems items, string filename)
+        public static ProjectItem GetItemByFilename(ProjectItems items, string filename)
         {
             foreach (ProjectItem item in items)
             {
                 for (short i = 0; i < item.FileCount; i++)
                 {
                     if (item.FileNames[i].Equals(filename))
-                        return item;
+                        return item as ProjectItem;
                 }
             }
             return null;

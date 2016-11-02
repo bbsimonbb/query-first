@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="0.4" Language="en-US" Publisher="Boddy Simon" />
+    <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="0.5" Language="en-US" Publisher="Boddy Simon" />
     <DisplayName>QueryFirst</DisplayName>
     <Description xml:space="preserve">World first implementation of the Dominic Strauss Kahn data access method .</Description>
   </Metadata>

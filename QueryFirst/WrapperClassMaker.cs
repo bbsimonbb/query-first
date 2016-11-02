@@ -16,7 +16,9 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;";
+using System.Linq;
+
+";
 
         }
         public virtual string StartNamespace(CodeGenerationContext ctx)

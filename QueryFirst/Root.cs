@@ -133,14 +133,6 @@ namespace QueryFirst
 
 
             }
-            if (Document.FullName.EndsWith(".gen.cs"))
-            {
-                var textDoc = ((TextDocument)Document.Object());
-                // format the whole document !
-                textDoc.StartPoint.CreateEditPoint().SmartFormat(textDoc.EndPoint);
-            }
-
-
         }
         private void HandleTimer(Object source, System.Timers.ElapsedEventArgs e)
         {
@@ -157,45 +149,60 @@ namespace QueryFirst
         }
         private void RegisterTypes()
         {
-            LogToVSOutputWindow("Registering types...\n");
-            //kludge
-            if (TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
+            try
             {
-                LogToVSOutputWindow("Already registered\n");
-                return;
-            }
-            ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
-            var helperAssembly = config.AppSettings["QfHelperAssembly"];
-            if (helperAssembly != null && !string.IsNullOrEmpty(helperAssembly.Value))
-            {
-                IEnumerable<Assembly> assemblies = new Assembly[]
-                {Assembly.LoadFrom(helperAssembly.Value), Assembly.GetExecutingAssembly()};
-                //IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.GetExecutingAssembly(), Assembly.LoadFrom(helperAssembly.Value) };
+                LogToVSOutputWindow("Registering types...\n");
+                //kludge
+                if (TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
+                {
+                    LogToVSOutputWindow("Already registered\n");
+                    return;
+                }
+                System.Configuration.KeyValueConfigurationElement helperAssembly = null;
+                try
+                {
+                    ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
+                    helperAssembly = config.AppSettings["QfHelperAssembly"];
+                }
+                catch (Exception ex)
+                {//nobody cares
+                }
+                if (helperAssembly != null && !string.IsNullOrEmpty(helperAssembly.Value))
+                {
+                    IEnumerable<Assembly> assemblies = new Assembly[]
+                    {Assembly.LoadFrom(helperAssembly.Value), Assembly.GetExecutingAssembly()};
+                    //IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.GetExecutingAssembly(), Assembly.LoadFrom(helperAssembly.Value) };
 
-                // Don't use AutoRegister(), it registers thousands of types and we only use four.
-                //TinyIoCContainer.Current.AutoRegister(assemblies);
-                TinyIoCContainer.Current.Register<ITypeMapping>(new TypeMapping());
-                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
-                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
-                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
-                TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
+                    // Don't use AutoRegister(), it registers thousands of types and we only use four.
+                    //TinyIoCContainer.Current.AutoRegister(assemblies);
+                    TinyIoCContainer.Current.Register<ITypeMapping>(new TypeMapping());
+                    TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
+                }
+                else
+                {
+                    // Don't use AutoRegister(), it registers thousands of types and we only use four.
+                    //TinyIoCContainer.Current.AutoRegister();
+                    TinyIoCContainer.Current.Register<ITypeMapping, TypeMapping>();
+                    TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
+                }
+                LogToVSOutputWindow("Registered types...\n");
             }
-            else
+            catch(Exception ex)
             {
-                // Don't use AutoRegister(), it registers thousands of types and we only use four.
-                //TinyIoCContainer.Current.AutoRegister();
-                TinyIoCContainer.Current.Register<ITypeMapping,TypeMapping>();
-                TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
-                TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
-                TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
-                TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
+                LogToVSOutputWindow(ex.Message + '\n' + ex.StackTrace);
             }
-            LogToVSOutputWindow("Registered types...\n");
         }
 
         #region methods
         // SBY composite items. Rename wrapper class if query name changes...
         void CSharpItemRenamed(ProjectItem renamedQuery, string OldName)
+
         {
             if (OldName.EndsWith(".sql"))
             {
@@ -208,6 +215,7 @@ namespace QueryFirst
                         if (item.Name == OldName.Replace(".sql", ".gen.cs"))
                         {
                             item.Name = renamedQuery.Name.Replace(".sql", ".gen.cs");
+                            
                             fuxed++;
                         }
                         if (item.Name == OldName.Replace(".sql", "Results.cs"))
@@ -216,7 +224,11 @@ namespace QueryFirst
                             fuxed++;
                         }
                         if (fuxed == 2)
+                        {
+                            // regenerate query in new location to get new path to manifest stream.
+                            new Conductor(renamedQuery.Document).Process();
                             return; //2 files to rename, then we're finished.
+                        }
                     }
                 }
             }
