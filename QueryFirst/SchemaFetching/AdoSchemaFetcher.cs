@@ -7,22 +7,24 @@ using System.Diagnostics;
 using System.Data.Sql;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
+using System.Configuration;
 
 
 namespace QueryFirst
 {
 
-    public class ADOHelper
+    public class AdoSchemaFetcher : ISchemaFetcher
     {
 
-        public List<ResultFieldDetails> GetFields(string ConnectionString, string Query)
+        public List<ResultFieldDetails> GetFields(ConnectionStringSettings ConnectionString, string Query)
         {
             DataTable dt = new DataTable();
-             var SchemaTable = GetQuerySchema(ConnectionString, Query);
+            var SchemaTable = GetQuerySchema(ConnectionString, Query);
 
             List<ResultFieldDetails> result = new List<ResultFieldDetails>();
             if (SchemaTable == null)
                 return result;
+
 
             for (int i = 0; i <= SchemaTable.Rows.Count - 1; i++)
             {
@@ -52,10 +54,26 @@ namespace QueryFirst
                                 qf.ColumnSize = (int)SchemaTable.Rows[i].Field<int>(j);
                                 break;
                             case "NumericPrecision":
-                                qf.NumericPrecision = (int)SchemaTable.Rows[i].Field<short>(j);
+                                // Postgres choking
+                                if (ConnectionString.ProviderName == "System.Data.SqlClient")
+                                {
+                                    qf.NumericPrecision = (int)SchemaTable.Rows[i].Field<short>(j);
+                                }
+                                else
+                                {
+                                    qf.NumericPrecision = (int)SchemaTable.Rows[i].Field<int>(j);
+                                }
                                 break;
                             case "NumericScale":
-                                qf.NumericScale = SchemaTable.Rows[i].Field<short>(j);
+                                // Postgres choking
+                                if (ConnectionString.ProviderName == "System.Data.SqlClient")
+                                {
+                                    qf.NumericScale = (int)SchemaTable.Rows[i].Field<short>(j);
+                                }
+                                else
+                                {
+                                    qf.NumericScale = (int)SchemaTable.Rows[i].Field<int>(j);
+                                }
                                 break;
                             case "IsUnique":
                                 qf.IsUnique = SchemaTable.Rows[i].Field<bool>(j);
@@ -67,13 +85,13 @@ namespace QueryFirst
                                 qf.BaseTableName = SchemaTable.Rows[i].Field<string>(j);
                                 break;
                             case "DataType":
-                                qf.DataType = SchemaTable.Rows[i].Field<System.Type>(j).FullName;
+                                qf.TypeCs = SchemaTable.Rows[i].Field<System.Type>(j).FullName;
                                 break;
                             case "AllowDBNull":
                                 qf.AllowDBNull = SchemaTable.Rows[i].Field<bool>(j);
                                 break;
                             case "ProviderType":
-                                qf.ProviderType = SchemaTable.Rows[i].Field<int>(j);
+                                //qf.ProviderType = SchemaTable.Rows[i].Field<int>(j);
                                 break;
                             case "IsIdentity":
                                 qf.IsIdentity = SchemaTable.Rows[i].Field<bool>(j);
@@ -94,7 +112,7 @@ namespace QueryFirst
                                 qf.ProviderSpecificDataType = SchemaTable.Rows[i].Field<System.Type>(j).FullName;
                                 break;
                             case "DataTypeName":
-                                qf.DataTypeName = SchemaTable.Rows[i].Field<string>(j);
+                                qf.TypeDb = SchemaTable.Rows[i].Field<string>(j);
                                 break;
                             case "UdtAssemblyQualifiedName":
                                 qf.UdtAssemblyQualifiedName = SchemaTable.Rows[i].Field<string>(j);
@@ -117,23 +135,25 @@ namespace QueryFirst
             return result;
         }
 
-        public ADOHelper()
+        public AdoSchemaFetcher()
         {
         }
 
         //Perform the query, extract the results
-        private DataTable GetQuerySchema(string strconn, string strSQL)
+        private DataTable GetQuerySchema(ConnectionStringSettings strconn, string strSQL)
         {
             //Returns a DataTable filled with the results of the query
             //Function returns the count of records in the datatable
             //----- dt (datatable) needs to be empty & no schema defined
+            var provider = TinyIoC.TinyIoCContainer.Current.Resolve<IProvider>(strconn.ProviderName);
 
-            using (var connection = new SqlConnection(strconn))
+            using (var connection = provider.GetConnection(strconn))
             {
                 connection.Open();
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = strSQL;
+                    provider.PrepareParametersForSchemaFetching(command);
                     using (var srdrQuery = command.ExecuteReader(CommandBehavior.SchemaOnly))
                     {
                         var dtSchema = srdrQuery.GetSchemaTable();

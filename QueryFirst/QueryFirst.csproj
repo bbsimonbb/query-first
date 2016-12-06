@@ -57,10 +57,20 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AdoHelper.cs" />
+    <Compile Include="Providers\IProvider.cs" />
+    <Compile Include="Providers\MySql.cs" />
+    <Compile Include="Providers\Postgres.cs" />
+    <Compile Include="Providers\sp_describe_undeclared_parameters.gen.cs">
+      <DependentUpon>sp_describe_undeclared_parameters.sql</DependentUpon>
+    </Compile>
+    <Compile Include="Providers\sp_describe_undeclared_parametersResults.cs">
+      <DependentUpon>sp_describe_undeclared_parameters.sql</DependentUpon>
+    </Compile>
+    <Compile Include="Providers\SqlServer.cs" />
+    <Compile Include="SchemaFetching\AdoSchemaFetcher.cs" />
     <Compile Include="CodeGenerationContext.cs" />
     <Compile Include="ConfigurationAccessor.cs" />
-    <Compile Include="IMap.cs" />
+    <Compile Include="SchemaFetching\TypeMappings\System2Alias.cs" />
     <Compile Include="InsertsAndUpdates\ScaffoldUpdate.gen.cs">
       <DependentUpon>ScaffoldUpdate.sql</DependentUpon>
     </Compile>
@@ -73,10 +83,10 @@
     <Compile Include="Inserts\GenerateInsertResults.cs">
       <DependentUpon>GenerateInsert.sql</DependentUpon>
     </Compile>
-    <Compile Include="IQueryParam.cs" />
+    <Compile Include="IQueryParamInfo.cs" />
     <Compile Include="ISignatureMaker.cs" />
+    <Compile Include="SchemaFetching\ISchemaFetcher.cs" />
     <Compile Include="IWrapperClassMaker.cs" />
-    <Compile Include="Map.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -101,10 +111,12 @@
     <Compile Include="ResultClassMaker.cs" />
     <Compile Include="Root.cs" />
     <Compile Include="TinyIoC.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="WizardImplementationClass.cs" />
     <Compile Include="WrapperClassMaker.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Key.snk" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -122,6 +134,8 @@
     </VSCTCompile>
     <EmbeddedResource Include="Inserts\GenerateInsert.sql" />
     <EmbeddedResource Include="InsertsAndUpdates\ScaffoldUpdate.sql" />
+    <EmbeddedResource Include="Providers\sp_describe_undeclared_parameters.sql" />
+    <Content Include="ReadMe.txt" />
     <Content Include="Resources\16.bmp" />
     <Content Include="Resources\QueryFirstCmd.png" />
     <Content Include="Resources\QueryFirstCmdPackage.ico" />
@@ -222,6 +236,14 @@
       <HintPath>..\packages\Microsoft.VisualStudio.Validation.14.1.111\lib\net45\Microsoft.VisualStudio.Validation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Npgsql, Version=3.1.8.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.3.1.8\lib\net451\Npgsql.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -249,6 +271,7 @@
       <IncludeOutputGroupsInVSIX>TemplateProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

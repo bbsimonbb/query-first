@@ -29,7 +29,7 @@
         string MakeExecuteNonQueryWithConn(CodeGenerationContext ctx);
         string MakeExecuteNonQueryWithoutConn(CodeGenerationContext ctx);
         string MakeExecuteWithConn(CodeGenerationContext ctx);
-        string MakeExecuteWithoutConn(CodeGenerationContext ctx);
+        string MakeExecuteWithoutConn(CodeGenerationContext ctn);
         string MakeGetOneWithConn(CodeGenerationContext ctx);
         string MakeGetOneWithoutConn(CodeGenerationContext ctx);
         string MakeGetCommandTextMethod(CodeGenerationContext ctx);

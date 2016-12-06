@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Data.SqlClient;
 using EnvDTE;
+using QueryFirst.TypeMappings;
 
 namespace QueryFirst
 {
@@ -15,36 +16,21 @@ namespace QueryFirst
     {
         private CodeGenerationContext ctx;
         private string text;
-        private ITypeMapping map;
-        private List<IQueryParam> queryParams;
+        private IProvider provider;
+        private List<IQueryParamInfo> queryParams;
         /// <summary>
         /// List of param names and types, parsed from declare statements anywhere in the sql query 
         /// or recovered with sp_describe_undeclared_parameters.
         /// Names are as declared, with leading @. The portion following the @ must be a valid C# identifier.
         /// Types are C# types that map to the sql type in the declare statement.
         /// </summary>
-        public List<IQueryParam> QueryParams
+        public List<IQueryParamInfo> QueryParams
         {
             get
             {
                 if (queryParams == null)
                 {
-                    int i = 0;
-                    queryParams = new List<IQueryParam>();
-                    // get design time section
-                    var dt = Regex.Match(Text, "--designTime(?<designTime>.*)--endDesignTime", RegexOptions.Singleline).Value;
-                    // extract declared parameters
-                    string pattern = "declare[^;]*";
-                    Match m = Regex.Match(dt, pattern, RegexOptions.IgnoreCase);
-                    while (m.Success)
-                    {
-                        string[] parts = m.Value.Split(' ');
-                        var qp = TinyIoC.TinyIoCContainer.Current.Resolve<IQueryParam>();
-                        qp.Populate(parts[1].Substring(1), parts[2], true);
-                        queryParams.Add(qp);
-                        m = m.NextMatch();
-                        i++;
-                    }
+                    queryParams = ctx.Provider.ParseDeclaredParameters(Text);
                 }
                 return queryParams;
             }
@@ -55,63 +41,43 @@ namespace QueryFirst
             var textDoc = ((TextDocument)ctx.QueryDoc.Object());
             var start = textDoc.StartPoint;
             text = start.CreateEditPoint().GetText(textDoc.EndPoint);
-            map = ctx.Map;
+            provider = ctx.Provider;
 
         }
-
-        public string Text { get { return text; } }
+        public void ReplacePattern(string pattern, string replaceWith)
+        {
+            var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+            textDoc.ReplacePattern(pattern, replaceWith);
+            var start = textDoc.StartPoint;
+            text = start.CreateEditPoint().GetText(textDoc.EndPoint);
+            queryParams = null;
+        }
+        public string Text {
+            get { return text; }
+            set
+            {
+                var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+                var ep = textDoc.CreateEditPoint();
+                ep.ReplaceText(textDoc.EndPoint, value, 0);
+                text = value;
+            }
+        }
         public bool IsQFQuery()
         {
             return Text.Contains("managed by QueryFirst");
         }
         public void ConvertForDesignDebug()
         {
-            text = text.Replace("/*designTime", "--designTime");
-            text = text.Replace("endDesignTime*/", "--endDesignTime");
+            text = text.Replace("/*designTime", "-- designTime");
+            text = text.Replace("endDesignTime*/", "-- endDesignTime");
         }
         public void ConvertForProductionBuild()
         {
+            // backwards  compatible
             text = text.Replace("--designTime", "/*designTime");
             text = text.Replace("--endDesignTime", "endDesignTime*/");
-        }
-        public void DiscoverParams()
-        {
-            // sp_describe_undeclared_parameters
-            using (SqlConnection conn = new SqlConnection(ctx.DesignTimeConnectionString))
-            {
-                SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandText = "sp_describe_undeclared_parameters @tsql";
-                var tsql = new SqlParameter("@tsql", System.Data.SqlDbType.NChar);
-                tsql.Value = text;
-                cmd.Parameters.Add(tsql);
-                StringBuilder bldr = new StringBuilder();
-
-                conn.Open();
-                var rdr = cmd.ExecuteReader();
-                bldr.Length = 0; // reuse
-                while (rdr.Read())
-                {
-                    // ignore global variables
-                    if (rdr.GetString(1).Substring(0, 2) != "@@")
-                    {
-                        // build declaration.
-                        bldr.AppendLine("declare " + rdr.GetString(1) + " " + rdr.GetString(3) + ";");
-                        queryParams = null; // reset the list, they will be re-read from the updated text.
-                    }
-
-
-                }
-                //inject discovered params
-                if (bldr.Length > 0)
-                {
-                    int insertHere = text.IndexOf("endDesignTime") - 2;
-                    text = text.Substring(0, insertHere) + bldr.ToString() + text.Substring(insertHere);
-                    //File.WriteAllText(ctx.QueryDoc.FullName, text);
-                    var textDoc = ((TextDocument)ctx.QueryDoc.Object());
-                    textDoc.ReplacePattern("--endDesignTime", bldr.ToString() + "--endDesignTime");
-                }
-
-            }
+            text = text.Replace("-- designTime", "/*designTime");
+            text = text.Replace("-- endDesignTime", "endDesignTime*/");
         }
     }
 }

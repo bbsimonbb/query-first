@@ -98,19 +98,23 @@ namespace QueryFirst
         }
         private void ProcessAllItems(ProjectItems items)
         {
-            foreach (ProjectItem item in items)
+            if (items != null)
             {
-                try
+
+                foreach (ProjectItem item in items)
                 {
-                    if (item.FileNames[1].EndsWith(".sql"))
+                    try
                     {
-                        item.Open();
-                        new Conductor(item.Document).Process();
+                        if (item.FileNames[1].EndsWith(".sql"))
+                        {
+                            item.Open();
+                            new Conductor(item.Document).Process();
+                        }
+                        if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
+                            ProcessAllItems(item.ProjectItems);
                     }
-                    if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
-                        ProcessAllItems(item.ProjectItems);
+                    catch (Exception ex) { }
                 }
-                catch (Exception ex) { }
             }
         }
     }

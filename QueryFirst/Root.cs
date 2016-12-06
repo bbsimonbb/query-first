@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Drawing;
 using TinyIoC;
 using System.Timers;
+using QueryFirst.TypeMappings;
 
 namespace QueryFirst
 {
@@ -73,6 +74,13 @@ namespace QueryFirst
                     if (item.FileNames[1].EndsWith(".sql"))
                     {
                         var queryText = File.ReadAllText(item.FileNames[1]);
+                        if (queryText.IndexOf("-- designTime") >= 0)
+                        {
+                            queryText = queryText.Replace("-- designTime", "/*designTime");
+                            queryText = queryText.Replace("-- endDesignTime", "endDesignTime*/");
+                            File.WriteAllText(item.FileNames[1], queryText);
+                        }
+                        // backwards compatible
                         if (queryText.IndexOf("--designTime") >= 0)
                         {
                             queryText = queryText.Replace("--designTime", "/*designTime");
@@ -99,8 +107,8 @@ namespace QueryFirst
                         var queryText = File.ReadAllText(item.FileNames[1]);
                         if (queryText.IndexOf("/*designTime") >= 0)
                         {
-                            queryText = queryText.Replace("/*designTime", "--designTime");
-                            queryText = queryText.Replace("endDesignTime*/", "--endDesignTime");
+                            queryText = queryText.Replace("/*designTime", "-- designTime");
+                            queryText = queryText.Replace("endDesignTime*/", "-- endDesignTime");
                             File.WriteAllText(item.FileNames[1], queryText);
                         }
 
@@ -117,8 +125,8 @@ namespace QueryFirst
             if (Document.FullName.EndsWith(".sql"))
             {
                 var textDoc = ((TextDocument)Document.Object());
-                textDoc.ReplacePattern("/*designTime", "--designTime");
-                textDoc.ReplacePattern("endDesignTime*/", "--endDesignTime");
+                textDoc.ReplacePattern("/*designTime", "-- designTime");
+                textDoc.ReplacePattern("endDesignTime*/", "-- endDesignTime");
 
                 // never got close to working. cost me 50 points on stack. just saw it open the window????
                 //try
@@ -175,21 +183,22 @@ namespace QueryFirst
 
                     // Don't use AutoRegister(), it registers thousands of types and we only use four.
                     //TinyIoCContainer.Current.AutoRegister(assemblies);
-                    TinyIoCContainer.Current.Register<ITypeMapping>(new TypeMapping());
                     TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
                     TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
                     TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(IQueryParamInfo), typeof(QueryParamInfo)).AsMultiInstance();
                 }
                 else
                 {
                     // Don't use AutoRegister(), it registers thousands of types and we only use four.
                     //TinyIoCContainer.Current.AutoRegister();
-                    TinyIoCContainer.Current.Register<ITypeMapping, TypeMapping>();
+                    TinyIoCContainer.Current.Register<IProvider, Providers.SqlServer>("System.Data.SqlClient");
+                    TinyIoCContainer.Current.Register<IProvider, Providers.Postgres>("Npgsql"); 
+                    TinyIoCContainer.Current.Register<IProvider, Providers.MySql>("MySql.Data.MySqlClient"); 
                     TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
                     TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
                     TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(IQueryParam), typeof(QueryParam)).AsMultiInstance();
+                    TinyIoCContainer.Current.Register(typeof(IQueryParamInfo), typeof(QueryParamInfo)).AsMultiInstance();
                 }
                 LogToVSOutputWindow("Registered types...\n");
             }

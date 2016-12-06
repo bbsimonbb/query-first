@@ -62,7 +62,8 @@ namespace QueryFirst
                 else
                 {
                     // Use QueryFirst within QueryFirst !
-                    QfRuntimeConnection.CurrentConnectionString = ctx.DesignTimeConnectionString;
+                    // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
+                    QfRuntimeConnection.CurrentConnectionString = ctx.DesignTimeConnectionString.ConnectionString;
                 }
                 var makeSelfTest = ctx.ProjectConfig?.AppSettings["QfMakeSelfTest"] != null && bool.Parse(ctx.ProjectConfig.AppSettings["QfMakeSelfTest"].Value);
 
@@ -74,6 +75,7 @@ namespace QueryFirst
                     var textDoc = ((TextDocument)ctx.QueryDoc.Object());
                     var ep = textDoc.CreateEditPoint();
                     ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
+                    //ctx.QueryDoc.Save();
                 }
                 else if (matchUpdate.Success)
                 {
@@ -81,6 +83,7 @@ namespace QueryFirst
                     var textDoc = ((TextDocument)ctx.QueryDoc.Object());
                     var ep = textDoc.CreateEditPoint();
                     ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
+                    //ctx.QueryDoc.Save();
                 }
                 else
                 {
@@ -88,7 +91,13 @@ namespace QueryFirst
                     // Execute query
                     try
                     {
-                        ctx.Query.DiscoverParams();
+                        // also called in the bowels of schema fetching, for Postgres, because no notion of declarations.
+                        var undeclared = ctx.Provider.FindUndeclaredParameters(ctx.Query.Text);                        
+                        var newParamDeclarations = ctx.Provider.ConstructParameterDeclarations(undeclared);
+                        if (!string.IsNullOrEmpty(newParamDeclarations))
+                        {
+                            ctx.Query.ReplacePattern("-- endDesignTime", newParamDeclarations + "-- endDesignTime");
+                        }
 
                         ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString, ctx.Query.Text);
                     }
@@ -109,8 +118,10 @@ namespace QueryFirst
                     }
                     ctx.QueryHasRun = true;
                     StringBuilder Code = new StringBuilder();
+
                     var wrapper = _tiny.Resolve<IWrapperClassMaker>();
                     var results = _tiny.Resolve<IResultClassMaker>();
+
                     Code.Append(wrapper.StartNamespace(ctx));
                     Code.Append(wrapper.Usings(ctx));
                     if (makeSelfTest)
@@ -122,6 +133,8 @@ namespace QueryFirst
                     Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
                     Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
                     Code.Append(wrapper.MakeGetCommandTextMethod(ctx));
+                    Code.Append(ctx.Provider.MakeAddAParameter(ctx));
+
                     if (makeSelfTest)
                         Code.Append(wrapper.MakeSelfTestMethod(ctx));
                     if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
@@ -152,7 +165,7 @@ namespace QueryFirst
             }
             catch (Exception ex)
             {
-                LogToVSOutputWindow(Environment.NewLine + ex.Message + Environment.NewLine + ex.StackTrace);
+                LogToVSOutputWindow(ex.TellMeEverything());
             }
         }
 

@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QueryFirst
+namespace QueryFirst.TypeMappings
 {
-    class TypeMapping : ITypeMapping
+    class SqlServer2CS : IDB2CS
     {
-        public string DBType2CSType(string p, out string SqlDbType, bool nullable=true)
+        public string Map(string p, out string SqlDbType, bool nullable=true)
         {
             switch (p.ToLower())
             {

@@ -36,8 +36,8 @@ Stream strm = typeof(ScaffoldUpdateResults).Assembly.GetManifestResourceStream("
 string queryText = new StreamReader(strm).ReadToEnd();
 #if DEBUG
 //Comments inverted at runtime in debug, pre-build in release
-queryText = queryText.Replace("--designTime", "/*designTime");
-queryText = queryText.Replace("--endDesignTime", "endDesignTime*/");
+queryText = queryText.Replace("-- designTime", "/*designTime");
+queryText = queryText.Replace("-- endDesignTime", "endDesignTime*/");
 #endif
 return queryText;
 }

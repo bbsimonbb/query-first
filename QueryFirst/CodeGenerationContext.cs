@@ -7,6 +7,8 @@ using TinyIoC;
 using EnvDTE;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Configuration;
+using QueryFirst.TypeMappings;
 
 namespace QueryFirst
 {
@@ -19,8 +21,8 @@ namespace QueryFirst
         public DTE Dte { get { return dte; } }
         protected Document queryDoc;
         public Document QueryDoc { get { return queryDoc; } }
-        protected ITypeMapping map;
-        public ITypeMapping Map { get { return map; } }
+        protected IProvider provider;
+        public IProvider Provider { get { return provider; } }
         protected Query query;
         public Query Query { get { return query; } }
         protected string baseName;
@@ -122,25 +124,36 @@ namespace QueryFirst
 
             }
         }
-        protected string designTimeConnectionString;
+        protected ConnectionStringSettings designTimeConnectionString;
         /// <summary>
         /// For recuperating the query schema at design time.
         /// </summary>
-        public virtual string DesignTimeConnectionString
+        public virtual ConnectionStringSettings DesignTimeConnectionString
         {
             get
             {
-                if (string.IsNullOrEmpty(designTimeConnectionString))
+                if (designTimeConnectionString == null)
                 {
                     var match = Regex.Match(Query.Text, "--QfDefaultConnection(=|:)(?<cstr>.*)$");
                     //var match = Regex.Match(Query.Text, "--QfDefaultConnectionString ?(=|:)? ?\"?(?<cstr>[^ \"]*)\" ? $");
                     if (match.Success)
                     {
-                        designTimeConnectionString = match.Groups["cstr"].Value;
+                        string providerName;
+                        var matchProviderName = Regex.Match(Query.Text, "--QfDefaultConnectionProviderName(=|:)(?<pn>.*)$");
+                        if (matchProviderName.Success)
+                        {
+                            providerName = matchProviderName.Groups["pn"].Value;
+                            designTimeConnectionString = new ConnectionStringSettings("QfDefaultConnection", match.Groups["cstr"].Value, matchProviderName.Groups["pn"].Value);
+                        }
+                        else
+                        {
+                            designTimeConnectionString = new ConnectionStringSettings("QfDefaultConnection", match.Groups["cstr"].Value);
+                        }
+
                     }
                     else if(ProjectConfig != null)
                     {
-                        designTimeConnectionString = ProjectConfig.ConnectionStrings["QfDefaultConnection"]?.ConnectionString;
+                        designTimeConnectionString = ProjectConfig.ConnectionStrings["QfDefaultConnection"];
                     }
                 }
                 return designTimeConnectionString;
@@ -161,7 +174,7 @@ namespace QueryFirst
                     int i = 0;
                     foreach (var qp in Query.QueryParams)
                     {
-                        sig.Append(qp.CSType + ' ' + qp.Name + ", ");
+                        sig.Append(qp.CSType + ' ' + qp.CSName + ", ");
                         i++;
                     }
                     //signature trailing comma trimmed in place if not needed. 
@@ -187,8 +200,8 @@ namespace QueryFirst
                     StringBuilder call = new StringBuilder();
                     foreach (var qp in Query.QueryParams)
                     {
-                        sig.Append(qp.CSType + ' ' + qp.Name + ", ");
-                        call.Append(qp.Name + ", ");
+                        sig.Append(qp.CSType + ' ' + qp.CSName + ", ");
+                        call.Append(qp.CSName + ", ");
                     }
                     //signature trailing comma trimmed in place if needed. 
                     call.Append("conn"); // calling args always used to call overload with connection
@@ -213,23 +226,23 @@ namespace QueryFirst
             get { return queryHasRun; }
             set { queryHasRun = value; }
         }
-        protected ADOHelper hlpr;
+        protected AdoSchemaFetcher hlpr;
         /// <summary>
         /// The class that runs the query and returns the schema table
         /// </summary>
-        public ADOHelper Hlpr { get { return hlpr; } }
+        public AdoSchemaFetcher Hlpr { get { return hlpr; } }
         protected ProjectItem resultsClass;
 
         // constructor
         public CodeGenerationContext(Document queryDoc)
         {
             tiny = TinyIoCContainer.Current;
-            map = tiny.Resolve<ITypeMapping>();
             queryHasRun = false;
             this.queryDoc = queryDoc;
             dte = queryDoc.DTE;
             query = new Query(this);
-
+            provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.ProviderName);
+            provider.Initialize(DesignTimeConnectionString);
             // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
             _putCodeHere = new PutCodeHere(Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename));
 
@@ -242,7 +255,7 @@ namespace QueryFirst
             // doc.fullname started being lowercase ??
             //namespaceAndClassNames = GetNamespaceAndClassNames(resultsClass);
 
-            hlpr = new ADOHelper();
+            hlpr = new AdoSchemaFetcher();
         }
 
     }

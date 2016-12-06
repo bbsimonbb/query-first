@@ -12,6 +12,6 @@
         /// <param name="ParamNamesAndTypes">A two dimensional string array of C# type names and param names from the query.</param>
         /// <param name="MethodSignature">Output a comma separated string of typename paramname.</param>
         /// <param name="CallingSignature">Output a comma separated string of just paramname.</param>
-        void MakeMethodAndCallingSignatures(List<QueryParam> ParamNamesAndTypes, out string MethodSignature, out string CallingSignature);
+        void MakeMethodAndCallingSignatures(List<QueryParamInfo> ParamNamesAndTypes, out string MethodSignature, out string CallingSignature);
     }
 }
