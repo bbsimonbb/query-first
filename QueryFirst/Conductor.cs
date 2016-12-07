@@ -44,6 +44,10 @@ namespace QueryFirst
 
         public void Process()
         {
+            // backward compatible...
+            var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+            textDoc.ReplacePattern("--designTime", "-- designTime");
+            textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
             try
             {
                 if (ctx.DesignTimeConnectionString == null)
@@ -72,7 +76,6 @@ namespace QueryFirst
                 if (matchInsert.Success)
                 {
                     var statement = new ScaffoldInsert().ExecuteScalar(matchInsert.Groups["tableName"].Value);
-                    var textDoc = ((TextDocument)ctx.QueryDoc.Object());
                     var ep = textDoc.CreateEditPoint();
                     ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
                     //ctx.QueryDoc.Save();
@@ -80,7 +83,6 @@ namespace QueryFirst
                 else if (matchUpdate.Success)
                 {
                     var statement = new ScaffoldUpdate().ExecuteScalar(matchUpdate.Groups["tableName"].Value);
-                    var textDoc = ((TextDocument)ctx.QueryDoc.Object());
                     var ep = textDoc.CreateEditPoint();
                     ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
                     //ctx.QueryDoc.Save();
