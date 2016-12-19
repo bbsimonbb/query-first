@@ -127,6 +127,10 @@ namespace QueryFirst
                 var textDoc = ((TextDocument)Document.Object());
                 textDoc.ReplacePattern("/*designTime", "-- designTime");
                 textDoc.ReplacePattern("endDesignTime*/", "-- endDesignTime");
+                // backward compatibility
+                textDoc.ReplacePattern("--designTime", "-- designTime");
+                textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
+
 
                 // never got close to working. cost me 50 points on stack. just saw it open the window????
                 //try
