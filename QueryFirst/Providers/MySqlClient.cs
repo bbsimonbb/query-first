@@ -8,10 +8,12 @@ using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
+using TinyIoC;
 
 namespace QueryFirst.Providers
 {
-    class MySql : SqlServer, IProvider
+    [RegistrationName("MySql.Data.MySqlClient")]
+    class MySqlClient : SqlClient, IProvider
     {
 
         public override IDbConnection GetConnection(ConnectionStringSettings connectionString)

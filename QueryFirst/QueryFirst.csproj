@@ -58,15 +58,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Providers\IProvider.cs" />
-    <Compile Include="Providers\MySql.cs" />
-    <Compile Include="Providers\Postgres.cs" />
+    <Compile Include="Providers\MySqlClient.cs" />
+    <Compile Include="Providers\Npgsql.cs" />
     <Compile Include="Providers\sp_describe_undeclared_parameters.gen.cs">
       <DependentUpon>sp_describe_undeclared_parameters.sql</DependentUpon>
     </Compile>
     <Compile Include="Providers\sp_describe_undeclared_parametersResults.cs">
       <DependentUpon>sp_describe_undeclared_parameters.sql</DependentUpon>
     </Compile>
-    <Compile Include="Providers\SqlServer.cs" />
+    <Compile Include="Providers\SqlClient.cs" />
     <Compile Include="SchemaFetching\AdoSchemaFetcher.cs" />
     <Compile Include="CodeGenerationContext.cs" />
     <Compile Include="ConfigurationAccessor.cs" />

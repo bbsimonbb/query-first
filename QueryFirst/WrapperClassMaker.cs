@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace QueryFirst
 {
-    class WrapperClassMaker : IWrapperClassMaker
+    public class WrapperClassMaker : IWrapperClassMaker
     {
         public virtual string Usings(CodeGenerationContext ctx)
         {

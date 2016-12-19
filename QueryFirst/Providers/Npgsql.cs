@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Configuration;
 using Npgsql;
+using TinyIoC;
 
 namespace QueryFirst.Providers
 {
-    public class Postgres : IProvider
+    [RegistrationName("Npgsql")]
+    public class Npgsql : IProvider
     {
         public IDbConnection GetConnection(ConnectionStringSettings connectionString)
         {
@@ -74,7 +76,7 @@ namespace QueryFirst.Providers
             // no notion of declaring parameters in Postgres
             foreach (var queryParam in FindUndeclaredParameters(cmd.CommandText))
             {
-                var myParam = new Npgsql.NpgsqlParameter();
+                var myParam = new global::Npgsql.NpgsqlParameter();
                 myParam.ParameterName = queryParam.DbName;
                 if (!string.IsNullOrEmpty(queryParam.DbType))
                 {

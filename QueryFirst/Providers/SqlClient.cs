@@ -7,10 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using TinyIoC;
 
 namespace QueryFirst.Providers
 {
-    class SqlServer : IProvider
+    [RegistrationName("System.Data.SqlClient")]
+    class SqlClient : IProvider
     {
         public virtual IDbConnection GetConnection(ConnectionStringSettings connectionString)
         {

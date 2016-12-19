@@ -153,15 +153,20 @@ namespace QueryFirst
         }
         private void SolutionEvents_Opened()
         {
-            RegisterTypes();
+            RegisterTypes(true);
         }
-        private void RegisterTypes()
+        private void RegisterTypes(bool force = false)
         {
             try
             {
+                var ctr = TinyIoCContainer.Current;
                 LogToVSOutputWindow("Registering types...\n");
                 //kludge
-                if (TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
+                if(force == true)
+                {
+                    ctr.Dispose();
+                }
+                else if (TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
                 {
                     LogToVSOutputWindow("Already registered\n");
                     return;
@@ -175,34 +180,19 @@ namespace QueryFirst
                 catch (Exception ex)
                 {//nobody cares
                 }
+                List<Assembly> assemblies = new List<Assembly>();
                 if (helperAssembly != null && !string.IsNullOrEmpty(helperAssembly.Value))
                 {
-                    IEnumerable<Assembly> assemblies = new Assembly[]
-                    {Assembly.LoadFrom(helperAssembly.Value), Assembly.GetExecutingAssembly()};
-                    //IEnumerable<Assembly> assemblies = new Assembly[] { Assembly.GetExecutingAssembly(), Assembly.LoadFrom(helperAssembly.Value) };
+                    assemblies.Add(Assembly.LoadFrom(helperAssembly.Value));
+                }
+                assemblies.Add(Assembly.GetExecutingAssembly());
+                TinyIoCContainer.Current.AutoRegister(assemblies, DuplicateImplementationActions.RegisterSingle);
+                // IProvider, for instance, has multiple implementations. To resolve we use the provider name on the connection string, 
+                // which must correspond to the fully qualified name of the implementation. ie. QueryFirst.Providers.SqlClient for SqlServer
 
-                    // Don't use AutoRegister(), it registers thousands of types and we only use four.
-                    //TinyIoCContainer.Current.AutoRegister(assemblies);
-                    TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(IQueryParamInfo), typeof(QueryParamInfo)).AsMultiInstance();
-                }
-                else
-                {
-                    // Don't use AutoRegister(), it registers thousands of types and we only use four.
-                    //TinyIoCContainer.Current.AutoRegister();
-                    TinyIoCContainer.Current.Register<IProvider, Providers.SqlServer>("System.Data.SqlClient");
-                    TinyIoCContainer.Current.Register<IProvider, Providers.Postgres>("Npgsql"); 
-                    TinyIoCContainer.Current.Register<IProvider, Providers.MySql>("MySql.Data.MySqlClient"); 
-                    TinyIoCContainer.Current.Register(typeof(IWrapperClassMaker), typeof(WrapperClassMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(ISignatureMaker), typeof(SignatureMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(IResultClassMaker), typeof(ResultClassMaker)).AsMultiInstance();
-                    TinyIoCContainer.Current.Register(typeof(IQueryParamInfo), typeof(QueryParamInfo)).AsMultiInstance();
-                }
                 LogToVSOutputWindow("Registered types...\n");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogToVSOutputWindow(ex.Message + '\n' + ex.StackTrace);
             }
@@ -224,7 +214,7 @@ namespace QueryFirst
                         if (item.Name == OldName.Replace(".sql", ".gen.cs"))
                         {
                             item.Name = renamedQuery.Name.Replace(".sql", ".gen.cs");
-                            
+
                             fuxed++;
                         }
                         if (item.Name == OldName.Replace(".sql", "Results.cs"))
