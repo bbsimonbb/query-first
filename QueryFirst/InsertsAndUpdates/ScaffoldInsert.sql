@@ -2,7 +2,7 @@
 --QfDefaultConnection=Data Source=not-mobility;Initial Catalog=NORTHWND;Integrated Security=SSPI;
 SET NOCOUNT ON;
 DECLARE @nl varchar(5) = CHAR(13) + CHAR(10);
-DECLARE @CloseComments varchar(50) = @nl + char(45) + '-endDesignTime' + @nl ;
+DECLARE @CloseComments varchar(50) = @nl + char(45) + '- endDesignTime' + @nl ;
 /*designTime - put parameter declarations and design time initialization here
 
 

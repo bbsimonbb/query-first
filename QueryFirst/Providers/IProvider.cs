@@ -6,6 +6,15 @@ namespace QueryFirst
 {
     public interface IProvider
     {
+        /// <summary>
+        /// Harvests parameter declarations from the -- design time section. Different DBs have different
+        /// syntaxes for local variable declaration, and this method needs to understand your DBs syntax. 
+        /// A SQL Server declaration for instance looks like DECLARE @myLocalVariable [dataType]
+        /// MySql has SET @myLocalVariable (no datatype).
+        /// Postgres has no local variables, so parameters need to be inferred directly from the text of the query.
+        /// </summary>
+        /// <param name="queryText">The text of the query from which parameters are to be extracted.</param>
+        /// <returns></returns>
         List<IQueryParamInfo> ParseDeclaredParameters(string queryText);
         List<IQueryParamInfo> FindUndeclaredParameters(string queryText);
         /// <summary>
@@ -32,6 +41,13 @@ namespace QueryFirst
         /// <returns>The C# type name.</returns>
         string TypeMapDB2CS(string DBType, out string DBTypeNormalized, bool nullable = true);
 
+        /// <summary>
+        /// Generates the C# method that adds a parameter to the command. Called once for each parameter in the query.
+        /// The method should have the signature...
+        /// private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length)
+        /// </summary>
+        /// <param name="ctx">The code generation context</param>
+        /// <returns></returns>
         string MakeAddAParameter(CodeGenerationContext ctx);
         void Initialize(ConnectionStringSettings designTimeConnectionString);
     }

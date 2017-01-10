@@ -30,7 +30,7 @@ using System.Linq;
         }
         public virtual string StartClass(CodeGenerationContext ctx)
         {
-            return "public class " + ctx.BaseName + " : I" + ctx.BaseName + "{" + Environment.NewLine;
+            return "public partial class " + ctx.BaseName + " : I" + ctx.BaseName + "{" + Environment.NewLine;
 
         }
         public virtual string MakeExecuteWithoutConn(CodeGenerationContext ctx)
@@ -168,7 +168,7 @@ using System.Linq;
             // Create() method
             code.AppendLine("public virtual " + ctx.ResultClassName + " Create(IDataRecord record)");
             code.AppendLine("{");
-            code.AppendLine("var returnVal = new " + ctx.ResultClassName + "();");
+            code.AppendLine("var returnVal = CreatePoco(record);");
             int j = 0;
             foreach (var col in ctx.ResultFields)
             {

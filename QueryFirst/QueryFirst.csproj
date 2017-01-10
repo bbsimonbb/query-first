@@ -57,6 +57,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BackwardCompatibility.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Providers\MySqlClient.cs" />
     <Compile Include="Providers\Npgsql.cs" />
@@ -76,12 +77,6 @@
     </Compile>
     <Compile Include="InsertsAndUpdates\ScaffoldUpdateResults.cs">
       <DependentUpon>ScaffoldUpdate.sql</DependentUpon>
-    </Compile>
-    <Compile Include="Inserts\GenerateInsert.gen.cs">
-      <DependentUpon>GenerateInsert.sql</DependentUpon>
-    </Compile>
-    <Compile Include="Inserts\GenerateInsertResults.cs">
-      <DependentUpon>GenerateInsert.sql</DependentUpon>
     </Compile>
     <Compile Include="IQueryParamInfo.cs" />
     <Compile Include="ISignatureMaker.cs" />
@@ -132,7 +127,6 @@
     <VSCTCompile Include="QueryFirstCmdPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
-    <EmbeddedResource Include="Inserts\GenerateInsert.sql" />
     <EmbeddedResource Include="InsertsAndUpdates\ScaffoldUpdate.sql" />
     <EmbeddedResource Include="Providers\sp_describe_undeclared_parameters.sql" />
     <Content Include="ReadMe.txt" />
