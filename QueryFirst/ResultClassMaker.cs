@@ -25,7 +25,7 @@ namespace QueryFirst
         }
         public virtual string MakeProperty(ResultFieldDetails fld)
         {
-            return string.Format("public {0} {1} {{ get; set; }} //({2} {3})" + nl, fld.TypeCsShort, fld.CSColumnName, fld.TypeDb, fld.AllowDBNull ? "null" : "not null");
+            return string.Format("public {0} {1}; //({2} {3})" + nl, fld.TypeCsShort, fld.CSColumnName, fld.TypeDb, fld.AllowDBNull ? "null" : "not null");
         }
 
         public virtual string CloseClass()
