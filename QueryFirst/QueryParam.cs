@@ -18,5 +18,7 @@ namespace QueryFirst
         public string DbName { get; set; }
         public string DbType { get; set; }
         public int Length { get; set; }
+        public int Precision { get; set; }
+        public int Scale { get; set; }
     }
 }

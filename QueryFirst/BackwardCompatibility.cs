@@ -11,6 +11,12 @@ namespace QueryFirst
     {
         public void InjectPOCOFactory(CodeGenerationContext ctx, ProjectItem partialClass)
         {
+            bool rememberToClose = false;
+            if (!partialClass.IsOpen)
+            {
+                partialClass.Open();
+                rememberToClose = true;
+            }
             var textDoc = ((TextDocument)partialClass.Document.Object());
             var ep = textDoc.CreateEditPoint();
             string textOfDoc = ep.GetText(textDoc.EndPoint);
@@ -23,21 +29,17 @@ namespace QueryFirst
                 bldr.AppendLine("public partial class " + ctx.BaseName + "\n{");
                 bldr.AppendLine(ctx.BaseName + "Results CreatePoco(System.Data.IDataRecord record)\n{");
                 bldr.AppendLine("return new " + ctx.BaseName + "Results();\n}\n}");
-                bool rememberToClose = false;
-                if (!partialClass.IsOpen)
-                {
-                    partialClass.Open();
-                    rememberToClose = true;
-                }
+
                 int insertHere = textOfDoc.LastIndexOf('}');
                 string newContents = textOfDoc.Substring(0, insertHere) + bldr.ToString() + textOfDoc.Substring(insertHere, textOfDoc.Length - insertHere);
                 ep.ReplaceText(textDoc.EndPoint, newContents, 0);
                 ep.SmartFormat(textDoc.EndPoint);
                 partialClass.Save();
-                if (rememberToClose)
-                {
-                    partialClass.Document.Close();
-                }
+
+            }
+            if (rememberToClose)
+            {
+                partialClass.Document.Close();
             }
         }
     }

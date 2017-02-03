@@ -38,6 +38,7 @@ namespace QueryFirst.Providers
             }
             return queryParams;
         }
+        private List<string> typesWithLength = new List<string>() { "char", "varchar", "nchar", "nvarchar" };
         private void FillParamInfo(IQueryParamInfo qp, string name, string sqlTypeAndLength)
         {
             string typeOnly;
@@ -45,7 +46,10 @@ namespace QueryFirst.Providers
             if (sqlTypeAndLength.IndexOf('(') > 0)
             {
                 typeOnly = sqlTypeAndLength.Substring(0, sqlTypeAndLength.IndexOf('('));
-                len = int.Parse(sqlTypeAndLength.Substring(sqlTypeAndLength.IndexOf('(') + 1, sqlTypeAndLength.Length - sqlTypeAndLength.IndexOf('(') - 2));
+                if (typesWithLength.Contains(typeOnly.ToLower()))
+                {
+                    int.TryParse(Regex.Match(sqlTypeAndLength, "(?<=\\()\\s*(?'myInt'\\d*)").Groups["myInt"].Value, out len);
+                }
             }
             else
             {
@@ -118,7 +122,12 @@ namespace QueryFirst.Providers
             StringBuilder code = new StringBuilder();
             code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length)\n{");
             code.AppendLine("var dbType = (SqlDbType)System.Enum.Parse(typeof(SqlDbType), DbType);");
-            code.AppendLine("var myParam = new SqlParameter(DbName, dbType, Length);");
+            code.AppendLine("SqlParameter myParam;");
+            code.AppendLine("if(Length != 0){");
+            code.AppendLine("myParam = new SqlParameter(DbName, dbType, Length);");
+            code.AppendLine("}else{");
+            code.AppendLine("myParam = new SqlParameter(DbName, dbType);");
+            code.AppendLine("}");
             code.AppendLine("myParam.Value = Value != null ? Value : DBNull.Value;");
             code.AppendLine("Cmd.Parameters.Add( myParam);");
             code.AppendLine("}");
@@ -126,7 +135,6 @@ namespace QueryFirst.Providers
             return code.ToString();
 
         }
-
         public virtual string TypeMapDB2CS(string DBType, out string DBTypeNormalized, bool nullable = true)
         {
             switch (DBType.ToLower())

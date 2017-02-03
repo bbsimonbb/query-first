@@ -124,39 +124,12 @@ namespace QueryFirst
 
             }
         }
-        protected ConnectionStringSettings designTimeConnectionString;
-        /// <summary>
-        /// For recuperating the query schema at design time.
-        /// </summary>
-        public virtual ConnectionStringSettings DesignTimeConnectionString
+        protected DesignTimeConnectionString _dtcs;
+        public DesignTimeConnectionString DesignTimeConnectionString
         {
             get
             {
-                if (designTimeConnectionString == null)
-                {
-                    var match = Regex.Match(Query.Text, "--QfDefaultConnection(=|:)(?<cstr>.*)$");
-                    //var match = Regex.Match(Query.Text, "--QfDefaultConnectionString ?(=|:)? ?\"?(?<cstr>[^ \"]*)\" ? $");
-                    if (match.Success)
-                    {
-                        string providerName;
-                        var matchProviderName = Regex.Match(Query.Text, "--QfDefaultConnectionProviderName(=|:)(?<pn>.*)$");
-                        if (matchProviderName.Success)
-                        {
-                            providerName = matchProviderName.Groups["pn"].Value;
-                            designTimeConnectionString = new ConnectionStringSettings("QfDefaultConnection", match.Groups["cstr"].Value, matchProviderName.Groups["pn"].Value);
-                        }
-                        else
-                        {
-                            designTimeConnectionString = new ConnectionStringSettings("QfDefaultConnection", match.Groups["cstr"].Value);
-                        }
-
-                    }
-                    else if(ProjectConfig != null)
-                    {
-                        designTimeConnectionString = ProjectConfig.ConnectionStrings["QfDefaultConnection"];
-                    }
-                }
-                return designTimeConnectionString;
+                return _dtcs ?? (_dtcs = new DesignTimeConnectionString(this));
             }
         }
 
@@ -241,8 +214,8 @@ namespace QueryFirst
             this.queryDoc = queryDoc;
             dte = queryDoc.DTE;
             query = new Query(this);
-            provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.ProviderName);
-            provider.Initialize(DesignTimeConnectionString);
+            provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.v.ProviderName);
+            provider.Initialize(DesignTimeConnectionString.v);
             // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
             _putCodeHere = new PutCodeHere(Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename));
 

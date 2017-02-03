@@ -50,11 +50,11 @@ namespace QueryFirst
             textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
             try
             {
-                if (ctx.DesignTimeConnectionString == null)
+                if (!ctx.DesignTimeConnectionString.IsPresent)
                 {
                     LogToVSOutputWindow(@"QueryFirst would like to help you, but you need to tell it where your DB is.
     You can specify the design time connection string in your app or web.config or directly in the query file.
-    Add these lines to your app or web.config. The name QfDefaultConnection and SqlClient are important. The rest is up to you.
+    Add these lines to your app or web.config. providerName should be one of System.Data.SqlClient, Npgsql MySql.Data.MySqlClient.
     <connectionStrings>
         <add name=""QfDefaultConnection"" connectionString=""Data Source = localhost; Initial Catalog = NORTHWND; Integrated Security = SSPI; "" providerName=""System.Data.SqlClient"" />
     </ connectionStrings >
@@ -63,15 +63,21 @@ namespace QueryFirst
                     return; // nothing to be done
 
                 }
-                else
+                if (!ctx.DesignTimeConnectionString.IsProviderValid)
                 {
-                    // Use QueryFirst within QueryFirst !
-                    // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
-                    QfRuntimeConnection.CurrentConnectionString = ctx.DesignTimeConnectionString.ConnectionString;
+                    LogToVSOutputWindow(string.Format(
+@"No Implementation of IProvider for providerName {0}. 
+The query {1} may not run and the wrapper has not been regenerated.",
+                    ctx.DesignTimeConnectionString.v.ProviderName, ctx.BaseName
+                    ));
                 }
+                // Use QueryFirst within QueryFirst !
+                // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
+                QfRuntimeConnection.CurrentConnectionString = ctx.DesignTimeConnectionString.v.ConnectionString;
+
                 var makeSelfTest = ctx.ProjectConfig?.AppSettings["QfMakeSelfTest"] != null && bool.Parse(ctx.ProjectConfig.AppSettings["QfMakeSelfTest"].Value);
 
-                var matchInsert = Regex.Match(ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.",RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var matchInsert = Regex.Match(ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 var matchUpdate = Regex.Match(ctx.Query.Text, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 if (matchInsert.Success)
                 {
@@ -94,14 +100,21 @@ namespace QueryFirst
                     try
                     {
                         // also called in the bowels of schema fetching, for Postgres, because no notion of declarations.
-                        var undeclared = ctx.Provider.FindUndeclaredParameters(ctx.Query.Text);                        
-                        var newParamDeclarations = ctx.Provider.ConstructParameterDeclarations(undeclared);
-                        if (!string.IsNullOrEmpty(newParamDeclarations))
+                        try
                         {
-                            ctx.Query.ReplacePattern("-- endDesignTime", newParamDeclarations + "-- endDesignTime");
+                            var undeclared = ctx.Provider.FindUndeclaredParameters(ctx.Query.Text);
+                            var newParamDeclarations = ctx.Provider.ConstructParameterDeclarations(undeclared);
+                            if (!string.IsNullOrEmpty(newParamDeclarations))
+                            {
+                                ctx.Query.ReplacePattern("-- endDesignTime", newParamDeclarations + "-- endDesignTime");
+                            }
+                        }
+                        catch (SqlException ex)
+                        {
+                            LogToVSOutputWindow("Unable to find undeclared parameters. You will have to do this yourself.");
                         }
 
-                        ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString, ctx.Query.Text);
+                        ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString.v, ctx.Query.Text);
                     }
                     catch (Exception ex)
                     {

@@ -58,6 +58,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BackwardCompatibility.cs" />
+    <Compile Include="DesignTimeConnectionString.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Providers\MySqlClient.cs" />
     <Compile Include="Providers\Npgsql.cs" />
