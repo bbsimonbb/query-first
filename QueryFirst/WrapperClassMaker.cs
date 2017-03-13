@@ -124,7 +124,11 @@ using System.Linq;
             {
                 code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ");");
             }
-            code.AppendLine("return (" + ctx.ResultFields[0].TypeCs + ")cmd.ExecuteScalar();");
+            code.AppendLine("var result = cmd.ExecuteScalar();");
+            code.AppendLine("if(result == DBNull.Value)");
+            code.AppendLine("return null;");
+            code.AppendLine("else");
+            code.AppendLine("return (" + ctx.ResultFields[0].TypeCs + ")result;");
             code.AppendLine("}");
             // close ExecuteScalar()
             return code.ToString();
@@ -255,21 +259,23 @@ using System.Linq;
             StringBuilder code = new StringBuilder();
 
             code.AppendLine("[Fact]");
-            code.AppendLine("public void SelfTest()");
+            code.AppendLine("public void " + ctx.BaseName + "SelfTest()");
             code.AppendLine("{");
-            code.AppendLine("var errors = new List<string>();");
             code.AppendLine("var queryText = getCommandText();");
             code.AppendLine("// we'll be getting a runtime version with the comments section closed. To run without parameters, open it.");
             code.AppendLine("queryText = queryText.Replace(\"/*designTime\", \"-- designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"endDesignTime*/\", \"-- endDesignTime\");");
             code.AppendLine("var schema = new ADOHelper().GetFields(new QfRuntimeConnection(), queryText);");
+            code.Append("Assert.True(" + ctx.ResultFields.Count + " <=  schema.Count,");
+            code.AppendLine("\"Query only returns \" + schema.Count.ToString() + \" columns. Expected at least " + ctx.ResultFields.Count + ". \");");
             for (int i = 0; i < ctx.ResultFields.Count; i++)
             {
                 var col = ctx.ResultFields[i];
-                code.AppendLine("if (schema[" + i.ToString() + "].DataTypeName != \"" + col.TypeDb + "\")");
-                code.AppendLine("errors.Add(string.Format(\"Col " + i.ToString() + " (ColName) DB datatype has changed! Was " + col.TypeDb + ". Now {1}\", schema[" + i.ToString() + "].DataTypeName));");
+                code.Append("Assert.True(schema[" + i.ToString() + "].DataTypeName == \"" + col.TypeDb + "\",");
+                code.AppendLine("\"Result Column " + i.ToString() + " Type wrong. Expected " + col.TypeDb + ". Found \" + schema[" + i.ToString() + "].DataTypeName + \".\");");
+                code.Append("Assert.True(schema[" + i.ToString() + "].ColumnName == \"" + col.ColumnName + "\",");
+                code.AppendLine("\"Result Column " + i.ToString() + " Name wrong. Expected " + col.ColumnName + ". Found \" + schema[" + i.ToString() + "].ColumnName + \".\");");
             }
-            code.AppendLine("Assert.Empty(errors);");
             code.AppendLine("}");
             return code.ToString();
         }

@@ -27,7 +27,7 @@ namespace QueryFirst
                 if (_v == null)
                 {
                     // if the query defines a QfDefaultConnection, use it.
-                    var match = Regex.Match(_ctx.Query.Text, "--QfDefaultConnection(=|:)(?<cstr>.*)$");
+                    var match = Regex.Match(_ctx.Query.Text, "--QfDefaultConnection(=|:)(?<cstr>.*)$",RegexOptions.Multiline);
                     //var match = Regex.Match(Query.Text, "--QfDefaultConnectionString ?(=|:)? ?\"?(?<cstr>[^ \"]*)\" ? $");
                     if (match.Success)
                     {

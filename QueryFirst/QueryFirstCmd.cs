@@ -27,7 +27,7 @@ namespace QueryFirst
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly Package package;
+        private readonly Package _package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryFirstCmd"/> class.
@@ -41,7 +41,7 @@ namespace QueryFirst
                 throw new ArgumentNullException("package");
             }
 
-            this.package = package;
+            this._package = package;
 
             OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
@@ -68,7 +68,7 @@ namespace QueryFirst
         {
             get
             {
-                return this.package;
+                return this._package;
             }
         }
 
@@ -90,13 +90,16 @@ namespace QueryFirst
         /// <param name="e">Event args.</param>
         private void MenuItemCallback(object sender, EventArgs e)
         {
-            foreach (Project proj in ((QueryFirstCmdPackage)package).dte.Solution.Projects)
+            DTE2 dte2;
+            dte2 = (DTE2)System.Runtime.InteropServices.Marshal.GetActiveObject("VisualStudio.DTE.12.0");
+            var vsOutputWindow = new VSOutputWindow(dte2);
+            foreach (Project proj in ((QueryFirstCmdPackage)_package).dte.Solution.Projects)
             {
-                ProcessAllItems(proj.ProjectItems);
+                ProcessAllItems(proj.ProjectItems, vsOutputWindow);
             }
             return;
         }
-        private void ProcessAllItems(ProjectItems items)
+        private void ProcessAllItems(ProjectItems items, VSOutputWindow vsOutputWindow)
         {
             if (items != null)
             {
@@ -108,10 +111,16 @@ namespace QueryFirst
                         if (item.FileNames[1].EndsWith(".sql"))
                         {
                             item.Open();
-                            new Conductor(item.Document).Process();
+                            var textDoc = ((TextDocument)item.Document.Object());
+                            var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
+                            if (text.Contains("managed by QueryFirst"))
+                            {
+                                new Conductor(vsOutputWindow).ProcessOneQuery(item.Document);
+                            }
+                            
                         }
                         if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
-                            ProcessAllItems(item.ProjectItems);
+                            ProcessAllItems(item.ProjectItems, vsOutputWindow);
                     }
                     catch (Exception ex) { }
                 }

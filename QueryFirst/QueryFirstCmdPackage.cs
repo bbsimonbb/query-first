@@ -54,7 +54,7 @@ namespace QueryFirst
         public DTE dte;
         public DTE2 dte2;
         uint cookie;
-        Root qfRoot;
+        SolutionEventHandlers qfRoot;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryFirstCmd"/> class.
@@ -94,23 +94,30 @@ namespace QueryFirst
             {
                 if ((bool)var == false)
                 {
-                    zombieProofInitialization();
+                    if (zombieProofInitialization())
+                    {
+                        // eventlistener no longer needed
+                        IVsShell shellService = GetService(typeof(SVsShell)) as IVsShell;
+                        if (shellService != null)
+                            ErrorHandler.ThrowOnFailure(shellService.UnadviseShellPropertyChanges(this.cookie));
+                        this.cookie = 0;
+                    }
 
-                    // eventlistener no longer needed
-                    IVsShell shellService = GetService(typeof(SVsShell)) as IVsShell;
-                    if (shellService != null)
-                        ErrorHandler.ThrowOnFailure(shellService.UnadviseShellPropertyChanges(this.cookie));
-                    this.cookie = 0;
                 }
             }
             return VSConstants.S_OK;
         }
-        private void zombieProofInitialization()
+        private bool zombieProofInitialization()
         {
             dte = GetService(typeof(SDTE)) as DTE;
-            dte2 = (DTE2)GetService(typeof(DTE2));
-            if(dte != null)
-                qfRoot = Root.Get(dte);
+            DTE2 dte2 = Package.GetGlobalService(typeof(DTE)) as DTE2;
+            if (dte != null && dte2 != null)
+            {
+                qfRoot = SolutionEventHandlers.Inst(dte, dte2);
+                return true;
+            }
+            else
+                return false;
         }
     }
 }

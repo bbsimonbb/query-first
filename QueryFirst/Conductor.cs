@@ -1,15 +1,9 @@
-﻿using System.Text;
-using System.IO;
+﻿using EnvDTE;
 using System;
-using System.Data;
 using System.Data.SqlClient;
-using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
+using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Resources;
-using System.Reflection;
-using System.Globalization;
 using TinyIoC;
 
 
@@ -20,11 +14,20 @@ namespace QueryFirst
     {
         private CodeGenerationContext ctx;
         private TinyIoCContainer _tiny;
+        private VSOutputWindow _vsOutputWindow;
 
-        public Conductor(Document queryDoc)
+        public Conductor(VSOutputWindow vsOutpuWindow)
         {
-            ctx = new CodeGenerationContext(queryDoc);
+            _vsOutputWindow = vsOutpuWindow;
+        }
+
+
+
+
+        public void ProcessOneQuery(Document queryDoc)
+        {
             _tiny = TinyIoCContainer.Current;
+            ctx = new CodeGenerationContext(queryDoc);
 
             // Test this! If I can get source control exclusions working, team members won't get the generated file.
 
@@ -33,17 +36,6 @@ namespace QueryFirst
             if (GetItemByFilename(queryDoc.ProjectItem.Collection, ctx.GeneratedClassFullFilename) != null)
                 queryDoc.ProjectItem.Collection.AddFromFile(ctx.GeneratedClassFullFilename);
             // copy namespace of generated partial class from user partial class
-
-        }
-        public bool IsQFQuery()
-        {
-            return ctx.Query.IsQFQuery();
-        }
-
-
-
-        public void Process()
-        {
             // backward compatible...
             var textDoc = ((TextDocument)ctx.QueryDoc.Object());
             textDoc.ReplacePattern("--designTime", "-- designTime");
@@ -52,7 +44,7 @@ namespace QueryFirst
             {
                 if (!ctx.DesignTimeConnectionString.IsPresent)
                 {
-                    LogToVSOutputWindow(@"QueryFirst would like to help you, but you need to tell it where your DB is.
+                    _vsOutputWindow.Write(@"QueryFirst would like to help you, but you need to tell it where your DB is.
     You can specify the design time connection string in your app or web.config or directly in the query file.
     Add these lines to your app or web.config. providerName should be one of System.Data.SqlClient, Npgsql MySql.Data.MySqlClient.
     <connectionStrings>
@@ -65,7 +57,7 @@ namespace QueryFirst
                 }
                 if (!ctx.DesignTimeConnectionString.IsProviderValid)
                 {
-                    LogToVSOutputWindow(string.Format(
+                    _vsOutputWindow.Write(string.Format(
 @"No Implementation of IProvider for providerName {0}. 
 The query {1} may not run and the wrapper has not been regenerated.",
                     ctx.DesignTimeConnectionString.v.ProviderName, ctx.BaseName
@@ -111,7 +103,9 @@ The query {1} may not run and the wrapper has not been regenerated.",
                         }
                         catch (SqlException ex)
                         {
-                            LogToVSOutputWindow("Unable to find undeclared parameters. You will have to do this yourself.");
+                            if (ex.Message.Contains("sp_describe_undeclared_parameters"))
+                                _vsOutputWindow.Write("Unable to find undeclared parameters. You will have to do this yourself.\n");
+                            else throw;
                         }
 
                         ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString.v, ctx.Query.Text);
@@ -176,13 +170,13 @@ The query {1} may not run and the wrapper has not been regenerated.",
                     ctx.PutCodeHere.WriteAndFormat(Code.ToString());
                     var partialClassFile = GetItemByFilename(ctx.QueryDoc.ProjectItem.ProjectItems, ctx.CurrDir + ctx.BaseName + "Results.cs");
                     new BackwardCompatibility().InjectPOCOFactory(ctx, partialClassFile);
-                    LogToVSOutputWindow(Environment.NewLine + "QueryFirst generated wrapper class for " + ctx.BaseName + ".sql");
+                    _vsOutputWindow.Write(Environment.NewLine + "QueryFirst generated wrapper class for " + ctx.BaseName + ".sql");
                 }
 
             }
             catch (Exception ex)
             {
-                LogToVSOutputWindow(ex.TellMeEverything());
+                _vsOutputWindow.Write(ex.TellMeEverything());
             }
         }
 
@@ -198,26 +192,6 @@ The query {1} may not run and the wrapper has not been regenerated.",
                 }
             }
             return null;
-        }
-        public void LogToVSOutputWindow(string message)
-        {
-            Window window = ctx.Dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
-            OutputWindow outputWindow = (OutputWindow)window.Object;
-            OutputWindowPane outputWindowPane = null;
-
-            for (uint i = 1; i <= outputWindow.OutputWindowPanes.Count; i++)
-            {
-                if (outputWindow.OutputWindowPanes.Item(i).Name.Equals("QueryFirst", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    outputWindowPane = outputWindow.OutputWindowPanes.Item(i);
-                    break;
-                }
-            }
-
-            if (outputWindowPane == null)
-                outputWindowPane = outputWindow.OutputWindowPanes.Add("QueryFirst");
-
-            outputWindowPane.OutputString(message);
         }
     }
 }

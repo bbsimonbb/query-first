@@ -24,18 +24,37 @@ namespace QueryFirst
         protected IProvider provider;
         public IProvider Provider { get { return provider; } }
         protected Query query;
+
+        // constructor
+        public CodeGenerationContext(Document queryDoc)
+        {
+            tiny = TinyIoCContainer.Current;
+            queryHasRun = false;
+            this.queryDoc = queryDoc;
+            dte = queryDoc.DTE;
+            query = new Query(this);
+            provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.v.ProviderName);
+            provider.Initialize(DesignTimeConnectionString.v);
+            // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
+            _putCodeHere = new PutCodeHere(Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename));
+
+
+            string currDir = Path.GetDirectoryName(queryDoc.FullName);
+
+            hlpr = new AdoSchemaFetcher();
+        }
         public Query Query { get { return query; } }
         protected string baseName;
-        private ConfigurationAccessor config;
+        private ConfigurationAccessor _config;
         public ConfigurationAccessor ProjectConfig
         {
             get
             {
-                if (config == null)
+                if (_config == null)
                 {
                     try
                     {
-                        config = new ConfigurationAccessor(dte, null);
+                        _config = new ConfigurationAccessor(dte, null);
                     }
                     catch (Exception ex)
                     {
@@ -43,7 +62,7 @@ namespace QueryFirst
                         return null;
                     }
                 }
-                return config;
+                return _config;
             }
         }
         /// <summary>
@@ -135,10 +154,11 @@ namespace QueryFirst
 
         protected string methodSignature;
         /// <summary>
-        /// Parameter types and names, extracted from sql, with trailing comma.
+        /// Parameter types and names, with trailing comma.
         /// </summary>
         public virtual string MethodSignature
         {
+            // todo this should be a stringtemplate
             get
             {
                 if (string.IsNullOrEmpty(methodSignature))
@@ -206,30 +226,7 @@ namespace QueryFirst
         public AdoSchemaFetcher Hlpr { get { return hlpr; } }
         protected ProjectItem resultsClass;
 
-        // constructor
-        public CodeGenerationContext(Document queryDoc)
-        {
-            tiny = TinyIoCContainer.Current;
-            queryHasRun = false;
-            this.queryDoc = queryDoc;
-            dte = queryDoc.DTE;
-            query = new Query(this);
-            provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.v.ProviderName);
-            provider.Initialize(DesignTimeConnectionString.v);
-            // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
-            _putCodeHere = new PutCodeHere(Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename));
 
-
-            string currDir = Path.GetDirectoryName(queryDoc.FullName);
-            //WriteToOutput("\nprocessing " + queryDoc.FullName );
-            // class name and namespace read from user's half of partial class.
-            //QfClassName = Regex.Match(query, "(?im)^--QfClassName\\s*=\\s*(\\S+)").Groups[1].Value;
-            //QfNamespace = Regex.Match(query, "(?im)^--QfNamespace\\s*=\\s*(\\S+)").Groups[1].Value;
-            // doc.fullname started being lowercase ??
-            //namespaceAndClassNames = GetNamespaceAndClassNames(resultsClass);
-
-            hlpr = new AdoSchemaFetcher();
-        }
 
     }
 }

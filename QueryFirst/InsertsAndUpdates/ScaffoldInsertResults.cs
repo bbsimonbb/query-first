@@ -12,4 +12,13 @@ namespace QueryFirst
         {
         }
     }
+    // POCO factory, called for each line of results. For polymorphic POCOs, put your instantiation logic here.
+    // Tag the results class as abstract above, add some virtual methods, create some subclasses, then instantiate them here based on data in the row.
+    public partial class ScaffoldInsert
+    {
+        ScaffoldInsertResults CreatePoco(System.Data.IDataRecord record)
+        {
+            return new ScaffoldInsertResults();
+        }
+    }
 }

@@ -1,14 +1,5 @@
-﻿using System;
+﻿using EnvDTE;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Data.SqlClient;
-using EnvDTE;
-using QueryFirst.TypeMappings;
 
 namespace QueryFirst
 {
@@ -61,23 +52,6 @@ namespace QueryFirst
                 ep.ReplaceText(textDoc.EndPoint, value, 0);
                 text = value;
             }
-        }
-        public bool IsQFQuery()
-        {
-            return Text.Contains("managed by QueryFirst");
-        }
-        public void ConvertForDesignDebug()
-        {
-            text = text.Replace("/*designTime", "-- designTime");
-            text = text.Replace("endDesignTime*/", "-- endDesignTime");
-        }
-        public void ConvertForProductionBuild()
-        {
-            // backwards  compatible
-            text = text.Replace("--designTime", "/*designTime");
-            text = text.Replace("--endDesignTime", "endDesignTime*/");
-            text = text.Replace("-- designTime", "/*designTime");
-            text = text.Replace("-- endDesignTime", "endDesignTime*/");
         }
     }
 }

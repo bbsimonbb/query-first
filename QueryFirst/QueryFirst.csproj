@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="BackwardCompatibility.cs" />
     <Compile Include="DesignTimeConnectionString.cs" />
+    <Compile Include="VSOutputWindow.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Providers\MySqlClient.cs" />
     <Compile Include="Providers\Npgsql.cs" />
@@ -105,7 +106,7 @@
     <Compile Include="QueryFirstCmdPackage.cs" />
     <Compile Include="Conductor.cs" />
     <Compile Include="ResultClassMaker.cs" />
-    <Compile Include="Root.cs" />
+    <Compile Include="SolutionEventHandlers.cs" />
     <Compile Include="TinyIoC.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WizardImplementationClass.cs" />
@@ -139,7 +140,9 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\EnvDTE.dll</HintPath>
     </Reference>
     <Reference Include="EnvDTE100, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>False</EmbedInteropTypes>
