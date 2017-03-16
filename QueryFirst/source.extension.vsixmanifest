@@ -3,10 +3,10 @@
   <Metadata>
     <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="0.6" Language="en-US" Publisher="Simon Boddy" />
     <DisplayName>QueryFirst</DisplayName>
-    <Description xml:space="preserve">World first implementation of the Dominic Strauss Kahn data access method .</Description>
+    <Description xml:space="preserve">"Cool!" - Don Chamberlin</Description>
   </Metadata>
   <Installation>
-    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[11.0,14.0]" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[11.0,15.0]" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
@@ -16,4 +16,7 @@
     <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="Project" d:ProjectName="%CurrentProject%QueryTemplate" d:TargetPath="|QueryFirstQueryTemplate;TemplateProjectOutputGroup|" Path="ItemTemplates" d:VsixSubPath="ItemTemplates" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" AssemblyName="|%CurrentProject%;AssemblyName|" />
   </Assets>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" />
+  </Prerequisites>
 </PackageManifest>

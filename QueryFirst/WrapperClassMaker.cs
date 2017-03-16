@@ -125,9 +125,13 @@ using System.Linq;
                 code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ");");
             }
             code.AppendLine("var result = cmd.ExecuteScalar();");
-            code.AppendLine("if(result == DBNull.Value)");
-            code.AppendLine("return null;");
-            code.AppendLine("else");
+            // only convert dbnull if nullable
+            if (ctx.ResultFields[0].AllowDBNull)
+            {
+                code.AppendLine("if(result == DBNull.Value)");
+                code.AppendLine("return null;");
+                code.AppendLine("else");
+            }
             code.AppendLine("return (" + ctx.ResultFields[0].TypeCs + ")result;");
             code.AppendLine("}");
             // close ExecuteScalar()
