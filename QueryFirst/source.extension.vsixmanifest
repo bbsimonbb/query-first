@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="0.6" Language="en-US" Publisher="Simon Boddy" />
+    <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="0.7" Language="en-US" Publisher="Simon Boddy" />
     <DisplayName>QueryFirst</DisplayName>
-    <Description xml:space="preserve">"Cool!" - Don Chamberlin</Description>
+    <Description xml:space="preserve">A much smarter way to work with SQL.A much smarter way to work with SQL</Description>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[11.0,15.0]" />
