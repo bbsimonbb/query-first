@@ -128,8 +128,12 @@ using System.Linq;
             // only convert dbnull if nullable
             if (ctx.ResultFields[0].AllowDBNull)
             {
+                //null safe, but why are nullable columns mapping to not nullable types?
                 code.AppendLine("if(result == DBNull.Value)");
-                code.AppendLine("return null;");
+                if (Type.GetType(ctx.ResultFields[0].TypeCs).IsValueType)
+                    code.AppendLine($"return ({ctx.ResultFields[0].TypeCs})Activator.CreateInstance(typeof({ctx.ResultFields[0].TypeCs}));");
+                else
+                    code.AppendLine("return null;");
                 code.AppendLine("else");
             }
             code.AppendLine("return (" + ctx.ResultFields[0].TypeCs + ")result;");
