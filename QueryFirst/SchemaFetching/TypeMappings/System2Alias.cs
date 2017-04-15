@@ -27,11 +27,14 @@ namespace QueryFirst.TypeMappings
                 {"System.UInt16","ushort" }
             };
 
-        public static string Map(string CSType)
+        public static string Map(string CSType, bool AllowDBNull)
         {
             if (_map.ContainsKey(CSType))
             {
-                return _map[CSType];
+                var nullable = "?";
+                if (!AllowDBNull || CSType == "System.String" || CSType == "System.Object")
+                    nullable = "";
+                return _map[CSType] + nullable;
             }
             else
             {
