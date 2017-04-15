@@ -161,7 +161,7 @@ namespace QueryFirst
                 var ctr = TinyIoCContainer.Current;
                 _VSOutputWindow.Write("Registering types...\n");
                 //kludge
-                if(force == true)
+                if (force == true)
                 {
                     ctr.Dispose();
                 }
@@ -219,6 +219,14 @@ namespace QueryFirst
                         if (item.Name == OldName.Replace(".sql", "Results.cs"))
                         {
                             item.Name = renamedQuery.Name.Replace(".sql", "Results.cs");
+                            var oldBaseName = OldName.Replace(".sql", "");
+                            var newBaseName = renamedQuery.Name.Replace(".sql", "");
+                            var userFile = ((TextDocument)item.Document.Object());
+                            if (!item.IsOpen)
+                                item.Open();
+                            userFile.ReplacePattern(oldBaseName, newBaseName);
+                            item.Document.Save();
+
                             fuxed++;
                         }
                         if (fuxed == 2)
@@ -239,7 +247,7 @@ namespace QueryFirst
             if (Document.FullName.EndsWith(".sql"))
                 try
                 {
-                    var textDoc = ((TextDocument)Document.Object()); 
+                    var textDoc = ((TextDocument)Document.Object());
                     var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                     if (text.Contains("managed by QueryFirst"))
                     {
