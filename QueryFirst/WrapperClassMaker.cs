@@ -199,7 +199,7 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // private load command text
-            code.AppendLine("private string getCommandText(){");
+            code.AppendLine("public string getCommandText(){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
             code.AppendLine("#if DEBUG");
