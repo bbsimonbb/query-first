@@ -202,14 +202,16 @@ using System.Linq;
             code.AppendLine("public string getCommandText(){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
-            code.AppendLine("#if DEBUG");
+			if (ctx.DesignTimeConnectionString.NeedDebug)
+				code.AppendLine("#if DEBUG");
             code.AppendLine("//Comments inverted at runtime in debug, pre-build in release");
             code.AppendLine("queryText = queryText.Replace(\"-- designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"-- endDesignTime\", \"endDesignTime*/\");");
             // backwards compatible
             code.AppendLine("queryText = queryText.Replace(\"--designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");");
-            code.AppendLine("#endif");
+			if (ctx.DesignTimeConnectionString.NeedDebug)
+				code.AppendLine("#endif");
             code.AppendLine("return queryText;");
             code.AppendLine("}"); // close method;
             return code.ToString();
