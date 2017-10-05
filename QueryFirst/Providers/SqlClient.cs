@@ -29,7 +29,7 @@ namespace QueryFirst.Providers
             Match m = Regex.Match(dt, pattern, RegexOptions.IgnoreCase);
             while (m.Success)
             {
-                string[] parts = m.Value.Split(' ');
+                string[] parts = m.Value.Split(new[] { ' ', '	' }, StringSplitOptions.RemoveEmptyEntries);
                 var qp = TinyIoC.TinyIoCContainer.Current.Resolve<IQueryParamInfo>();
                 FillParamInfo(qp, parts[1].Substring(1), parts[2]);
                 queryParams.Add(qp);
