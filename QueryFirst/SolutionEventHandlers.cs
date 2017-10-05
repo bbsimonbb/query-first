@@ -56,8 +56,33 @@ namespace QueryFirst
 
         private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
         {
-            if (!_dte.Solution.SolutionBuild.ActiveConfiguration.Name.Contains("Debug"))
+			// Determine whether require extension setting includes debug commenting
+			bool commentInDebug = false;
+			System.Configuration.KeyValueConfigurationElement requireExtension = null;
+			try
+			{
+				ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
+					requireExtension = config.AppSettings["QfRequireExtension"];
+			}
+			catch (Exception)
+			{//nobody cares
+			}
+			if (requireExtension != null)
+			{
+				try
+				{
+					if (!Convert.ToBoolean(requireExtension.Value))
+						commentInDebug = true;
+				}
+				catch (Exception)
+				{//still, nobody cares
+				}
+			}
+
+
+			if (!_dte.Solution.SolutionBuild.ActiveConfiguration.Name.Contains("Debug") || commentInDebug)
             {
+				
                 foreach (Project proj in _dte.Solution.Projects)
                 {
                     // Comments !

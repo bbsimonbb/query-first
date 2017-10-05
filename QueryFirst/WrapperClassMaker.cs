@@ -202,15 +202,19 @@ using System.Linq;
             code.AppendLine("public string getCommandText(){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
-			if (ctx.DesignTimeConnectionString.NeedDebug)
+			if (!ctx.DesignTimeConnectionString.AlwaysParse)
+			{
 				code.AppendLine("#if DEBUG");
-            code.AppendLine("//Comments inverted at runtime in debug, pre-build in release");
-            code.AppendLine("queryText = queryText.Replace(\"-- designTime\", \"/*designTime\");");
+				code.AppendLine("//Comments inverted at runtime in debug, pre-build in release");
+			}
+			else
+				code.AppendLine("//Comments inverted at runtime: QfCommentDesignTimeInRelease is set to true");
+			code.AppendLine("queryText = queryText.Replace(\"-- designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"-- endDesignTime\", \"endDesignTime*/\");");
             // backwards compatible
             code.AppendLine("queryText = queryText.Replace(\"--designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");");
-			if (ctx.DesignTimeConnectionString.NeedDebug)
+			if (!ctx.DesignTimeConnectionString.AlwaysParse)
 				code.AppendLine("#endif");
             code.AppendLine("return queryText;");
             code.AppendLine("}"); // close method;

@@ -56,7 +56,7 @@ namespace QueryFirst
 		/// <summary>
 		/// For determining pre-build parameter parsing (requires extension)
 		/// </summary>
-		public bool NeedDebug
+		public bool AlwaysParse
 		{
 			get
 			{
@@ -64,10 +64,10 @@ namespace QueryFirst
 				{
 					if (_ctx.ProjectConfig.AppSettings == null)
 						return true;
-					if (_ctx.ProjectConfig.AppSettings["QfRequireExtensionForRelease"] == null)
+					if (_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"] == null)
 						return true;
 
-					return Convert.ToBoolean(_ctx.ProjectConfig.AppSettings["QfRequireExtensionForRelease"].Value);
+					return !Convert.ToBoolean(_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"].Value);
 				}
 				catch (Exception)
 				{
