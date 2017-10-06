@@ -63,15 +63,15 @@ namespace QueryFirst
 				try
 				{
 					if (_ctx.ProjectConfig.AppSettings == null)
-						return true;
+						return false;
 					if (_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"] == null)
-						return true;
+						return false;
 
-					return !Convert.ToBoolean(_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"].Value);
+					return Convert.ToBoolean(_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"].Value);
 				}
 				catch (Exception)
 				{
-					return true;
+					return false;
 				}
 			}
 		}

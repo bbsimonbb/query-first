@@ -25,7 +25,7 @@ namespace QueryFirst.Providers
             // get design time section
             var dt = Regex.Match(queryText, "-- designTime(?<designTime>.*)-- endDesignTime", RegexOptions.Singleline).Value;
             // extract declared parameters
-            string pattern = "declare[^;]*";
+            string pattern = "declare[^;\n]*";
             Match m = Regex.Match(dt, pattern, RegexOptions.IgnoreCase);
             while (m.Success)
             {
