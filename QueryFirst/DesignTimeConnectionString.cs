@@ -16,6 +16,7 @@ namespace QueryFirst
             _ctx = ctx;
         }
         protected ConnectionStringSettings _v;
+		protected AppSettingsSection _d;
 
         /// <summary>
         /// For recuperating the query schema at design time.
@@ -52,7 +53,29 @@ namespace QueryFirst
                 return _v;
             }
         }
-        public bool IsPresent
+		/// <summary>
+		/// For determining pre-build parameter parsing (requires extension)
+		/// </summary>
+		public bool AlwaysParse
+		{
+			get
+			{
+				try
+				{
+					if (_ctx.ProjectConfig.AppSettings == null)
+						return false;
+					if (_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"] == null)
+						return false;
+
+					return Convert.ToBoolean(_ctx.ProjectConfig.AppSettings["QfCommentDesignTimeInRelease"].Value);
+				}
+				catch (Exception)
+				{
+					return false;
+				}
+			}
+		}
+		public bool IsPresent
         {
             get { return !string.IsNullOrEmpty(v.ConnectionString); }
         }
