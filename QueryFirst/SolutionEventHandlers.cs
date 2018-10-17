@@ -173,8 +173,8 @@ namespace QueryFirst
                 System.Configuration.KeyValueConfigurationElement helperAssembly = null;
                 try
                 {
-                    ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
-                    helperAssembly = config.AppSettings["QfHelperAssembly"];
+                    //var config = new ConfigResolver().GetConfig()
+                    //helperAssembly = config.AppSettings["QfHelperAssembly"];
                 }
                 catch (Exception ex)
                 {//nobody cares
@@ -232,7 +232,7 @@ namespace QueryFirst
                         if (fuxed == 2)
                         {
                             // regenerate query in new location to get new path to manifest stream.
-                            new Conductor(_VSOutputWindow).ProcessOneQuery(renamedQuery.Document);
+                            new Conductor(_VSOutputWindow, new CodeGenerationContext(new ConfigResolver(new ConfigFileReader()))).ProcessOneQuery(renamedQuery.Document);
                             return; //2 files to rename, then we're finished.
                         }
                     }
@@ -251,7 +251,7 @@ namespace QueryFirst
                     var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                     if (text.Contains("managed by QueryFirst"))
                     {
-                        var cdctr = new Conductor(_VSOutputWindow);
+                        var cdctr = new Conductor(_VSOutputWindow, new CodeGenerationContext(new ConfigResolver(new ConfigFileReader())));
                         cdctr.ProcessOneQuery(Document);
                     }
 

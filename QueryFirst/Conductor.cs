@@ -12,13 +12,14 @@ namespace QueryFirst
 {
     class Conductor
     {
-        private CodeGenerationContext ctx;
         private TinyIoCContainer _tiny;
         private VSOutputWindow _vsOutputWindow;
+        private ICodeGenerationContext _ctx;
 
-        public Conductor(VSOutputWindow vsOutpuWindow)
+        public Conductor(VSOutputWindow vsOutpuWindow,ICodeGenerationContext ctx)
         {
             _vsOutputWindow = vsOutpuWindow;
+            _ctx = ctx;
         }
 
 
@@ -27,22 +28,21 @@ namespace QueryFirst
         public void ProcessOneQuery(Document queryDoc)
         {
             _tiny = TinyIoCContainer.Current;
-            ctx = new CodeGenerationContext(queryDoc);
-
+            _ctx.InitForQuery(queryDoc);
             // Test this! If I can get source control exclusions working, team members won't get the generated file.
 
-            if (!File.Exists(ctx.GeneratedClassFullFilename))
-                File.Create(ctx.GeneratedClassFullFilename);
-            if (GetItemByFilename(queryDoc.ProjectItem.Collection, ctx.GeneratedClassFullFilename) != null)
-                queryDoc.ProjectItem.Collection.AddFromFile(ctx.GeneratedClassFullFilename);
+            if (!File.Exists(_ctx.GeneratedClassFullFilename))
+                File.Create(_ctx.GeneratedClassFullFilename);
+            if (GetItemByFilename(queryDoc.ProjectItem.Collection, _ctx.GeneratedClassFullFilename) != null)
+                queryDoc.ProjectItem.Collection.AddFromFile(_ctx.GeneratedClassFullFilename);
             // copy namespace of generated partial class from user partial class
             // backward compatible...
-            var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+            var textDoc = ((TextDocument)_ctx.QueryDoc.Object());
             textDoc.ReplacePattern("--designTime", "-- designTime");
             textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
             try
             {
-                if (!ctx.DesignTimeConnectionString.IsPresent)
+                if (!_ctx.DesignTimeConnectionString.IsPresent)
                 {
                     _vsOutputWindow.Write(@"QueryFirst would like to help you, but you need to tell it where your DB is.
     You can specify the design time connection string in your app or web.config or directly in the query file.
@@ -55,34 +55,33 @@ namespace QueryFirst
                     return; // nothing to be done
 
                 }
-                if (!ctx.DesignTimeConnectionString.IsProviderValid)
+                if (!_ctx.DesignTimeConnectionString.IsProviderValid)
                 {
                     _vsOutputWindow.Write(string.Format(
 @"No Implementation of IProvider for providerName {0}. 
 The query {1} may not run and the wrapper has not been regenerated.",
-                    ctx.DesignTimeConnectionString.v.ProviderName, ctx.BaseName
+                    _ctx.DesignTimeConnectionString.v.ProviderName, _ctx.BaseName
                     ));
                 }
                 // Use QueryFirst within QueryFirst !
                 // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
-                QfRuntimeConnection.CurrentConnectionString = ctx.DesignTimeConnectionString.v.ConnectionString;
+                QfRuntimeConnection.CurrentConnectionString = _ctx.DesignTimeConnectionString.v.ConnectionString;
 
-                var makeSelfTest = ctx.ProjectConfig?.AppSettings["QfMakeSelfTest"] != null && bool.Parse(ctx.ProjectConfig.AppSettings["QfMakeSelfTest"].Value);
 
-                var matchInsert = Regex.Match(ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                var matchUpdate = Regex.Match(ctx.Query.Text, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var matchInsert = Regex.Match(_ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var matchUpdate = Regex.Match(_ctx.Query.Text, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 if (matchInsert.Success)
                 {
                     var statement = new ScaffoldInsert().ExecuteScalar(matchInsert.Groups["tableName"].Value);
                     var ep = textDoc.CreateEditPoint();
-                    ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
+                    ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
                     //ctx.QueryDoc.Save();
                 }
                 else if (matchUpdate.Success)
                 {
                     var statement = new ScaffoldUpdate().ExecuteScalar(matchUpdate.Groups["tableName"].Value);
                     var ep = textDoc.CreateEditPoint();
-                    ep.ReplaceText(ctx.Query.Text.Length, statement, 0);
+                    ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
                     //ctx.QueryDoc.Save();
                 }
                 else
@@ -94,11 +93,11 @@ The query {1} may not run and the wrapper has not been regenerated.",
                         // also called in the bowels of schema fetching, for Postgres, because no notion of declarations.
                         try
                         {
-                            var undeclared = ctx.Provider.FindUndeclaredParameters(ctx.Query.Text);
-                            var newParamDeclarations = ctx.Provider.ConstructParameterDeclarations(undeclared);
+                            var undeclared = _ctx.Provider.FindUndeclaredParameters(_ctx.Query.Text);
+                            var newParamDeclarations = _ctx.Provider.ConstructParameterDeclarations(undeclared);
                             if (!string.IsNullOrEmpty(newParamDeclarations))
                             {
-                                ctx.Query.ReplacePattern("-- endDesignTime", newParamDeclarations + "-- endDesignTime");
+                                _ctx.Query.ReplacePattern("-- endDesignTime", newParamDeclarations + "-- endDesignTime");
                             }
                         }
                         catch (SqlException ex)
@@ -108,7 +107,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                             else throw;
                         }
 
-                        ctx.ResultFields = ctx.Hlpr.GetFields(ctx.DesignTimeConnectionString.v, ctx.Query.Text);
+                        _ctx.ResultFields = _ctx.Hlpr.GetFields(_ctx.DesignTimeConnectionString.v, _ctx.Query.Text);
                     }
                     catch (Exception ex)
                     {
@@ -122,55 +121,60 @@ The query {1} may not run and the wrapper has not been regenerated.",
                         bldr.AppendLine("-----------------------------------------------------------");
                         bldr.AppendLine(ex.StackTrace);
                         bldr.AppendLine("*/");
-                        File.AppendAllText(ctx.GeneratedClassFullFilename, bldr.ToString());
+                        File.AppendAllText(_ctx.GeneratedClassFullFilename, bldr.ToString());
                         throw;
                     }
-                    ctx.QueryHasRun = true;
+                    _ctx.QueryHasRun = true;
                     StringBuilder Code = new StringBuilder();
 
                     var wrapper = _tiny.Resolve<IWrapperClassMaker>();
                     var results = _tiny.Resolve<IResultClassMaker>();
 
-                    Code.Append(wrapper.StartNamespace(ctx));
-                    Code.Append(wrapper.Usings(ctx));
-                    if (makeSelfTest)
-                        Code.Append(wrapper.SelfTestUsings(ctx));
-                    if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+                    Code.Append(wrapper.StartNamespace(_ctx));
+                    Code.Append(wrapper.Usings(_ctx));
+                    if (_ctx.Config.MakeSelfTest)
+                        Code.Append(wrapper.SelfTestUsings(_ctx));
+                    if (_ctx.ResultFields != null && _ctx.ResultFields.Count > 0)
                         Code.Append(results.Usings());
-                    Code.Append(wrapper.MakeInterface(ctx));
-                    Code.Append(wrapper.StartClass(ctx));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(ctx));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(ctx));
-                    Code.Append(wrapper.MakeGetCommandTextMethod(ctx));
-                    Code.Append(ctx.Provider.MakeAddAParameter(ctx));
+                    Code.Append(wrapper.MakeInterface(_ctx));
+                    Code.Append(wrapper.StartClass(_ctx));
+                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(_ctx));
+                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(_ctx));
+                    Code.Append(wrapper.MakeGetCommandTextMethod(_ctx));
+                    Code.Append(_ctx.Provider.MakeAddAParameter(_ctx));
 
-                    if (makeSelfTest)
-                        Code.Append(wrapper.MakeSelfTestMethod(ctx));
-                    if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+                    if (_ctx.Config.MakeSelfTest)
+                        Code.Append(wrapper.MakeSelfTestMethod(_ctx));
+                    if (_ctx.ResultFields != null && _ctx.ResultFields.Count > 0)
                     {
-                        Code.Append(wrapper.MakeExecuteWithoutConn(ctx));
-                        Code.Append(wrapper.MakeExecuteWithConn(ctx));
-                        Code.Append(wrapper.MakeGetOneWithoutConn(ctx));
-                        Code.Append(wrapper.MakeGetOneWithConn(ctx));
-                        Code.Append(wrapper.MakeExecuteScalarWithoutConn(ctx));
-                        Code.Append(wrapper.MakeExecuteScalarWithConn(ctx));
+                        Code.Append(wrapper.MakeExecuteWithoutConn(_ctx));
+                        Code.Append(wrapper.MakeExecuteWithConn(_ctx));
+                        Code.Append(wrapper.MakeGetOneWithoutConn(_ctx));
+                        Code.Append(wrapper.MakeGetOneWithConn(_ctx));
+                        Code.Append(wrapper.MakeExecuteScalarWithoutConn(_ctx));
+                        Code.Append(wrapper.MakeExecuteScalarWithConn(_ctx));
 
-                        Code.Append(wrapper.MakeCreateMethod(ctx));
-                        Code.Append(wrapper.MakeOtherMethods(ctx));
-                        Code.Append(wrapper.CloseClass(ctx));
-                        Code.Append(results.StartClass(ctx));
-                        foreach (var fld in ctx.ResultFields)
+                        Code.Append(wrapper.MakeCreateMethod(_ctx));
+                        Code.Append(wrapper.MakeOtherMethods(_ctx));
+                        Code.Append(wrapper.CloseClass(_ctx));
+                        Code.Append(results.StartClass(_ctx));
+                        foreach (var fld in _ctx.ResultFields)
                         {
                             Code.Append(results.MakeProperty(fld));
                         }
                     }
                     Code.Append(results.CloseClass()); // closes wrapper class if no results !
-                    Code.Append(wrapper.CloseNamespace(ctx));
+                    Code.Append(wrapper.CloseNamespace(_ctx));
                     //File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
-                    ctx.PutCodeHere.WriteAndFormat(Code.ToString());
-                    var partialClassFile = GetItemByFilename(ctx.QueryDoc.ProjectItem.ProjectItems, ctx.CurrDir + ctx.BaseName + "Results.cs");
-                    new BackwardCompatibility().InjectPOCOFactory(ctx, partialClassFile);
-                    _vsOutputWindow.Write(Environment.NewLine + "QueryFirst generated wrapper class for " + ctx.BaseName + ".sql");
+                    _ctx.PutCodeHere.WriteAndFormat(Code.ToString());
+                    var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem.ProjectItems, _ctx.CurrDir + _ctx.BaseName + "Results.cs");
+                    if (partialClassFile == null)
+                    {
+                        // .net core has a little problem with nested items.
+                        partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem.ContainingProject.ProjectItems, _ctx.CurrDir + _ctx.BaseName + "Results.cs");
+                    }
+                    new BackwardCompatibility().InjectPOCOFactory(_ctx, partialClassFile);
+                    _vsOutputWindow.Write(Environment.NewLine + "QueryFirst generated wrapper class for " + _ctx.BaseName + ".sql");
                 }
 
             }

@@ -115,7 +115,7 @@ namespace QueryFirst
                             var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                             if (text.Contains("managed by QueryFirst"))
                             {
-                                new Conductor(vsOutputWindow).ProcessOneQuery(item.Document);
+                                new Conductor(vsOutputWindow, new CodeGenerationContext(new ConfigResolver(new ConfigFileReader()))).ProcessOneQuery(item.Document);
                             }
                             
                         }

@@ -5,7 +5,7 @@ namespace QueryFirst
 {
     public class Query
     {
-        private CodeGenerationContext ctx;
+        private ICodeGenerationContext ctx;
         private string text;
         private IProvider provider;
         private List<IQueryParamInfo> queryParams;
@@ -26,7 +26,7 @@ namespace QueryFirst
                 return queryParams;
             }
         }
-        public Query(CodeGenerationContext _ctx)
+        public Query(ICodeGenerationContext _ctx)
         {
             ctx = _ctx;
             var textDoc = ((TextDocument)ctx.QueryDoc.Object());

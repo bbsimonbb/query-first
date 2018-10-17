@@ -7,6 +7,8 @@
     <ProjectType>CSharp</ProjectType>
     <SortOrder>10</SortOrder>
     <Icon>Carrot.ico</Icon>
+    <TemplateID>QueryFirstQueryTemplate.Template</TemplateID>
+    <AppliesTo>CSharp + DNX</AppliesTo>
   </TemplateData>
   <TemplateContent>
     <References>

@@ -12,7 +12,7 @@ using QueryFirst.TypeMappings;
 
 namespace QueryFirst
 {
-    public class CodeGenerationContext
+    public class CodeGenerationContext : ICodeGenerationContext
     {
         protected TinyIoCContainer tiny;
         private PutCodeHere _putCodeHere;
@@ -24,47 +24,61 @@ namespace QueryFirst
         protected IProvider provider;
         public IProvider Provider { get { return provider; } }
         protected Query query;
+        private IConfigResolver _configResolver;
+        private QFConfigModel _config;
 
-        // constructor
-        public CodeGenerationContext(Document queryDoc)
+        // 
+        public CodeGenerationContext(IConfigResolver configResolver)
+        {
+            _configResolver = configResolver;
+        }
+        public void InitForQuery(Document queryDoc)
         {
             tiny = TinyIoCContainer.Current;
             queryHasRun = false;
             this.queryDoc = queryDoc;
             dte = queryDoc.DTE;
             query = new Query(this);
+            _config = _configResolver.GetConfig( queryDoc.FullName, query.Text );
             provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.v.ProviderName);
             provider.Initialize(DesignTimeConnectionString.v);
             // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
-            _putCodeHere = new PutCodeHere(Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename));
+            var target = Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename);
+            if(target == null)
+            {
+                // .net core has a little problem with nested items.
+                target = Conductor.GetItemByFilename(queryDoc.ProjectItem.ContainingProject.ProjectItems, GeneratedClassFullFilename);
+            }
+            _putCodeHere = new PutCodeHere(target);
 
 
             string currDir = Path.GetDirectoryName(queryDoc.FullName);
 
             hlpr = new AdoSchemaFetcher();
         }
+        public QFConfigModel Config { get { return _config; } }
         public Query Query { get { return query; } }
         protected string baseName;
-        private ConfigurationAccessor _config;
-        public ConfigurationAccessor ProjectConfig
-        {
-            get
-            {
-                if (_config == null)
-                {
-                    try
-                    {
-                        _config = new ConfigurationAccessor(dte, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        // will throw if there's no configuration file
-                        return null;
-                    }
-                }
-                return _config;
-            }
-        }
+        //private ConfigurationAccessor _config;
+        //public ConfigurationAccessor ProjectConfig
+        //{
+        //    get
+        //    {
+        //        if (_config == null)
+        //        {
+        //            try
+        //            {
+        //                _config = new ConfigurationAccessor(dte, null);
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                // will throw if there's no configuration file
+        //                return null;
+        //            }
+        //        }
+        //        return _config;
+        //    }
+        //}
         /// <summary>
         /// The name of the query file, without extension. Used to infer the filenames of code classes, and to generate the wrapper class name.
         /// </summary>

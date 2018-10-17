@@ -8,7 +8,7 @@ namespace QueryFirst
 {
     public class WrapperClassMaker : IWrapperClassMaker
     {
-        public virtual string Usings(CodeGenerationContext ctx)
+        public virtual string Usings(ICodeGenerationContext ctx)
         {
             return @"using System;
 using System.Data;
@@ -21,19 +21,19 @@ using System.Linq;
 ";
 
         }
-        public virtual string StartNamespace(CodeGenerationContext ctx)
+        public virtual string StartNamespace(ICodeGenerationContext ctx)
         {
             if (!string.IsNullOrEmpty(ctx.Namespace))
                 return "namespace " + ctx.Namespace + "{" + Environment.NewLine;
             else
                 return "";
         }
-        public virtual string StartClass(CodeGenerationContext ctx)
+        public virtual string StartClass(ICodeGenerationContext ctx)
         {
             return "public partial class " + ctx.BaseName + " : I" + ctx.BaseName + "{" + Environment.NewLine;
 
         }
-        public virtual string MakeExecuteWithoutConn(CodeGenerationContext ctx)
+        public virtual string MakeExecuteWithoutConn(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             char[] spaceComma = new char[] { ',', ' ' };
@@ -47,7 +47,7 @@ using System.Linq;
             code.AppendLine("}");
             return code.ToString();
         }
-        public virtual string MakeExecuteWithConn(CodeGenerationContext ctx)
+        public virtual string MakeExecuteWithConn(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // Execute method with connection
@@ -68,7 +68,7 @@ using System.Linq;
             code.AppendLine("}"); //close Execute() method
             return code.ToString();
         }
-        public virtual string MakeGetOneWithoutConn(CodeGenerationContext ctx)
+        public virtual string MakeGetOneWithoutConn(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
@@ -83,7 +83,7 @@ using System.Linq;
             return code.ToString();
 
         }
-        public virtual string MakeGetOneWithConn(CodeGenerationContext ctx)
+        public virtual string MakeGetOneWithConn(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // GetOne() with connection
@@ -99,7 +99,7 @@ using System.Linq;
             return code.ToString();
 
         }
-        public virtual string MakeExecuteScalarWithoutConn(CodeGenerationContext ctx)
+        public virtual string MakeExecuteScalarWithoutConn(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
@@ -113,7 +113,7 @@ using System.Linq;
             code.AppendLine("}");
             return code.ToString();
         }
-        public virtual string MakeExecuteScalarWithConn(CodeGenerationContext ctx)
+        public virtual string MakeExecuteScalarWithConn(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
@@ -142,7 +142,7 @@ using System.Linq;
             return code.ToString();
 
         }
-        public virtual string MakeExecuteNonQueryWithoutConn(CodeGenerationContext ctx)
+        public virtual string MakeExecuteNonQueryWithoutConn(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
@@ -156,7 +156,7 @@ using System.Linq;
             code.AppendLine("}");
             return code.ToString();
         }
-        public virtual string MakeExecuteNonQueryWithConn(CodeGenerationContext ctx)
+        public virtual string MakeExecuteNonQueryWithConn(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
@@ -174,7 +174,7 @@ using System.Linq;
 
         }
 
-        public virtual string MakeCreateMethod(CodeGenerationContext ctx)
+        public virtual string MakeCreateMethod(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // Create() method
@@ -195,7 +195,7 @@ using System.Linq;
 
             return code.ToString();
         }
-        public virtual string MakeGetCommandTextMethod(CodeGenerationContext ctx)
+        public virtual string MakeGetCommandTextMethod(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             // private load command text
@@ -215,15 +215,15 @@ using System.Linq;
             return code.ToString();
 
         }
-        public virtual string MakeOtherMethods(CodeGenerationContext ctx)
+        public virtual string MakeOtherMethods(ICodeGenerationContext ctx)
         {
             return "";
         }
-        public virtual string CloseClass(CodeGenerationContext ctx)
+        public virtual string CloseClass(ICodeGenerationContext ctx)
         {
             return "}" + Environment.NewLine;
         }
-        public virtual string CloseNamespace(CodeGenerationContext ctx)
+        public virtual string CloseNamespace(ICodeGenerationContext ctx)
         {
             if (!string.IsNullOrEmpty(ctx.Namespace))
                 return "}" + Environment.NewLine;
@@ -231,7 +231,7 @@ using System.Linq;
                 return "";
         }
 
-        public string MakeInterface(CodeGenerationContext ctx)
+        public string MakeInterface(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
@@ -253,7 +253,7 @@ using System.Linq;
             return code.ToString();
         }
 
-        public string SelfTestUsings(CodeGenerationContext ctx)
+        public string SelfTestUsings(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
             code.AppendLine("using QueryFirst;");
@@ -261,7 +261,7 @@ using System.Linq;
             return code.ToString();
         }
 
-        public string MakeSelfTestMethod(CodeGenerationContext ctx)
+        public string MakeSelfTestMethod(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();

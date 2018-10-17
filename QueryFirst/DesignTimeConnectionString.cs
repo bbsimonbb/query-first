@@ -10,46 +10,21 @@ namespace QueryFirst
 {
     public class DesignTimeConnectionString
     {
-        CodeGenerationContext _ctx;
-        public DesignTimeConnectionString(CodeGenerationContext ctx)
+        ICodeGenerationContext _ctx;
+        public DesignTimeConnectionString(ICodeGenerationContext ctx)
         {
             _ctx = ctx;
         }
         protected ConnectionStringSettings _v;
 
         /// <summary>
-        /// For recuperating the query schema at design time.
+        /// For fetching the query schema at design time.
         /// </summary>
         public virtual ConnectionStringSettings v
         {
             get
             {
-                if (_v == null)
-                {
-                    // if the query defines a QfDefaultConnection, use it.
-                    var match = Regex.Match(_ctx.Query.Text, "--QfDefaultConnection(=|:)(?<cstr>.*)$",RegexOptions.Multiline);
-                    //var match = Regex.Match(Query.Text, "--QfDefaultConnectionString ?(=|:)? ?\"?(?<cstr>[^ \"]*)\" ? $");
-                    if (match.Success)
-                    {
-                        string providerName;
-                        var matchProviderName = Regex.Match(_ctx.Query.Text, "--QfDefaultConnectionProviderName(=|:)(?<pn>.*)$");
-                        if (matchProviderName.Success)
-                        {
-                            providerName = matchProviderName.Groups["pn"].Value;
-                            _v = new ConnectionStringSettings("QfDefaultConnection", match.Groups["cstr"].Value, matchProviderName.Groups["pn"].Value);
-                        }
-                        else
-                        {
-                            _v = new ConnectionStringSettings("QfDefaultConnection", match.Groups["cstr"].Value, "System.Data.SqlClient");
-                        }
-
-                    }
-                    else if (_ctx.ProjectConfig != null)
-                    {
-                        _v = _ctx.ProjectConfig.ConnectionStrings["QfDefaultConnection"];
-                    }
-                }
-                return _v;
+                return new ConnectionStringSettings("QfDefaultConnection", _ctx.Config.DefaultConnection, _ctx.Config.Provider);
             }
         }
         public bool IsPresent
