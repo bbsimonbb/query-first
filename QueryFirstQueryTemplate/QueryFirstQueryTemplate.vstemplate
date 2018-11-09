@@ -8,7 +8,7 @@
     <SortOrder>10</SortOrder>
     <Icon>Carrot.ico</Icon>
     <TemplateID>QueryFirstQueryTemplate.Template</TemplateID>
-    <AppliesTo>CSharp + DNX</AppliesTo>
+    <AppliesTo>CSharp</AppliesTo>
   </TemplateData>
   <TemplateContent>
     <References>

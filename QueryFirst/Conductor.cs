@@ -107,7 +107,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                             else throw;
                         }
 
-                        _ctx.ResultFields = _ctx.Hlpr.GetFields(_ctx.DesignTimeConnectionString.v, _ctx.Query.Text);
+                        _ctx.ResultFields = _ctx.SchemaFetcher.GetFields(_ctx.DesignTimeConnectionString.v, _ctx.Query.Text);
                     }
                     catch (Exception ex)
                     {

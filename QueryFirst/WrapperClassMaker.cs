@@ -104,7 +104,7 @@ using System.Linq;
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             //ExecuteScalar without connection
-            code.AppendLine("public virtual " + ctx.ResultFields[0].TypeCs + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
@@ -117,7 +117,7 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public virtual " + ctx.ResultFields[0].TypeCs + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn){");
+            code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
@@ -126,17 +126,11 @@ using System.Linq;
             }
             code.AppendLine("var result = cmd.ExecuteScalar();");
             // only convert dbnull if nullable
-            if (ctx.ResultFields[0].AllowDBNull)
-            {
-                //null safe, but why are nullable columns mapping to not nullable types?
-                code.AppendLine("if(result == DBNull.Value)");
-                if (Type.GetType(ctx.ResultFields[0].TypeCs).IsValueType)
-                    code.AppendLine($"return ({ctx.ResultFields[0].TypeCs})Activator.CreateInstance(typeof({ctx.ResultFields[0].TypeCs}));");
-                else
-                    code.AppendLine("return null;");
-                code.AppendLine("else");
-            }
-            code.AppendLine("return (" + ctx.ResultFields[0].TypeCs + ")result;");
+
+            code.AppendLine("if( result == null || result == DBNull.Value)");
+                code.AppendLine("return null;");
+            code.AppendLine("else");
+            code.AppendLine("return (" + ctx.ExecuteScalarReturnType + ")result;");
             code.AppendLine("}");
             // close ExecuteScalar()
             return code.ToString();
@@ -163,7 +157,7 @@ using System.Linq;
             code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
             code.AppendLine("cmd.CommandText = getCommandText();");
-            foreach(var qp in ctx.Query.QueryParams)
+            foreach (var qp in ctx.Query.QueryParams)
             {
                 code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ");");
             }
@@ -202,14 +196,12 @@ using System.Linq;
             code.AppendLine("public string getCommandText(){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
-            code.AppendLine("#if DEBUG");
             code.AppendLine("//Comments inverted at runtime in debug, pre-build in release");
             code.AppendLine("queryText = queryText.Replace(\"-- designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"-- endDesignTime\", \"endDesignTime*/\");");
             // backwards compatible
             code.AppendLine("queryText = queryText.Replace(\"--designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");");
-            code.AppendLine("#endif");
             code.AppendLine("return queryText;");
             code.AppendLine("}"); // close method;
             return code.ToString();
@@ -242,8 +234,8 @@ using System.Linq;
                 code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn);");
                 code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + ");");
                 code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn);");
-                code.AppendLine("" + ctx.ResultFields[0].TypeCs + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("" + ctx.ResultFields[0].TypeCs + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn);");
+                code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn);");
                 code.AppendLine("" + ctx.ResultClassName + " Create(IDataRecord record);");
             }
             code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + ");");

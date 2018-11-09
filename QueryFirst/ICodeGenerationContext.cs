@@ -11,7 +11,7 @@ namespace QueryFirst
         DesignTimeConnectionString DesignTimeConnectionString { get; }
         DTE Dte { get; }
         string GeneratedClassFullFilename { get; }
-        AdoSchemaFetcher Hlpr { get; }
+        ISchemaFetcher SchemaFetcher { get; }
         string MethodSignature { get; }
         string NameAndPathForManifestStream { get; }
         string Namespace { get; }
@@ -25,5 +25,6 @@ namespace QueryFirst
         List<ResultFieldDetails> ResultFields { get; set; }
         QFConfigModel Config { get; }
         void InitForQuery(Document queryDoc);
+        string ExecuteScalarReturnType { get; }
     }
 }

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using TinyIoC;
 using EnvDTE;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Configuration;
-using QueryFirst.TypeMappings;
+using System;
 
 namespace QueryFirst
 {
@@ -26,11 +22,14 @@ namespace QueryFirst
         protected Query query;
         private IConfigResolver _configResolver;
         private QFConfigModel _config;
+        protected ISchemaFetcher _schemaFetcher;
+
 
         // 
-        public CodeGenerationContext(IConfigResolver configResolver)
+        public CodeGenerationContext(IConfigResolver configResolver, ISchemaFetcher schemaFetcher)
         {
             _configResolver = configResolver;
+            _schemaFetcher = schemaFetcher;
         }
         public void InitForQuery(Document queryDoc)
         {
@@ -51,34 +50,11 @@ namespace QueryFirst
             }
             _putCodeHere = new PutCodeHere(target);
 
-
             string currDir = Path.GetDirectoryName(queryDoc.FullName);
-
-            hlpr = new AdoSchemaFetcher();
         }
         public QFConfigModel Config { get { return _config; } }
         public Query Query { get { return query; } }
         protected string baseName;
-        //private ConfigurationAccessor _config;
-        //public ConfigurationAccessor ProjectConfig
-        //{
-        //    get
-        //    {
-        //        if (_config == null)
-        //        {
-        //            try
-        //            {
-        //                _config = new ConfigurationAccessor(dte, null);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                // will throw if there's no configuration file
-        //                return null;
-        //            }
-        //        }
-        //        return _config;
-        //    }
-        //}
         /// <summary>
         /// The name of the query file, without extension. Used to infer the filenames of code classes, and to generate the wrapper class name.
         /// </summary>
@@ -233,14 +209,27 @@ namespace QueryFirst
             get { return queryHasRun; }
             set { queryHasRun = value; }
         }
-        protected AdoSchemaFetcher hlpr;
         /// <summary>
         /// The class that runs the query and returns the schema table
         /// </summary>
-        public AdoSchemaFetcher Hlpr { get { return hlpr; } }
+        public ISchemaFetcher SchemaFetcher { get { return _schemaFetcher; } }
+        /// <summary>
+        /// Execute scalar return type should always be nullable, even when the underlying column is not nullable.
+        /// </summary>
+        public string ExecuteScalarReturnType {
+            get {
+                if (IsNullable(Type.GetType(ResultFields[0].TypeCs, false)))
+                {
+                    return ResultFields[0].TypeCs;
+                }
+                else
+                {
+                    return ResultFields[0].TypeCs + "?";
+                }
+
+            }
+        }
+        bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
         protected ProjectItem resultsClass;
-
-
-
     }
 }
