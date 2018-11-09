@@ -90,8 +90,7 @@ namespace QueryFirst
         /// <param name="e">Event args.</param>
         private void MenuItemCallback(object sender, EventArgs e)
         {
-            DTE2 dte2;
-            dte2 = (DTE2)System.Runtime.InteropServices.Marshal.GetActiveObject("VisualStudio.DTE.12.0");
+            DTE2 dte2 = ServiceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;//Package.GetGlobalService(typeof(DTE)) as DTE2;
             var vsOutputWindow = new VSOutputWindow(dte2);
             foreach (Project proj in ((QueryFirstCmdPackage)_package).dte.Solution.Projects)
             {
