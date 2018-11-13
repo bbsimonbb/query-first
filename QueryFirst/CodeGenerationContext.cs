@@ -171,7 +171,7 @@ namespace QueryFirst
         //.MakeMethodAndCallingSignatures(ctx.Query.QueryParams, out methodSignature, out callingArgs);
         protected string callingArgs;
         /// <summary>
-        /// Parameter names, if any, with trailing "conn". String used by connectionless methods to call their connectionful overloads.
+        /// Parameter names, if any, withOUT trailing "conn". String used by connectionless methods to call their connectionful overloads.
         /// </summary>
         public string CallingArgs
         {
@@ -187,7 +187,7 @@ namespace QueryFirst
                         call.Append(qp.CSName + ", ");
                     }
                     //signature trailing comma trimmed in place if needed. 
-                    call.Append("conn"); // calling args always used to call overload with connection
+                    //call.Append("conn"); // calling args always used to call overload with connection
                     callingArgs = call.ToString();
                 }
                 return callingArgs;

@@ -42,7 +42,7 @@ using System.Linq;
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return Execute(" + ctx.CallingArgs + ").ToList();");
+            code.AppendLine("return Execute(" + ctx.CallingArgs + " conn).ToList();");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
@@ -51,8 +51,10 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // Execute method with connection
-            code.AppendLine("public virtual IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn){");
+            code.AppendLine("public virtual IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
+            code.AppendLine("if(tx != null)");
+            code.AppendLine("cmd.Transaction = tx;");
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
             {
@@ -77,7 +79,7 @@ using System.Linq;
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return GetOne(" + ctx.CallingArgs + ");");
+            code.AppendLine("return GetOne(" + ctx.CallingArgs + " conn);");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
@@ -87,9 +89,9 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // GetOne() with connection
-            code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn)");
+            code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null)");
             code.AppendLine("{");
-            code.AppendLine("var all = Execute(" + ctx.CallingArgs + ");");
+            code.AppendLine("var all = Execute(" + ctx.CallingArgs + " conn,tx);");
             code.AppendLine("using (IEnumerator<" + ctx.ResultClassName + "> iter = all.GetEnumerator())");
             code.AppendLine("{");
             code.AppendLine("iter.MoveNext();");
@@ -108,7 +110,7 @@ using System.Linq;
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return ExecuteScalar(" + ctx.CallingArgs + ");");
+            code.AppendLine("return ExecuteScalar(" + ctx.CallingArgs + " conn);");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
@@ -117,8 +119,10 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn){");
+            code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
+            code.AppendLine("if(tx != null)");
+            code.AppendLine("cmd.Transaction = tx;");
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
             {
@@ -145,7 +149,7 @@ using System.Linq;
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return ExecuteNonQuery(" + ctx.CallingArgs + ");");
+            code.AppendLine("return ExecuteNonQuery(" + ctx.CallingArgs + " conn);");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
@@ -154,8 +158,10 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn){");
+            code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
+            code.AppendLine("if(tx != null)");
+            code.AppendLine("cmd.Transaction = tx;");
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
             {
@@ -231,15 +237,15 @@ using System.Linq;
             if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
             {
                 code.AppendLine("List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn);");
+                code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
                 code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn);");
+                code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
                 code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn);");
+                code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
                 code.AppendLine("" + ctx.ResultClassName + " Create(IDataRecord record);");
             }
             code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-            code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn);");
+            code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
             code.AppendLine("}"); // close interface;
 
             return code.ToString();
