@@ -199,7 +199,7 @@ using System.Linq;
         {
             StringBuilder code = new StringBuilder();
             // private load command text
-            code.AppendLine("public string getCommandText(){");
+            code.AppendLine("public string getCommandTextOld(){");
             code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
             code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
             code.AppendLine("//Comments inverted at runtime in debug, pre-build in release");
@@ -209,6 +209,12 @@ using System.Linq;
             code.AppendLine("queryText = queryText.Replace(\"--designTime\", \"/*designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");");
             code.AppendLine("return queryText;");
+            code.AppendLine("}"); // close method;
+            // try again !
+            code.AppendLine("public string getCommandText(){");
+            code.AppendLine("return @\"");
+            code.Append(ctx.Query.FinalTextForCode);
+            code.AppendLine("\";");
             code.AppendLine("}"); // close method;
             return code.ToString();
 

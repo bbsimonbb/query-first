@@ -53,5 +53,13 @@ namespace QueryFirst
                 text = value;
             }
         }
+        public string FinalTextForCode { get {
+                return text
+                    .Replace("-- designTime", "/*designTime")
+                    .Replace("-- endDesignTime", "endDesignTime*/")
+                    // for inclusion in a verbatim string, only modif required is to double double quotes
+                    .Replace("\"","\"\"");
+            }
+        }
     }
 }

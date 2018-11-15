@@ -218,7 +218,7 @@ namespace QueryFirst
         /// </summary>
         public string ExecuteScalarReturnType {
             get {
-                if (IsNullable(Type.GetType(ResultFields[0].TypeCs, false)))
+                if (IsNullable(Type.GetType(ResultFields[0].TypeCs, false)) || ResultFields[0].TypeCs == "System.String")
                 {
                     return ResultFields[0].TypeCs;
                 }
