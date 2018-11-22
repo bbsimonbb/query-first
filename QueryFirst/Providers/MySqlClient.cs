@@ -49,7 +49,7 @@ namespace QueryFirst.Providers
         public override string MakeAddAParameter(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
-            code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length)\n{");
+            code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length, int Scale, int Precision)\n{");
             code.AppendLine("((MySql.Data.MySqlClient.MySqlCommand)Cmd).Parameters.AddWithValue(DbName, Value);");
             code.AppendLine("}");
             return code.ToString();

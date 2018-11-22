@@ -58,7 +58,7 @@ using System.Linq;
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
             {
-                code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ");");
+                code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
             }
             code.AppendLine("using (var reader = cmd.ExecuteReader())");
             code.AppendLine("{");
@@ -126,7 +126,7 @@ using System.Linq;
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
             {
-                code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ");");
+                code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
             }
             code.AppendLine("var result = cmd.ExecuteScalar();");
             // only convert dbnull if nullable
@@ -165,7 +165,7 @@ using System.Linq;
             code.AppendLine("cmd.CommandText = getCommandText();");
             foreach (var qp in ctx.Query.QueryParams)
             {
-                code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ");");
+                code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
             }
             code.AppendLine("return cmd.ExecuteNonQuery();");
             code.AppendLine("}");

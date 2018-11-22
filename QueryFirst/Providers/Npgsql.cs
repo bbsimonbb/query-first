@@ -90,7 +90,7 @@ namespace QueryFirst.Providers
         public virtual string MakeAddAParameter(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
-            code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length)\n{");
+            code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length, int Scale, int Precision)\n{");
             code.AppendLine("var myParam = new Npgsql.NpgsqlParameter();");
             code.AppendLine("myParam.ParameterName = DbName;");
             code.AppendLine("if(DbType != \"\")");
