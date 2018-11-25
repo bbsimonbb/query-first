@@ -73,16 +73,33 @@ The query {1} may not run and the wrapper has not been regenerated.",
                 if (matchInsert.Success)
                 {
                     var statement = new ScaffoldInsert().ExecuteScalar(matchInsert.Groups["tableName"].Value);
-                    var ep = textDoc.CreateEditPoint();
-                    ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
-                    //ctx.QueryDoc.Save();
+                    if (string.IsNullOrEmpty(statement))
+                    {
+                        _vsOutputWindow.Write("Unknown problem generating insert.\n");
+
+                    }
+                    else
+                    {
+                        var ep = textDoc.CreateEditPoint();
+                        ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
+                        //ctx.QueryDoc.Save();
+                    }
+
                 }
                 else if (matchUpdate.Success)
                 {
                     var statement = new ScaffoldUpdate().ExecuteScalar(matchUpdate.Groups["tableName"].Value);
-                    var ep = textDoc.CreateEditPoint();
-                    ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
-                    //ctx.QueryDoc.Save();
+                    if (string.IsNullOrEmpty(statement))
+                    {
+                        _vsOutputWindow.Write("Unknown problem generating update.\n");
+
+                    }
+                    else
+                    {
+                        var ep = textDoc.CreateEditPoint();
+                        ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
+                        //ctx.QueryDoc.Save();
+                    }
                 }
                 else
                 {
