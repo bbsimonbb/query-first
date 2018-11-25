@@ -173,8 +173,8 @@ namespace QueryFirst
                 System.Configuration.KeyValueConfigurationElement helperAssembly = null;
                 try
                 {
-                    ConfigurationAccessor config = new ConfigurationAccessor(_dte, null);
-                    helperAssembly = config.AppSettings["QfHelperAssembly"];
+                    //var config = new ConfigResolver().GetConfig()
+                    //helperAssembly = config.AppSettings["QfHelperAssembly"];
                 }
                 catch (Exception ex)
                 {//nobody cares
@@ -232,7 +232,8 @@ namespace QueryFirst
                         if (fuxed == 2)
                         {
                             // regenerate query in new location to get new path to manifest stream.
-                            new Conductor(_VSOutputWindow).ProcessOneQuery(renamedQuery.Document);
+                            var ctx = TinyIoC.TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
+                            new Conductor(_VSOutputWindow, ctx).ProcessOneQuery(renamedQuery.Document);
                             return; //2 files to rename, then we're finished.
                         }
                     }
@@ -242,7 +243,7 @@ namespace QueryFirst
         void myDocumentEvents_DocumentSaved(Document Document)
         {
             //kludge
-            if (!TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
+            if (!TinyIoCContainer.Current.CanResolve<ICodeGenerationContext>())
                 RegisterTypes();
             if (Document.FullName.EndsWith(".sql"))
                 try
@@ -251,7 +252,8 @@ namespace QueryFirst
                     var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                     if (text.Contains("managed by QueryFirst"))
                     {
-                        var cdctr = new Conductor(_VSOutputWindow);
+                        var ctx = TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
+                        var cdctr = new Conductor(_VSOutputWindow, ctx);
                         cdctr.ProcessOneQuery(Document);
                     }
 

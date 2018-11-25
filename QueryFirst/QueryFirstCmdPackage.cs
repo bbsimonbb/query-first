@@ -110,7 +110,7 @@ namespace QueryFirst
         private bool zombieProofInitialization()
         {
             dte = GetService(typeof(SDTE)) as DTE;
-            DTE2 dte2 = Package.GetGlobalService(typeof(DTE)) as DTE2;
+            DTE2 dte2 = GetService(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;//Package.GetGlobalService(typeof(DTE)) as DTE2;
             if (dte != null && dte2 != null)
             {
                 qfRoot = SolutionEventHandlers.Inst(dte, dte2);
