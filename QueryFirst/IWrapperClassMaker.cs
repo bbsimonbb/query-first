@@ -8,37 +8,37 @@
         /// <summary>
         /// The brace that closes the class
         /// </summary>
-        /// <param name="ctx">The CodeGenerationContext</param>
+        /// <param name="ctx">The ICodeGenerationContext</param>
         /// <returns>The brace that closes the class</returns>
-        string CloseClass(CodeGenerationContext ctx);
+        string CloseClass(ICodeGenerationContext ctx);
         /// <summary>
         /// The brace that closes the namespace
         /// </summary>
-        /// <param name="ctx">The CodeGenerationContext</param>
+        /// <param name="ctx">The ICodeGenerationContext</param>
         /// <returns>The brace that closes the namespace, if present.</returns>
-        string CloseNamespace(CodeGenerationContext ctx);
+        string CloseNamespace(ICodeGenerationContext ctx);
         /// <summary>
         /// Makes a method that takes an IDataRecord and fills a Results class.
         /// 
         /// </summary>
         /// <param name="ctx"></param>
         /// <returns></returns>
-        string MakeCreateMethod(CodeGenerationContext ctx);
-        string MakeExecuteScalarWithConn(CodeGenerationContext ctx);
-        string MakeExecuteScalarWithoutConn(CodeGenerationContext ctx);
-        string MakeExecuteNonQueryWithConn(CodeGenerationContext ctx);
-        string MakeExecuteNonQueryWithoutConn(CodeGenerationContext ctx);
-        string MakeExecuteWithConn(CodeGenerationContext ctx);
-        string MakeExecuteWithoutConn(CodeGenerationContext ctn);
-        string MakeGetOneWithConn(CodeGenerationContext ctx);
-        string MakeGetOneWithoutConn(CodeGenerationContext ctx);
-        string MakeGetCommandTextMethod(CodeGenerationContext ctx);
-        string MakeOtherMethods(CodeGenerationContext ctx);
-        string StartClass(CodeGenerationContext ctx);
-        string StartNamespace(CodeGenerationContext ctx);
-        string Usings(CodeGenerationContext ctx);
-        string MakeInterface(CodeGenerationContext ctx);
-        string SelfTestUsings(CodeGenerationContext ctx);
-        string MakeSelfTestMethod(CodeGenerationContext ctx);
+        string MakeCreateMethod(ICodeGenerationContext ctx);
+        string MakeExecuteScalarWithConn(ICodeGenerationContext ctx);
+        string MakeExecuteScalarWithoutConn(ICodeGenerationContext ctx);
+        string MakeExecuteNonQueryWithConn(ICodeGenerationContext ctx);
+        string MakeExecuteNonQueryWithoutConn(ICodeGenerationContext ctx);
+        string MakeExecuteWithConn(ICodeGenerationContext ctx);
+        string MakeExecuteWithoutConn(ICodeGenerationContext ctn);
+        string MakeGetOneWithConn(ICodeGenerationContext ctx);
+        string MakeGetOneWithoutConn(ICodeGenerationContext ctx);
+        string MakeGetCommandTextMethod(ICodeGenerationContext ctx);
+        string MakeOtherMethods(ICodeGenerationContext ctx);
+        string StartClass(ICodeGenerationContext ctx);
+        string StartNamespace(ICodeGenerationContext ctx);
+        string Usings(ICodeGenerationContext ctx);
+        string MakeInterface(ICodeGenerationContext ctx);
+        string SelfTestUsings(ICodeGenerationContext ctx);
+        string MakeSelfTestMethod(ICodeGenerationContext ctx);
     }
 }

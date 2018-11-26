@@ -1,12 +1,6 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
-using System.Data.Sql;
-using System.Data.SqlClient;
-using System.Text.RegularExpressions;
 using System.Configuration;
 
 
@@ -145,6 +139,7 @@ namespace QueryFirst
             //Returns a DataTable filled with the results of the query
             //Function returns the count of records in the datatable
             //----- dt (datatable) needs to be empty & no schema defined
+            // we can't put provider in the constructor because we need the provider name to resolve.
             var provider = TinyIoC.TinyIoCContainer.Current.Resolve<IProvider>(strconn.ProviderName);
 
             using (var connection = provider.GetConnection(strconn))

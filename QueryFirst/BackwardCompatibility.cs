@@ -9,7 +9,7 @@ namespace QueryFirst
 {
     public class BackwardCompatibility
     {
-        public void InjectPOCOFactory(CodeGenerationContext ctx, ProjectItem partialClass)
+        public void InjectPOCOFactory(ICodeGenerationContext ctx, ProjectItem partialClass)
         {
             bool rememberToClose = false;
             if (!partialClass.IsOpen)

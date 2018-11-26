@@ -42,13 +42,11 @@ namespace QueryFirst
         {
             Stream strm = typeof(ScaffoldUpdateResults).Assembly.GetManifestResourceStream("QueryFirst.InsertsAndUpdates.ScaffoldUpdate.sql");
             string queryText = new StreamReader(strm).ReadToEnd();
-#if DEBUG
 //Comments inverted at runtime in debug, pre-build in release
 queryText = queryText.Replace("-- designTime", "/*designTime");
 queryText = queryText.Replace("-- endDesignTime", "endDesignTime*/");
 queryText = queryText.Replace("--designTime", "/*designTime");
 queryText = queryText.Replace("--endDesignTime", "endDesignTime*/");
-#endif
             return queryText;
         }
         private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length)

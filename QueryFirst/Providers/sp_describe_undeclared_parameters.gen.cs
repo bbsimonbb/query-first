@@ -35,11 +35,9 @@
         {
             Stream strm = typeof(sp_describe_undeclared_parametersResults).Assembly.GetManifestResourceStream("QueryFirst.Providers.sp_describe_undeclared_parameters.sql");
             string queryText = new StreamReader(strm).ReadToEnd();
-#if DEBUG
             //Comments inverted at runtime in debug, pre-build in release
-            queryText = queryText.Replace("--designTime", "/*designTime");
-            queryText = queryText.Replace("--endDesignTime", "endDesignTime*/");
-#endif
+            queryText = queryText.Replace("-- designTime", "/*designTime");
+            queryText = queryText.Replace("-- endDesignTime", "endDesignTime*/");
             return queryText;
         }
     }

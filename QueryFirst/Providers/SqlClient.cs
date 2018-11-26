@@ -41,26 +41,28 @@ namespace QueryFirst.Providers
         private List<string> typesWithLength = new List<string>() { "char", "varchar", "nchar", "nvarchar" };
         private void FillParamInfo(IQueryParamInfo qp, string name, string sqlTypeAndLength)
         {
-            string typeOnly;
-            int len = 0;
-            if (sqlTypeAndLength.IndexOf('(') > 0)
+            var m = Regex.Match(sqlTypeAndLength, @"(?'type'^\w*)\(?(?'firstNum'\d*),?(?'secondNum'\d*)");
+            var typeOnly = m.Groups["type"].Value;
+            int.TryParse(m.Groups["firstNum"].Value, out int firstNum);
+            int.TryParse(m.Groups["secondNum"].Value, out int secondNum);
+            if (secondNum != 0)
             {
-                typeOnly = sqlTypeAndLength.Substring(0, sqlTypeAndLength.IndexOf('('));
-                if (typesWithLength.Contains(typeOnly.ToLower()))
-                {
-                    int.TryParse(Regex.Match(sqlTypeAndLength, "(?<=\\()\\s*(?'myInt'\\d*)").Groups["myInt"].Value, out len);
-                }
+                qp.Precision = firstNum;
+                qp.Scale = secondNum;
             }
-            else
+            else if (typeOnly.ToLower() == "datetime2")
             {
-                typeOnly = sqlTypeAndLength;
+                qp.Precision = firstNum;
+            }
+            else if (firstNum > 0)
+            {
+                qp.Length = firstNum;
             }
             string normalizedType;
             var csType = TypeMapDB2CS(typeOnly, out normalizedType);
 
             qp.CSType = csType;
             qp.DbType = normalizedType;
-            qp.Length = len;
             qp.CSName = name;
             qp.DbName = '@' + name;
         }
@@ -117,10 +119,10 @@ namespace QueryFirst.Providers
             }
             return bldr.ToString();
         }
-        public virtual string MakeAddAParameter(CodeGenerationContext ctx)
+        public virtual string MakeAddAParameter(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
-            code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length)\n{");
+            code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length, byte Scale, byte Precision)\n{");
             code.AppendLine("var dbType = (SqlDbType)System.Enum.Parse(typeof(SqlDbType), DbType);");
             code.AppendLine("SqlParameter myParam;");
             code.AppendLine("if(Length != 0){");
@@ -129,6 +131,8 @@ namespace QueryFirst.Providers
             code.AppendLine("myParam = new SqlParameter(DbName, dbType);");
             code.AppendLine("}");
             code.AppendLine("myParam.Value = Value != null ? Value : DBNull.Value;");
+            code.AppendLine("myParam.Scale = Scale;");
+            code.AppendLine("myParam.Precision = Precision;");
             code.AppendLine("Cmd.Parameters.Add( myParam);");
             code.AppendLine("}");
 

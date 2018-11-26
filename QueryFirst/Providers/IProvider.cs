@@ -48,7 +48,7 @@ namespace QueryFirst
         /// </summary>
         /// <param name="ctx">The code generation context</param>
         /// <returns></returns>
-        string MakeAddAParameter(CodeGenerationContext ctx);
+        string MakeAddAParameter(ICodeGenerationContext ctx);
         void Initialize(ConnectionStringSettings designTimeConnectionString);
     }
 }
