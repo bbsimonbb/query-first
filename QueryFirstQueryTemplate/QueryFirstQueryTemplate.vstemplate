@@ -17,7 +17,7 @@
         <Assembly>System</Assembly>
       </Reference>
     </References>
-    <ProjectItem ReplaceParameters="true" ItemType="EmbeddedResource">Query.sql</ProjectItem>
+    <ProjectItem ReplaceParameters="true">Query.sql</ProjectItem>
     <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$.gen.cs">Query.gen.cs</ProjectItem>
     <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$Results.cs">QueryResults.cs</ProjectItem>
   </TemplateContent>
