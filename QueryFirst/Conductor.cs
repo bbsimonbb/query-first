@@ -45,12 +45,9 @@ namespace QueryFirst
                 if (!ctx.DesignTimeConnectionString.IsPresent)
                 {
                     _vsOutputWindow.Write(@"QueryFirst would like to help you, but you need to tell it where your DB is.
-    You can specify the design time connection string in your app or web.config or directly in the query file.
-    Add these lines to your app or web.config. providerName should be one of System.Data.SqlClient, Npgsql MySql.Data.MySqlClient.
-    <connectionStrings>
-        <add name=""QfDefaultConnection"" connectionString=""Data Source = localhost; Initial Catalog = NORTHWND; Integrated Security = SSPI; "" providerName=""System.Data.SqlClient"" />
-    </ connectionStrings >
-    or put --QfDefaultConnection=myConnectionString somewhere in your query file.
+Breaking change in 1.0.0: QueryFirst now has it's own config file. You need to create qfconfig.json beside or above your query 
+or put --QfDefaultConnection=myConnectionString somewhere in your query file.
+See the Readme section at https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst    
 ");
                     return; // nothing to be done
 
