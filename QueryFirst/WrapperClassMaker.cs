@@ -198,19 +198,7 @@ using System.Linq;
         public virtual string MakeGetCommandTextMethod(ICodeGenerationContext ctx)
         {
             StringBuilder code = new StringBuilder();
-            // private load command text
-            code.AppendLine("public string getCommandTextOld(){");
-            code.AppendLine("Stream strm = typeof(" + ctx.ResultClassName + ").Assembly.GetManifestResourceStream(\"" + ctx.NameAndPathForManifestStream + "\");");
-            code.AppendLine("string queryText = new StreamReader(strm).ReadToEnd();");
-            code.AppendLine("//Comments inverted at runtime in debug, pre-build in release");
-            code.AppendLine("queryText = queryText.Replace(\"-- designTime\", \"/*designTime\");");
-            code.AppendLine("queryText = queryText.Replace(\"-- endDesignTime\", \"endDesignTime*/\");");
-            // backwards compatible
-            code.AppendLine("queryText = queryText.Replace(\"--designTime\", \"/*designTime\");");
-            code.AppendLine("queryText = queryText.Replace(\"--endDesignTime\", \"endDesignTime*/\");");
-            code.AppendLine("return queryText;");
-            code.AppendLine("}"); // close method;
-            // try again !
+            // public load command text
             code.AppendLine("public string getCommandText(){");
             code.AppendLine("return @\"");
             code.Append(ctx.Query.FinalTextForCode);

@@ -175,7 +175,7 @@ namespace QueryFirst.Providers
                     return nullable ? "DateTime?" : "DateTime";
                 case "time":
                     DBTypeNormalized = "Time";
-                    return nullable ? "DateTime?" : "DateTime";
+                    return nullable ? "TimeSpan?" : "TimeSpan";
                 case "datetimeoffset":
                     DBTypeNormalized = "DateTimeOffset";
                     return nullable ? "DateTimeOffset?" : "DateTimeOffset";

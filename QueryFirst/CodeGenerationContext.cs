@@ -39,6 +39,10 @@ namespace QueryFirst
             dte = queryDoc.DTE;
             query = new Query(this);
             _config = _configResolver.GetConfig( queryDoc.FullName, query.Text );
+            if (string.IsNullOrEmpty(_config.DefaultConnection))
+            {
+                return; // absence will be picked up in conductor. Not fabulous.
+            }
             provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.v.ProviderName);
             provider.Initialize(DesignTimeConnectionString.v);
             // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
