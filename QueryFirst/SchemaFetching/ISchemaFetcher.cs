@@ -5,6 +5,6 @@ namespace QueryFirst
 {
     public interface ISchemaFetcher
     {
-        List<ResultFieldDetails> GetFields( ConnectionStringSettings strconn, string Query);
+        List<ResultFieldDetails> GetFields( string connectionString, string provider, string Query);
     }
 }

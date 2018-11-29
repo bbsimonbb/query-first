@@ -52,7 +52,8 @@ namespace QueryFirst
             {
                 var ctr = TinyIoCContainer.Current;
                 _VSOutputWindow.Write(@"If you're using and enjoying QueryFirst, please leave a review!
-https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-details");
+https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-details
+");
                 //kludge
                 if (force == true)
                 {

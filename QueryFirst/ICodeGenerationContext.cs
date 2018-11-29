@@ -8,7 +8,6 @@ namespace QueryFirst
         string BaseName { get; }
         string CallingArgs { get; }
         string CurrDir { get; }
-        DesignTimeConnectionString DesignTimeConnectionString { get; }
         DTE Dte { get; }
         string GeneratedClassFullFilename { get; }
         ISchemaFetcher SchemaFetcher { get; }

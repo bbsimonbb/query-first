@@ -16,12 +16,12 @@ namespace QueryFirst.Providers
     class MySqlClient : SqlClient, IProvider
     {
 
-        public override IDbConnection GetConnection(ConnectionStringSettings connectionString)
+        public override IDbConnection GetConnection(string connectionString)
         {
-            return new MySqlConnection(connectionString.ConnectionString);
+            return new MySqlConnection(connectionString);
         }
         
-        public override List<IQueryParamInfo> ParseDeclaredParameters(string queryText)
+        public override List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
             int i = 0;
             var queryParams = new List<IQueryParamInfo>();
@@ -54,7 +54,7 @@ namespace QueryFirst.Providers
             code.AppendLine("}");
             return code.ToString();
         }
-        public override List<IQueryParamInfo> FindUndeclaredParameters(string queryText)
+        public override List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString)
         {
             return new List<IQueryParamInfo>();
         }

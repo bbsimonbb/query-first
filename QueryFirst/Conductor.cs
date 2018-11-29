@@ -42,7 +42,7 @@ namespace QueryFirst
             textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
             try
             {
-                if (!_ctx.DesignTimeConnectionString.IsPresent)
+                if (string.IsNullOrEmpty(_ctx.Config.DefaultConnection))
                 {
                     _vsOutputWindow.Write(@"QueryFirst would like to help you, but you need to tell it where your DB is.
 Breaking change in 1.0.0: QueryFirst now has it's own config file. You need to create qfconfig.json beside or above your query 
@@ -52,17 +52,18 @@ See the Readme section at https://marketplace.visualstudio.com/items?itemName=bb
                     return; // nothing to be done
 
                 }
-                if (!_ctx.DesignTimeConnectionString.IsProviderValid)
+                if (!_tiny.CanResolve<IProvider>(_ctx.Config.Provider))
                 {
                     _vsOutputWindow.Write(string.Format(
 @"No Implementation of IProvider for providerName {0}. 
 The query {1} may not run and the wrapper has not been regenerated.",
-                    _ctx.DesignTimeConnectionString.v.ProviderName, _ctx.BaseName
+                    _ctx.Config.Provider, _ctx.BaseName
                     ));
+                    return;
                 }
                 // Use QueryFirst within QueryFirst !
                 // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
-                QfRuntimeConnection.CurrentConnectionString = _ctx.DesignTimeConnectionString.v.ConnectionString;
+                QfRuntimeConnection.CurrentConnectionString = _ctx.Config.DefaultConnection;
 
 
                 var matchInsert = Regex.Match(_ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
@@ -107,7 +108,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                         // also called in the bowels of schema fetching, for Postgres, because no notion of declarations.
                         try
                         {
-                            var undeclared = _ctx.Provider.FindUndeclaredParameters(_ctx.Query.Text);
+                            var undeclared = _ctx.Provider.FindUndeclaredParameters(_ctx.Query.Text, _ctx.Config.DefaultConnection);
                             var newParamDeclarations = _ctx.Provider.ConstructParameterDeclarations(undeclared);
                             if (!string.IsNullOrEmpty(newParamDeclarations))
                             {
@@ -121,7 +122,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                             else throw;
                         }
 
-                        _ctx.ResultFields = _ctx.SchemaFetcher.GetFields(_ctx.DesignTimeConnectionString.v, _ctx.Query.Text);
+                        _ctx.ResultFields = _ctx.SchemaFetcher.GetFields(_ctx.Config.DefaultConnection, _ctx.Config.Provider, _ctx.Query.Text);
                     }
                     catch (Exception ex)
                     {

@@ -39,12 +39,11 @@ namespace QueryFirst
             dte = queryDoc.DTE;
             query = new Query(this);
             _config = _configResolver.GetConfig( queryDoc.FullName, query.Text );
-            if (string.IsNullOrEmpty(_config.DefaultConnection))
+            if (string.IsNullOrEmpty(Config.DefaultConnection))
             {
                 return; // absence will be picked up in conductor. Not fabulous.
             }
-            provider = tiny.Resolve<IProvider>(DesignTimeConnectionString.v.ProviderName);
-            provider.Initialize(DesignTimeConnectionString.v);
+            provider = tiny.Resolve<IProvider>(Config.Provider);
             // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
             var target = Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename);
             if(target == null)
@@ -137,14 +136,6 @@ namespace QueryFirst
 
             }
         }
-        protected DesignTimeConnectionString _dtcs;
-        public DesignTimeConnectionString DesignTimeConnectionString
-        {
-            get
-            {
-                return _dtcs ?? (_dtcs = new DesignTimeConnectionString(this));
-            }
-        }
 
         protected string methodSignature;
         /// <summary>
@@ -235,5 +226,10 @@ namespace QueryFirst
         }
         bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
         protected ProjectItem resultsClass;
+    }
+    public class QFConnectionSettings
+    {
+        public string ConnectionString { get; set; }
+        public string ProviderName { get; set; }
     }
 }

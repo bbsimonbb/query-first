@@ -265,14 +265,15 @@ using System.Linq;
             code.AppendLine("// we'll be getting a runtime version with the comments section closed. To run without parameters, open it.");
             code.AppendLine("queryText = queryText.Replace(\"/*designTime\", \"-- designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"endDesignTime*/\", \"-- endDesignTime\");");
-            code.AppendLine("var schema = new ADOHelper().GetFields(new QfRuntimeConnection(), queryText);");
+            // QfruntimeConnection will be used, but we still need to reference a provider, for the prepare parameters method.
+            code.AppendLine($"var schema = new AdoSchemaFetcher().GetFields(QfRuntimeConnection.GetConnection(), \"{ctx.Config.Provider}\", queryText);");
             code.Append("Assert.True(" + ctx.ResultFields.Count + " <=  schema.Count,");
             code.AppendLine("\"Query only returns \" + schema.Count.ToString() + \" columns. Expected at least " + ctx.ResultFields.Count + ". \");");
             for (int i = 0; i < ctx.ResultFields.Count; i++)
             {
                 var col = ctx.ResultFields[i];
-                code.Append("Assert.True(schema[" + i.ToString() + "].DataTypeName == \"" + col.TypeDb + "\",");
-                code.AppendLine("\"Result Column " + i.ToString() + " Type wrong. Expected " + col.TypeDb + ". Found \" + schema[" + i.ToString() + "].DataTypeName + \".\");");
+                code.Append("Assert.True(schema[" + i.ToString() + "].TypeDb == \"" + col.TypeDb + "\",");
+                code.AppendLine("\"Result Column " + i.ToString() + " Type wrong. Expected " + col.TypeDb + ". Found \" + schema[" + i.ToString() + "].TypeDb + \".\");");
                 code.Append("Assert.True(schema[" + i.ToString() + "].ColumnName == \"" + col.ColumnName + "\",");
                 code.AppendLine("\"Result Column " + i.ToString() + " Name wrong. Expected " + col.ColumnName + ". Found \" + schema[" + i.ToString() + "].ColumnName + \".\");");
             }

@@ -2,18 +2,63 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Configuration;
-
+using QueryFirst.Providers;
 
 namespace QueryFirst
 {
 
     public class AdoSchemaFetcher : ISchemaFetcher
     {
+        /// <summary>
+        /// At design time, our provider implementation will create us a connection.
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="provider"></param>
+        /// <param name="Query"></param>
+        /// <returns></returns>
+        public List<ResultFieldDetails> GetFields(string connectionString, string provider, string Query)
+        {
+            var prov = TinyIoC.TinyIoCContainer.Current.Resolve<IProvider>(provider);
 
-        public List<ResultFieldDetails> GetFields(ConnectionStringSettings ConnectionString, string Query)
+            using (var connection = prov.GetConnection(connectionString))
+            {
+                connection.Open();
+                return GetFields(connection, prov, Query);
+            }
+        }
+        /// <summary>
+        /// For SelfTest, the user's QfRuntimeConnection will be called by the generated code. We still need the provider
+        /// </summary>
+        /// <param name="connection">Must be open</param>
+        /// <param name="provider">Must be a built-in provider. No DI for self-test.</param>
+        /// <param name="Query">The query text</param>
+        /// <returns></returns>
+        public List<ResultFieldDetails> GetFields(IDbConnection connection, string provider, string Query)
+        {
+            // how do I be registering with tiny inside someone else's program ?
+            IProvider prov = null;
+            switch (provider)
+            {
+                case "System.Data.SqlClient":
+                    prov = new SqlClient();
+                    break;
+                case "Npgsql":
+                    prov = new Providers.Npgsql();
+                    break;
+                case "MySql.Data.MySqlClient":
+                    prov = new MySqlClient();
+                    break;
+            }
+            if(connection.State != ConnectionState.Open)
+                connection.Open();
+            return GetFields(connection, prov, Query);
+        }
+
+
+        private List<ResultFieldDetails> GetFields(IDbConnection connection, IProvider provObj, string Query)
         {
             DataTable dt = new DataTable();
-            var SchemaTable = GetQuerySchema(ConnectionString, Query);
+            var SchemaTable = GetQuerySchema(connection, provObj, Query);
 
             List<ResultFieldDetails> result = new List<ResultFieldDetails>();
             if (SchemaTable == null)
@@ -49,7 +94,7 @@ namespace QueryFirst
                                 break;
                             case "NumericPrecision":
                                 // Postgres choking
-                                if (ConnectionString.ProviderName == "System.Data.SqlClient")
+                                if (connection.GetType().Name == "SqlConnection")
                                 {
                                     qf.NumericPrecision = (int)SchemaTable.Rows[i].Field<short>(j);
                                 }
@@ -60,7 +105,7 @@ namespace QueryFirst
                                 break;
                             case "NumericScale":
                                 // Postgres choking
-                                if (ConnectionString.ProviderName == "System.Data.SqlClient")
+                                if (connection.GetType().Name == "SqlConnection")
                                 {
                                     qf.NumericScale = (int)SchemaTable.Rows[i].Field<short>(j);
                                 }
@@ -133,29 +178,24 @@ namespace QueryFirst
         {
         }
 
-        //Perform the query, extract the results
-        private DataTable GetQuerySchema(ConnectionStringSettings strconn, string strSQL)
+        // Perform the query, extract the results
+        private DataTable GetQuerySchema(IDbConnection connection, IProvider prov, string strSQL)
         {
-            //Returns a DataTable filled with the results of the query
-            //Function returns the count of records in the datatable
-            //----- dt (datatable) needs to be empty & no schema defined
+            // Returns a DataTable filled with the results of the query
+            // Function returns the count of records in the datatable
+            // ----- dt (datatable) needs to be empty & no schema defined
             // we can't put provider in the constructor because we need the provider name to resolve.
-            var provider = TinyIoC.TinyIoCContainer.Current.Resolve<IProvider>(strconn.ProviderName);
 
-            using (var connection = provider.GetConnection(strconn))
+            using (var command = connection.CreateCommand())
             {
-                connection.Open();
-                using (var command = connection.CreateCommand())
+                command.CommandText = strSQL;
+                prov.PrepareParametersForSchemaFetching(command);
+                using (var srdrQuery = command.ExecuteReader(CommandBehavior.SchemaOnly))
                 {
-                    command.CommandText = strSQL;
-                    provider.PrepareParametersForSchemaFetching(command);
-                    using (var srdrQuery = command.ExecuteReader(CommandBehavior.SchemaOnly))
-                    {
-                        var dtSchema = srdrQuery.GetSchemaTable();
-                        return dtSchema;
-                    }
+                    var dtSchema = srdrQuery.GetSchemaTable();
+                    return dtSchema;
                 }
-            }  // the connection will be closed & disposed here
+            }
         }
     }
 }

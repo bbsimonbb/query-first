@@ -14,11 +14,11 @@ namespace QueryFirst.Providers
     [RegistrationName("System.Data.SqlClient")]
     class SqlClient : IProvider
     {
-        public virtual IDbConnection GetConnection(ConnectionStringSettings connectionString)
+        public virtual IDbConnection GetConnection(string connectionString)
         {
-            return new SqlConnection(connectionString.ConnectionString);
+            return new SqlConnection(connectionString);
         }
-        public virtual List<IQueryParamInfo> ParseDeclaredParameters(string queryText)
+        public virtual List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
             int i = 0;
             var queryParams = new List<IQueryParamInfo>();
@@ -66,11 +66,11 @@ namespace QueryFirst.Providers
             qp.CSName = name;
             qp.DbName = '@' + name;
         }
-        public virtual List<IQueryParamInfo> FindUndeclaredParameters(string queryText)
+        public virtual List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString)
         {
             var myParams = new List<IQueryParamInfo>();
             // sp_describe_undeclared_parameters
-            using (IDbConnection conn = GetConnection(_designTimeConnectionString))
+            using (IDbConnection conn = GetConnection(connectionString))
             {
                 IDbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = "sp_describe_undeclared_parameters @tsql";
@@ -245,12 +245,5 @@ namespace QueryFirst.Providers
 
             }
         }
-        protected ConnectionStringSettings _designTimeConnectionString;
-        public void Initialize(ConnectionStringSettings designTimeConnectionString)
-        {
-            _designTimeConnectionString = designTimeConnectionString;
-        }
-
-
     }
 }

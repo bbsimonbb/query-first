@@ -15,8 +15,8 @@ namespace QueryFirst
         /// </summary>
         /// <param name="queryText">The text of the query from which parameters are to be extracted.</param>
         /// <returns></returns>
-        List<IQueryParamInfo> ParseDeclaredParameters(string queryText);
-        List<IQueryParamInfo> FindUndeclaredParameters(string queryText);
+        List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString);
+        List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString);
         /// <summary>
         /// Find undeclared parameters and add them, either in the declarations section of the text (SqlServer, MySql)
         /// or as regular parameters on the command.
@@ -30,7 +30,7 @@ namespace QueryFirst
         /// </summary>
         /// <param name="connectionString">Connection string for the connection.</param>
         /// <returns></returns>
-        IDbConnection GetConnection(ConnectionStringSettings connectionString);
+        IDbConnection GetConnection(string connectionString);
 
         /// <summary>
         /// Returns the C# type to which the reader result can be safely cast, and from which a sql parameter
@@ -49,6 +49,5 @@ namespace QueryFirst
         /// <param name="ctx">The code generation context</param>
         /// <returns></returns>
         string MakeAddAParameter(ICodeGenerationContext ctx);
-        void Initialize(ConnectionStringSettings designTimeConnectionString);
     }
 }

@@ -14,15 +14,15 @@ namespace QueryFirst.Providers
     [RegistrationName("Npgsql")]
     public class Npgsql : IProvider
     {
-        public IDbConnection GetConnection(ConnectionStringSettings connectionString)
+        public IDbConnection GetConnection(string connectionString)
         {
-            return new NpgsqlConnection(connectionString.ConnectionString);
+            return new NpgsqlConnection(connectionString);
         }
-        public List<IQueryParamInfo> ParseDeclaredParameters(string queryText)
+        public List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
-            return FindUndeclaredParameters(queryText);
+            return FindUndeclaredParameters(queryText, connectionString);
         }
-        public List<IQueryParamInfo> FindUndeclaredParameters(string queryText)
+        public List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString)
         {
             var queryParams = new List<IQueryParamInfo>();
             var matchParams = Regex.Matches(queryText, "(:|@)\\w*");
@@ -65,16 +65,11 @@ namespace QueryFirst.Providers
             // nothing to do here.
             return null;
         }
-        private ConnectionStringSettings _designTimeConnectionString;
-        public void Initialize(ConnectionStringSettings designTimeConnectionString)
-        {
-            _designTimeConnectionString = designTimeConnectionString;
-        }
-
         public void PrepareParametersForSchemaFetching(IDbCommand cmd)
         {
             // no notion of declaring parameters in Postgres
-            foreach (var queryParam in FindUndeclaredParameters(cmd.CommandText))
+            // refacto, will this work harvesting connection string from passed command !
+            foreach (var queryParam in FindUndeclaredParameters(cmd.CommandText, cmd.Connection.ConnectionString))
             {
                 var myParam = new global::Npgsql.NpgsqlParameter();
                 myParam.ParameterName = queryParam.DbName;

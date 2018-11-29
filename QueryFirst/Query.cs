@@ -21,7 +21,7 @@ namespace QueryFirst
             {
                 if (queryParams == null)
                 {
-                    queryParams = ctx.Provider.ParseDeclaredParameters(Text);
+                    queryParams = ctx.Provider.ParseDeclaredParameters(Text, ctx.Config.DefaultConnection);
                 }
                 return queryParams;
             }
@@ -45,13 +45,13 @@ namespace QueryFirst
         }
         public string Text {
             get { return text; }
-            set
-            {
-                var textDoc = ((TextDocument)ctx.QueryDoc.Object());
-                var ep = textDoc.CreateEditPoint();
-                ep.ReplaceText(textDoc.EndPoint, value, 0);
-                text = value;
-            }
+            //set
+            //{
+            //    var textDoc = ((TextDocument)ctx.QueryDoc.Object());
+            //    var ep = textDoc.CreateEditPoint();
+            //    ep.ReplaceText(textDoc.EndPoint, value, 0);
+            //    text = value;
+            //}
         }
         public string FinalTextForCode { get {
                 return text
