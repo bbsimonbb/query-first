@@ -24,7 +24,9 @@ namespace QueryFirst.TypeMappings
                 {"System.UInt64","ulong" },
                 {"System.Object","object" },
                 {"System.Int16","short" },
-                {"System.UInt16","ushort" }
+                {"System.UInt16","ushort" },
+                {"System.Guid","Guid" },
+                {"System.DateTime","DateTime" }
             };
 
         public static string Map(string CSType, bool AllowDBNull)
