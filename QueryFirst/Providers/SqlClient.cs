@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using TinyIoC;
 
@@ -238,7 +235,7 @@ namespace QueryFirst.Providers
                     return "DataTable";
                 case "uniqueidentifier":
                     DBTypeNormalized = "UniqueIdentifier";
-                    return "Guid";
+                    return nullable ? "Guid?" : "Guid";
                 default:
                     throw new Exception("type not matched : " + DBType);
                     // todo : keep going here. old method had a second switch on ResultFieldDetails.DataType to catch a bunch of never seen types
