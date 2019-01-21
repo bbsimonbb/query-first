@@ -45,12 +45,7 @@ namespace QueryFirst
             }
             provider = tiny.Resolve<IProvider>(Config.Provider);
             // resolving the target project item for code generation. We know the file name, we loop through child items of the query til we find it.
-            var target = Conductor.GetItemByFilename(queryDoc.ProjectItem.ProjectItems, GeneratedClassFullFilename);
-            if(target == null)
-            {
-                // .net core has a little problem with nested items.
-                target = Conductor.GetItemByFilename(queryDoc.ProjectItem.ContainingProject.ProjectItems, GeneratedClassFullFilename);
-            }
+            var target = Conductor.GetItemByFilename(queryDoc.ProjectItem, GeneratedClassFullFilename);
             _putCodeHere = new PutCodeHere(target);
 
             string currDir = Path.GetDirectoryName(queryDoc.FullName);

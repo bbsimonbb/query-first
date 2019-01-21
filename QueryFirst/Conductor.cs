@@ -16,7 +16,7 @@ namespace QueryFirst
         private VSOutputWindow _vsOutputWindow;
         private ICodeGenerationContext _ctx;
 
-        public Conductor(VSOutputWindow vsOutpuWindow,ICodeGenerationContext ctx)
+        public Conductor(VSOutputWindow vsOutpuWindow, ICodeGenerationContext ctx)
         {
             _vsOutputWindow = vsOutpuWindow;
             _ctx = ctx;
@@ -33,7 +33,7 @@ namespace QueryFirst
 
             if (!File.Exists(_ctx.GeneratedClassFullFilename))
                 File.Create(_ctx.GeneratedClassFullFilename);
-            if (GetItemByFilename(queryDoc.ProjectItem.Collection, _ctx.GeneratedClassFullFilename) != null)
+            if (GetItemByFilename(queryDoc.ProjectItem, _ctx.GeneratedClassFullFilename) != null)
                 queryDoc.ProjectItem.Collection.AddFromFile(_ctx.GeneratedClassFullFilename);
             // copy namespace of generated partial class from user partial class
             // backward compatible...
@@ -182,12 +182,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                     Code.Append(wrapper.CloseNamespace(_ctx));
                     //File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
                     _ctx.PutCodeHere.WriteAndFormat(Code.ToString());
-                    var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem.ProjectItems, _ctx.CurrDir + _ctx.BaseName + "Results.cs");
-                    if (partialClassFile == null)
-                    {
-                        // .net core has a little problem with nested items.
-                        partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem.ContainingProject.ProjectItems, _ctx.CurrDir + _ctx.BaseName + "Results.cs");
-                    }
+                    var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem, _ctx.CurrDir + _ctx.BaseName + "Results.cs");
                     new BackwardCompatibility().InjectPOCOFactory(_ctx, partialClassFile);
                     _vsOutputWindow.Write(Environment.NewLine + "QueryFirst generated wrapper class for " + _ctx.BaseName + ".sql");
                 }
@@ -200,14 +195,23 @@ The query {1} may not run and the wrapper has not been regenerated.",
         }
 
         // Doesn't recurse into folders. Prefer items.Item("")
-        public static ProjectItem GetItemByFilename(ProjectItems items, string filename)
+        public static ProjectItem GetItemByFilename(ProjectItem item, string filename)
         {
-            foreach (ProjectItem item in items)
+            foreach (ProjectItem childItem in item.ProjectItems)
             {
-                for (short i = 0; i < item.FileCount; i++)
+                for (short i = 0; i < childItem.FileCount; i++)
                 {
-                    if (item.FileNames[i].Equals(filename))
-                        return item as ProjectItem;
+                    if (childItem.FileNames[i].Equals(filename))
+                        return childItem as ProjectItem;
+                }
+            }
+
+            // .net core has a little problem with nested items.
+            foreach (ProjectItem childItem in item.Collection)
+            {
+                if (childItem.FileNames[0] == filename)
+                {
+                    return childItem as ProjectItem;
                 }
             }
             return null;
