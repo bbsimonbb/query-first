@@ -112,7 +112,7 @@ namespace QueryFirst.Providers
                 //{
                 //    bldr.Append("(" + qp.Length + ")");
                 //}
-                bldr.Append(";\n");
+                bldr.Append(";\r\n");
             }
             return bldr.ToString();
         }

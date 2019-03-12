@@ -20,7 +20,7 @@ namespace QueryFirst
             var textDoc = ((TextDocument)partialClass.Document.Object());
             var ep = textDoc.CreateEditPoint();
             string textOfDoc = ep.GetText(textDoc.EndPoint);
-            if (textOfDoc.IndexOf("Results CreatePoco(") == -1)
+            if (textOfDoc.IndexOf("CreatePoco(") == -1)
             {
 
                 StringBuilder bldr = new StringBuilder();

@@ -243,8 +243,8 @@ IF LTRIM(@Actual_Values) = ''
 --Forming the final string that will be executed, to output the INSERT statements
 
 	BEGIN
-		SET @Actual_Values = '/* .sql query managed by QueryFirst add-in */' + @nl + @nl + char(45) +
-'-designTime - put parameter declarations and design time initialization here' + @nl + 
+		SET @Actual_Values = '/* .sql query managed by QueryFirst add-in */' + @nl + char(45) +
+'- designTime - put parameter declarations and design time initialization here' + @nl +
 @Declarations +
 @CloseComments +
 RTRIM(@Start_Insert) + @nl +

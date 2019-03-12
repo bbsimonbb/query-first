@@ -10,16 +10,14 @@ namespace QueryFirst
     {
         public virtual string Usings(ICodeGenerationContext ctx)
         {
-            return @"using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-
-";
-
+            var code = new StringBuilder();
+            code.AppendLine("using System;");
+            code.AppendLine("using System.Data;");
+            code.AppendLine("using System.Data.SqlClient;");
+            code.AppendLine("using System.Collections.Generic;");
+            code.AppendLine("using System.Linq;");
+            code.AppendLine("");
+            return code.ToString();
         }
         public virtual string StartNamespace(ICodeGenerationContext ctx)
         {
@@ -32,6 +30,20 @@ using System.Linq;
         {
             return "public partial class " + ctx.BaseName + " : I" + ctx.BaseName + "{" + Environment.NewLine;
 
+        }
+        public virtual string MakeProperties(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            if (ctx.Query.QueryParams.Count > 0)
+            {
+                foreach (var x in ctx.Query.QueryParams)
+                    code.AppendLine($"public virtual {x.CSType} {x.CSName} {{ get; set; }}");
+
+                code.AppendLine("");
+            }
+
+            return code.ToString();
         }
         public virtual string MakeExecuteWithoutConn(ICodeGenerationContext ctx)
         {
@@ -70,6 +82,60 @@ using System.Linq;
             code.AppendLine("}"); //close Execute() method
             return code.ToString();
         }
+        
+        public virtual string MakeExecuteWithoutConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // Execute method, without connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual List<" + ctx.ResultClassName + "> Execute(){");
+                code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
+                code.AppendLine("{");
+                code.AppendLine("conn.Open();");
+                code.AppendLine("return Execute(conn).ToList();");
+                code.AppendLine("}");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+        public virtual string MakeExecuteWithConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // Execute method with connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual IEnumerable<" + ctx.ResultClassName + "> Execute(IDbConnection conn, IDbTransaction tx = null){");
+                code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
+                code.AppendLine("if(tx != null)");
+                code.AppendLine("cmd.Transaction = tx;");
+                code.AppendLine("cmd.CommandText = getCommandText();");
+                foreach (var qp in ctx.Query.QueryParams)
+                {
+                    code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
+                }
+                code.AppendLine("using (var reader = cmd.ExecuteReader())");
+                code.AppendLine("{");
+                code.AppendLine("while (reader.Read())");
+                code.AppendLine("{");
+                code.AppendLine("yield return Create(reader);");
+                code.AppendLine("}");
+                code.AppendLine("}");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+
         public virtual string MakeGetOneWithoutConn(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
@@ -101,6 +167,52 @@ using System.Linq;
             return code.ToString();
 
         }
+
+        public virtual string MakeGetOneWithoutConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // GetOne without connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(){");
+                code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
+                code.AppendLine("{");
+                code.AppendLine("conn.Open();");
+                code.AppendLine("return GetOne(conn);");
+                code.AppendLine("}");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+        public virtual string MakeGetOneWithConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // GetOne() with connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(IDbConnection conn, IDbTransaction tx = null)");
+                code.AppendLine("{");
+                code.AppendLine("var all = Execute(conn, tx);");
+                code.AppendLine("using (IEnumerator<" + ctx.ResultClassName + "> iter = all.GetEnumerator())");
+                code.AppendLine("{");
+                code.AppendLine("iter.MoveNext();");
+                code.AppendLine("return iter.Current;");
+                code.AppendLine("}");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+
         public virtual string MakeExecuteScalarWithoutConn(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
@@ -140,6 +252,60 @@ using System.Linq;
             return code.ToString();
 
         }
+
+        public virtual string MakeExecuteScalarWithoutConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // ExecuteScalar without connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(){");
+                code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
+                code.AppendLine("{");
+                code.AppendLine("conn.Open();");
+                code.AppendLine("return ExecuteScalar(conn);");
+                code.AppendLine("}");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+        public virtual string MakeExecuteScalarWithConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // ExecuteScalar() with connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(IDbConnection conn, IDbTransaction tx = null){");
+                code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
+                code.AppendLine("if (tx != null)");
+                code.AppendLine("cmd.Transaction = tx;");
+                code.AppendLine("cmd.CommandText = getCommandText();");
+                foreach (var qp in ctx.Query.QueryParams)
+                {
+                    code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
+                }
+                code.AppendLine("var result = cmd.ExecuteScalar();");
+                // only convert dbnull if nullable
+
+                code.AppendLine("if ( result == null || result == DBNull.Value)");
+                code.AppendLine("return null;");
+                code.AppendLine("else");
+                code.AppendLine("return (" + ctx.ExecuteScalarReturnType + ")result;");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+
         public virtual string MakeExecuteNonQueryWithoutConn(ICodeGenerationContext ctx)
         {
             char[] spaceComma = new char[] { ',', ' ' };
@@ -172,6 +338,53 @@ using System.Linq;
             // close ExecuteScalar()
             return code.ToString();
 
+        }
+
+        public virtual string MakeExecuteNonQueryWithoutConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // ExecuteNonQuery without connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual int ExecuteNonQuery(){");
+                code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
+                code.AppendLine("{");
+                code.AppendLine("conn.Open();");
+                code.AppendLine("return ExecuteNonQuery(conn);");
+                code.AppendLine("}");
+                code.AppendLine("}");
+            }
+            return code.ToString();
+        }
+        public virtual string MakeExecuteNonQueryWithConnUsingProps(ICodeGenerationContext ctx)
+        {
+            var code = new StringBuilder();
+
+            // only make if other same named method has a method signature
+            if (ctx.MethodSignature.Length > 0)
+            {
+                // ExecuteNonQuery() with connection
+                code.AppendLine("/// <summary>");
+                code.AppendLine("/// Execute filling query parameters using instance properties.");
+                code.AppendLine("/// </summary>");
+                code.AppendLine("public virtual int ExecuteNonQuery(IDbConnection conn, IDbTransaction tx = null){");
+                code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
+                code.AppendLine("if (tx != null)");
+                code.AppendLine("cmd.Transaction = tx;");
+                code.AppendLine("cmd.CommandText = getCommandText();");
+                foreach (var qp in ctx.Query.QueryParams)
+                {
+                    code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
+                }
+                code.AppendLine("return cmd.ExecuteNonQuery();");
+                code.AppendLine("}");
+            }
+            return code.ToString();
         }
 
         public virtual string MakeCreateMethod(ICodeGenerationContext ctx)
@@ -227,19 +440,58 @@ using System.Linq;
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
-            code.AppendLine("public interface I" + ctx.BaseName + "{" + Environment.NewLine);
+            code.AppendLine("public interface I" + ctx.BaseName + "{");
+
+            if (ctx.Query.QueryParams.Count > 0)
+            {
+                foreach (var x in ctx.Query.QueryParams)
+                    code.AppendLine($"{x.CSType} {x.CSName} {{ get; set; }}");
+
+                code.AppendLine("");
+            }
+
             if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
             {
                 code.AppendLine("List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + ");");
                 code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+
+                // only make if other same named method has a method signature
+                if (ctx.MethodSignature.Length > 0)
+                {
+                    code.AppendLine("List<" + ctx.ResultClassName + "> Execute();");
+                    code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(IDbConnection conn, IDbTransaction tx = null);");
+                }
+
                 code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + ");");
                 code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+
+                if (ctx.MethodSignature.Length > 0)
+                {
+                    code.AppendLine("" + ctx.ResultClassName + " GetOne();");
+                    code.AppendLine("" + ctx.ResultClassName + " GetOne(IDbConnection conn, IDbTransaction tx = null);");
+                }
+
                 code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + ");");
                 code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+
+                if (ctx.MethodSignature.Length > 0)
+                {
+                    code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar();");
+                    code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(IDbConnection conn, IDbTransaction tx = null);");
+                }
+
                 code.AppendLine("" + ctx.ResultClassName + " Create(IDataRecord record);");
             }
+
             code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + ");");
             code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+
+            if (ctx.MethodSignature.Length > 0)
+            {
+                code.AppendLine("int ExecuteNonQuery();");
+                code.AppendLine("int ExecuteNonQuery(IDbConnection conn, IDbTransaction tx = null);");
+            }
+
             code.AppendLine("}"); // close interface;
 
             return code.ToString();
