@@ -87,7 +87,6 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
         #region methods
         // SBY composite items. Rename wrapper class if query name changes...
         void CSharpItemRenamed(ProjectItem renamedQuery, string OldName)
-
         {
             if (OldName.EndsWith(".sql"))
             {
@@ -108,20 +107,37 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                             item.Name = renamedQuery.Name.Replace(".sql", "Results.cs");
                             var oldBaseName = OldName.Replace(".sql", "");
                             var newBaseName = renamedQuery.Name.Replace(".sql", "");
+
+							bool rememberToClose = false;
+							if (!item.IsOpen)
+							{
+								item.Open();
+								rememberToClose = true;
+							}
+							
                             var userFile = ((TextDocument)item.Document.Object());
-                            if (!item.IsOpen)
-                                item.Open();
                             userFile.ReplacePattern(oldBaseName, newBaseName);
                             item.Document.Save();
 
-                            fuxed++;
+							if (rememberToClose)
+								item.Document.Close();
+
+							fuxed++;
                         }
                         if (fuxed == 2)
                         {
-                            // regenerate query in new location to get new path to manifest stream.
-                            var ctx = TinyIoC.TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
+							bool rememberToClose = false;
+							if (!renamedQuery.IsOpen)
+							{
+								renamedQuery.Open();
+								rememberToClose = true;
+							}
+							// regenerate query in new location to get new path to manifest stream.
+							var ctx = TinyIoC.TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
                             new Conductor(_VSOutputWindow, ctx).ProcessOneQuery(renamedQuery.Document);
-                            return; //2 files to rename, then we're finished.
+							if (rememberToClose)
+								renamedQuery.Document.Close();
+							return; //2 files to rename, then we're finished.
                         }
                     }
                 }

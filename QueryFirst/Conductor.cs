@@ -38,8 +38,17 @@ namespace QueryFirst
             // copy namespace of generated partial class from user partial class
             // backward compatible...
             var textDoc = ((TextDocument)_ctx.QueryDoc.Object());
-            textDoc.ReplacePattern("--designTime", "-- designTime");
-            textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
+
+			try
+			{
+				textDoc.ReplacePattern("--designTime", "-- designTime");
+				textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
+			}
+			catch
+			{
+				// renaming a .sql file not open in the editor throws error...we can ignore it
+			}
+
             try
             {
                 if (string.IsNullOrEmpty(_ctx.Config.DefaultConnection))
