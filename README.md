@@ -9,7 +9,7 @@ You will need to install the VSIX, then in your project, create qfconfig.json be
 // qfconfig.json
 {
   "defaultConnection": "Data Source=localhost;Initial Catalog=Northwind;Integrated Security=True",
-  "provider:["System.Data.SqlClient"(the default)/"MySql.Data.MySqlClient"/"Npgsql"],
+  "provider":["System.Data.SqlClient"(the default)/"MySql.Data.MySqlClient"/"Npgsql"],
   "helperAssembly":[pathToDll],
   "makeSelfTest":true/false
 } 
