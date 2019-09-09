@@ -9,7 +9,7 @@ namespace QueryFirst
     public class WizardImplementation : IWizard
     {
         //private UserInputForm inputForm;
-        private string customMessage;
+        //private string customMessage;
 
         // This method is called before opening any item that 
         // has the OpenInEditor attribute.

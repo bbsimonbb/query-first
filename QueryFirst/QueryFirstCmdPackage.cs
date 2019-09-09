@@ -18,6 +18,7 @@ using Microsoft.Win32;
 // sby
 using EnvDTE;
 using EnvDTE80;
+using System.Threading;
 
 namespace QueryFirst
 {
@@ -38,13 +39,13 @@ namespace QueryFirst
     /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
     /// </para>
     /// </remarks>
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)] // sby
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)] // sby
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(QueryFirstCmdPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    public sealed class QueryFirstCmdPackage : Package, IVsShellPropertyEvents
+    public sealed class QueryFirstCmdPackage : AsyncPackage, IVsShellPropertyEvents
     {
         /// <summary>
         /// QueryFirstCmdPackage GUID string.
@@ -73,13 +74,15 @@ namespace QueryFirst
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
             QueryFirstCmd.Initialize(this);
-            base.Initialize();
+            await base.InitializeAsync(cancellationToken, progress);
 
             // sby : set an eventlistener for shell property changes
-            IVsShell shellService = GetService(typeof(SVsShell)) as IVsShell;
+            IVsShell shellService = await GetServiceAsync(typeof(SVsShell)) as IVsShell;
             if (shellService != null)
                 ErrorHandler.ThrowOnFailure(shellService.AdviseShellPropertyChanges(this, out cookie));
             // do it anyway
