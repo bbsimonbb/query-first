@@ -23,7 +23,6 @@ namespace QueryFirst.Providers
         
         public override List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
-            int i = 0;
             var queryParams = new List<IQueryParamInfo>();
             // get design time section
             var dt = Regex.Match(queryText, "-- designTime(?<designTime>.*)-- endDesignTime", RegexOptions.Singleline).Value;

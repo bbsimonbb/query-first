@@ -122,7 +122,7 @@ namespace QueryFirst
                         if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                             ProcessAllItems(item.ProjectItems, vsOutputWindow);
                     }
-                    catch (Exception ex) { }
+                    catch { }
                 }
             }
         }
