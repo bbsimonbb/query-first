@@ -9,7 +9,7 @@ You will need to install the VSIX, then in your project, create qfconfig.json be
 // qfconfig.json
 {
   "defaultConnection": "Data Source=localhost;Initial Catalog=Northwind;Integrated Security=True",
-  "provider":["System.Data.SqlClient"(the default)/"MySql.Data.MySqlClient"/"Npgsql"],
+  "provider:["System.Data.SqlClient"(the default)/"MySql.Data.MySqlClient"/"Npgsql"],
   "helperAssembly":[pathToDll],
   "makeSelfTest":true/false
 } 
@@ -30,4 +30,4 @@ namespace CoreWebAppSqlServer
 }
 ```
 
-Read more and download the VSIX [here](https://visualstudiogallery.msdn.microsoft.com/eaf390af-afc1-4994-a442-ec95923dafcb). There's a little code project article [here](https://www.codeproject.com/Tips/1108776/QueryFirst-Worlds-First-Implementation-of-the-Domi).
+Read more and download the VSIX [here](https://visualstudiogallery.msdn.microsoft.com/eaf390af-afc1-4994-a442-ec95923dafcb). There's a little code project article [here](www.codeproject.com/Tips/1108776/QueryFirst-Worlds-First-Implementation-of-the-Domi).

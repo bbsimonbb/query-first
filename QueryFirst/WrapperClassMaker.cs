@@ -8,7 +8,7 @@ namespace QueryFirst
 {
     public class WrapperClassMaker : IWrapperClassMaker
     {
-        public virtual string Usings(ICodeGenerationContext ctx)
+        public virtual string Usings(State state)
         {
             return @"using System;
 using System.Data;
@@ -21,42 +21,42 @@ using System.Linq;
 ";
 
         }
-        public virtual string StartNamespace(ICodeGenerationContext ctx)
+        public virtual string StartNamespace(State state)
         {
-            if (!string.IsNullOrEmpty(ctx.Namespace))
-                return "namespace " + ctx.Namespace + "{" + Environment.NewLine;
+            if (!string.IsNullOrEmpty(state._2Namespace))
+                return "namespace " + state._2Namespace + "{" + Environment.NewLine;
             else
                 return "";
         }
-        public virtual string StartClass(ICodeGenerationContext ctx)
+        public virtual string StartClass(State state)
         {
-            return "public partial class " + ctx.BaseName + " : I" + ctx.BaseName + "{" + Environment.NewLine;
+            return "public partial class " + state._1BaseName + " : I" + state._1BaseName + "{" + Environment.NewLine;
 
         }
-        public virtual string MakeExecuteWithoutConn(ICodeGenerationContext ctx)
+        public virtual string MakeExecuteWithoutConn(State state)
         {
             StringBuilder code = new StringBuilder();
             char[] spaceComma = new char[] { ',', ' ' };
             // Execute method, without connection
-            code.AppendLine("public virtual List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual List<" + state._2ResultInterfaceName + "> Execute(" + state._8MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return Execute(" + ctx.CallingArgs + " conn).ToList();");
+            code.AppendLine("return Execute(" + state._8CallingArgs + " conn).ToList();");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
         }
-        public virtual string MakeExecuteWithConn(ICodeGenerationContext ctx)
+        public virtual string MakeExecuteWithConn(State state)
         {
             StringBuilder code = new StringBuilder();
             // Execute method with connection
-            code.AppendLine("public virtual IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
+            code.AppendLine("public virtual IEnumerable<" + state._2ResultInterfaceName + "> Execute(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
             code.AppendLine("if(tx != null)");
             code.AppendLine("cmd.Transaction = tx;");
             code.AppendLine("cmd.CommandText = getCommandText();");
-            foreach (var qp in ctx.Query.QueryParams)
+            foreach (var qp in state._8QueryParams)
             {
                 code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
             }
@@ -70,29 +70,29 @@ using System.Linq;
             code.AppendLine("}"); //close Execute() method
             return code.ToString();
         }
-        public virtual string MakeGetOneWithoutConn(ICodeGenerationContext ctx)
+        public virtual string MakeGetOneWithoutConn(State state)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             // GetOne without connection
-            code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual " + state._2ResultInterfaceName + " GetOne(" + state._8MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return GetOne(" + ctx.CallingArgs + " conn);");
+            code.AppendLine("return GetOne(" + state._8CallingArgs + " conn);");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
 
         }
-        public virtual string MakeGetOneWithConn(ICodeGenerationContext ctx)
+        public virtual string MakeGetOneWithConn(State state)
         {
             StringBuilder code = new StringBuilder();
             // GetOne() with connection
-            code.AppendLine("public virtual " + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null)");
+            code.AppendLine("public virtual " + state._2ResultInterfaceName + " GetOne(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null)");
             code.AppendLine("{");
-            code.AppendLine("var all = Execute(" + ctx.CallingArgs + " conn,tx);");
-            code.AppendLine("using (IEnumerator<" + ctx.ResultClassName + "> iter = all.GetEnumerator())");
+            code.AppendLine("var all = Execute(" + state._8CallingArgs + " conn,tx);");
+            code.AppendLine("using (IEnumerator<" + state._2ResultInterfaceName + "> iter = all.GetEnumerator())");
             code.AppendLine("{");
             code.AppendLine("iter.MoveNext();");
             code.AppendLine("return iter.Current;");
@@ -101,30 +101,30 @@ using System.Linq;
             return code.ToString();
 
         }
-        public virtual string MakeExecuteScalarWithoutConn(ICodeGenerationContext ctx)
+        public virtual string MakeExecuteScalarWithoutConn(State state)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             //ExecuteScalar without connection
-            code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual " + state._7ExecuteScalarReturnType + " ExecuteScalar(" + state._8MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return ExecuteScalar(" + ctx.CallingArgs + " conn);");
+            code.AppendLine("return ExecuteScalar(" + state._8CallingArgs + " conn);");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
         }
-        public virtual string MakeExecuteScalarWithConn(ICodeGenerationContext ctx)
+        public virtual string MakeExecuteScalarWithConn(State state)
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public virtual " + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
+            code.AppendLine("public virtual " + state._7ExecuteScalarReturnType + " ExecuteScalar(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
             code.AppendLine("if(tx != null)");
             code.AppendLine("cmd.Transaction = tx;");
             code.AppendLine("cmd.CommandText = getCommandText();");
-            foreach (var qp in ctx.Query.QueryParams)
+            foreach (var qp in state._8QueryParams)
             {
                 code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
             }
@@ -134,36 +134,36 @@ using System.Linq;
             code.AppendLine("if( result == null || result == DBNull.Value)");
                 code.AppendLine("return null;");
             code.AppendLine("else");
-            code.AppendLine("return (" + ctx.ExecuteScalarReturnType + ")result;");
+            code.AppendLine("return (" + state._7ExecuteScalarReturnType + ")result;");
             code.AppendLine("}");
             // close ExecuteScalar()
             return code.ToString();
 
         }
-        public virtual string MakeExecuteNonQueryWithoutConn(ICodeGenerationContext ctx)
+        public virtual string MakeExecuteNonQueryWithoutConn(State state)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
             //ExecuteScalar without connection
-            code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + "){");
+            code.AppendLine("public virtual int ExecuteNonQuery(" + state._8MethodSignature.Trim(spaceComma) + "){");
             code.AppendLine("using (IDbConnection conn = QfRuntimeConnection.GetConnection())");
             code.AppendLine("{");
             code.AppendLine("conn.Open();");
-            code.AppendLine("return ExecuteNonQuery(" + ctx.CallingArgs + " conn);");
+            code.AppendLine("return ExecuteNonQuery(" + state._8CallingArgs + " conn);");
             code.AppendLine("}");
             code.AppendLine("}");
             return code.ToString();
         }
-        public virtual string MakeExecuteNonQueryWithConn(ICodeGenerationContext ctx)
+        public virtual string MakeExecuteNonQueryWithConn(State state)
         {
             StringBuilder code = new StringBuilder();
             // ExecuteScalar() with connection
-            code.AppendLine("public virtual int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
+            code.AppendLine("public virtual int ExecuteNonQuery(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null){");
             code.AppendLine("IDbCommand cmd = conn.CreateCommand();");
             code.AppendLine("if(tx != null)");
             code.AppendLine("cmd.Transaction = tx;");
             code.AppendLine("cmd.CommandText = getCommandText();");
-            foreach (var qp in ctx.Query.QueryParams)
+            foreach (var qp in state._8QueryParams)
             {
                 code.AppendLine("AddAParameter(cmd, \"" + qp.DbType + "\", \"" + qp.DbName + "\", " + qp.CSName + ", " + qp.Length + ", " + qp.Scale + ", " + qp.Precision + ");");
             }
@@ -174,15 +174,15 @@ using System.Linq;
 
         }
 
-        public virtual string MakeCreateMethod(ICodeGenerationContext ctx)
+        public virtual string MakeCreateMethod(State state)
         {
             StringBuilder code = new StringBuilder();
             // Create() method
-            code.AppendLine("public virtual " + ctx.ResultClassName + " Create(IDataRecord record)");
+            code.AppendLine("public virtual " + state._2ResultInterfaceName + " Create(IDataRecord record)");
             code.AppendLine("{");
             code.AppendLine("var returnVal = CreatePoco(record);");
             int j = 0;
-            foreach (var col in ctx.ResultFields)
+            foreach (var col in state._7ResultFields)
             {
                 code.AppendLine("if(record[" + j + "] != null && record[" + j + "] != DBNull.Value)");
                 code.AppendLine("returnVal." + col.CSColumnName + " =  (" + col.TypeCsShort + ")record[" + j++ + "];");
@@ -195,57 +195,57 @@ using System.Linq;
 
             return code.ToString();
         }
-        public virtual string MakeGetCommandTextMethod(ICodeGenerationContext ctx)
+        public virtual string MakeGetCommandTextMethod(State state)
         {
             StringBuilder code = new StringBuilder();
             // public load command text
             code.AppendLine("public string getCommandText(){");
             code.AppendLine("return @\"");
-            code.Append(ctx.Query.FinalTextForCode);
+            code.Append(state._6FinalQueryTextForCode);
             code.AppendLine("\";");
             code.AppendLine("}"); // close method;
             return code.ToString();
 
         }
-        public virtual string MakeOtherMethods(ICodeGenerationContext ctx)
+        public virtual string MakeOtherMethods(State state)
         {
             return "";
         }
-        public virtual string CloseClass(ICodeGenerationContext ctx)
+        public virtual string CloseClass(State state)
         {
             return "}" + Environment.NewLine;
         }
-        public virtual string CloseNamespace(ICodeGenerationContext ctx)
+        public virtual string CloseNamespace(State state)
         {
-            if (!string.IsNullOrEmpty(ctx.Namespace))
+            if (!string.IsNullOrEmpty(state._2Namespace))
                 return "}" + Environment.NewLine;
             else
                 return "";
         }
 
-        public string MakeInterface(ICodeGenerationContext ctx)
+        public string MakeInterface(State state)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
-            code.AppendLine("public interface I" + ctx.BaseName + "{" + Environment.NewLine);
-            if (ctx.ResultFields != null && ctx.ResultFields.Count > 0)
+            code.AppendLine("public interface I" + state._1BaseName + "{" + Environment.NewLine);
+            if (state._7ResultFields != null && state._7ResultFields.Count > 0)
             {
-                code.AppendLine("List<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("IEnumerable<" + ctx.ResultClassName + "> Execute(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
-                code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("" + ctx.ResultClassName + " GetOne(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
-                code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-                code.AppendLine("" + ctx.ExecuteScalarReturnType + " ExecuteScalar(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
-                code.AppendLine("" + ctx.ResultClassName + " Create(IDataRecord record);");
+                code.AppendLine("List<" + state._2ResultInterfaceName + "> Execute(" + state._8MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("IEnumerable<" + state._2ResultInterfaceName + "> Execute(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+                code.AppendLine("" + state._2ResultInterfaceName + " GetOne(" + state._8MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("" + state._2ResultInterfaceName + " GetOne(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+                code.AppendLine("" + state._7ExecuteScalarReturnType + " ExecuteScalar(" + state._8MethodSignature.Trim(spaceComma) + ");");
+                code.AppendLine("" + state._7ExecuteScalarReturnType + " ExecuteScalar(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+                code.AppendLine("" + state._2ResultInterfaceName + " Create(IDataRecord record);");
             }
-            code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature.Trim(spaceComma) + ");");
-            code.AppendLine("int ExecuteNonQuery(" + ctx.MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
+            code.AppendLine("int ExecuteNonQuery(" + state._8MethodSignature.Trim(spaceComma) + ");");
+            code.AppendLine("int ExecuteNonQuery(" + state._8MethodSignature + "IDbConnection conn, IDbTransaction tx = null);");
             code.AppendLine("}"); // close interface;
 
             return code.ToString();
         }
 
-        public string SelfTestUsings(ICodeGenerationContext ctx)
+        public string SelfTestUsings(State state)
         {
             StringBuilder code = new StringBuilder();
             code.AppendLine("using QueryFirst;");
@@ -253,25 +253,25 @@ using System.Linq;
             return code.ToString();
         }
 
-        public string MakeSelfTestMethod(ICodeGenerationContext ctx)
+        public string MakeSelfTestMethod(State state)
         {
             char[] spaceComma = new char[] { ',', ' ' };
             StringBuilder code = new StringBuilder();
 
             code.AppendLine("[Fact]");
-            code.AppendLine("public void " + ctx.BaseName + "SelfTest()");
+            code.AppendLine("public void " + state._1BaseName + "SelfTest()");
             code.AppendLine("{");
             code.AppendLine("var queryText = getCommandText();");
             code.AppendLine("// we'll be getting a runtime version with the comments section closed. To run without parameters, open it.");
             code.AppendLine("queryText = queryText.Replace(\"/*designTime\", \"-- designTime\");");
             code.AppendLine("queryText = queryText.Replace(\"endDesignTime*/\", \"-- endDesignTime\");");
             // QfruntimeConnection will be used, but we still need to reference a provider, for the prepare parameters method.
-            code.AppendLine($"var schema = new AdoSchemaFetcher().GetFields(QfRuntimeConnection.GetConnection(), \"{ctx.Config.Provider}\", queryText);");
-            code.Append("Assert.True(" + ctx.ResultFields.Count + " <=  schema.Count,");
-            code.AppendLine("\"Query only returns \" + schema.Count.ToString() + \" columns. Expected at least " + ctx.ResultFields.Count + ". \");");
-            for (int i = 0; i < ctx.ResultFields.Count; i++)
+            code.AppendLine($"var schema = new AdoSchemaFetcher().GetFields(QfRuntimeConnection.GetConnection(), \"{state._4Config.Provider}\", queryText);");
+            code.Append("Assert.True(" + state._7ResultFields.Count + " <=  schema.Count,");
+            code.AppendLine("\"Query only returns \" + schema.Count.ToString() + \" columns. Expected at least " + state._7ResultFields.Count + ". \");");
+            for (int i = 0; i < state._7ResultFields.Count; i++)
             {
-                var col = ctx.ResultFields[i];
+                var col = state._7ResultFields[i];
                 code.Append("Assert.True(schema[" + i.ToString() + "].TypeDb == \"" + col.TypeDb + "\",");
                 code.AppendLine("\"Result Column " + i.ToString() + " Type wrong. Expected " + col.TypeDb + ". Found \" + schema[" + i.ToString() + "].TypeDb + \".\");");
                 code.Append("Assert.True(schema[" + i.ToString() + "].ColumnName == \"" + col.ColumnName + "\",");

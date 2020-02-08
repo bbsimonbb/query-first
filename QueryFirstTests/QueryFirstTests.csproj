@@ -72,7 +72,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigResolverTests.cs" />
+    <Compile Include="FakeProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProviderTests\SqlClient_Tests.cs" />
+    <Compile Include="StateAndTransitionTests\_2ExtractNamesFromUserPartialClass_Tests.cs" />
+    <Compile Include="StateAndTransitionTests\_6FindUndeclaredParameters_Tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

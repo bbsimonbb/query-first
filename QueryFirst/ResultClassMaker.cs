@@ -10,7 +10,7 @@ namespace QueryFirst
     public interface IResultClassMaker
     {
         string Usings();
-        string StartClass(ICodeGenerationContext ctx);
+        string StartClass(State state);
         string MakeProperty(ResultFieldDetails fld);
         string CloseClass();
     }
@@ -19,9 +19,9 @@ namespace QueryFirst
         public virtual string Usings() { return ""; }
 
         private string nl = Environment.NewLine;
-        public virtual string StartClass(ICodeGenerationContext ctx)
+        public virtual string StartClass(State state)
         {
-            return string.Format("public partial class {0} {{" + nl, ctx.ResultClassName);
+            return string.Format("public partial class {0} {{" + nl, state._2ResultClassName);
         }
         public virtual string MakeProperty(ResultFieldDetails fld)
         {

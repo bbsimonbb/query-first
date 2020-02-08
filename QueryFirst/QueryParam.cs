@@ -9,12 +9,10 @@ using QueryFirst.TypeMappings;
 
 namespace QueryFirst
 {
-    public class QueryParamInfo : IQueryParamInfo
+    public class QueryParamInfo
     {
         public string CSName { get; set; }
-        //public string SqlTypeAndLength { get; private set; }
         public string CSType { get; set; }
-        //public bool ExplicitlyDeclared { get; set; }
         public string DbName { get; set; }
         public string DbType { get; set; }
         public int Length { get; set; }

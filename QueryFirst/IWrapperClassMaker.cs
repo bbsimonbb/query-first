@@ -10,35 +10,35 @@
         /// </summary>
         /// <param name="ctx">The ICodeGenerationContext</param>
         /// <returns>The brace that closes the class</returns>
-        string CloseClass(ICodeGenerationContext ctx);
+        string CloseClass(State sate);
         /// <summary>
         /// The brace that closes the namespace
         /// </summary>
         /// <param name="ctx">The ICodeGenerationContext</param>
         /// <returns>The brace that closes the namespace, if present.</returns>
-        string CloseNamespace(ICodeGenerationContext ctx);
+        string CloseNamespace(State sate);
         /// <summary>
         /// Makes a method that takes an IDataRecord and fills a Results class.
         /// 
         /// </summary>
         /// <param name="ctx"></param>
         /// <returns></returns>
-        string MakeCreateMethod(ICodeGenerationContext ctx);
-        string MakeExecuteScalarWithConn(ICodeGenerationContext ctx);
-        string MakeExecuteScalarWithoutConn(ICodeGenerationContext ctx);
-        string MakeExecuteNonQueryWithConn(ICodeGenerationContext ctx);
-        string MakeExecuteNonQueryWithoutConn(ICodeGenerationContext ctx);
-        string MakeExecuteWithConn(ICodeGenerationContext ctx);
-        string MakeExecuteWithoutConn(ICodeGenerationContext ctn);
-        string MakeGetOneWithConn(ICodeGenerationContext ctx);
-        string MakeGetOneWithoutConn(ICodeGenerationContext ctx);
-        string MakeGetCommandTextMethod(ICodeGenerationContext ctx);
-        string MakeOtherMethods(ICodeGenerationContext ctx);
-        string StartClass(ICodeGenerationContext ctx);
-        string StartNamespace(ICodeGenerationContext ctx);
-        string Usings(ICodeGenerationContext ctx);
-        string MakeInterface(ICodeGenerationContext ctx);
-        string SelfTestUsings(ICodeGenerationContext ctx);
-        string MakeSelfTestMethod(ICodeGenerationContext ctx);
+        string MakeCreateMethod(State sate);
+        string MakeExecuteScalarWithConn(State sate);
+        string MakeExecuteScalarWithoutConn(State sate);
+        string MakeExecuteNonQueryWithConn(State sate);
+        string MakeExecuteNonQueryWithoutConn(State sate);
+        string MakeExecuteWithConn(State sate);
+        string MakeExecuteWithoutConn(State state);
+        string MakeGetOneWithConn(State sate);
+        string MakeGetOneWithoutConn(State sate);
+        string MakeGetCommandTextMethod(State sate);
+        string MakeOtherMethods(State sate);
+        string StartClass(State sate);
+        string StartNamespace(State sate);
+        string Usings(State sate);
+        string MakeInterface(State sate);
+        string SelfTestUsings(State sate);
+        string MakeSelfTestMethod(State sate);
     }
 }

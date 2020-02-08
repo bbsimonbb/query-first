@@ -90,6 +90,7 @@ namespace QueryFirst
         /// <param name="e">Event args.</param>
         private void MenuItemCallback(object sender, EventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 dte2 = ServiceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;//Package.GetGlobalService(typeof(DTE)) as DTE2;
             var vsOutputWindow = new VSOutputWindow(dte2);
             foreach (Project proj in ((QueryFirstCmdPackage)_package).dte.Solution.Projects)
@@ -100,6 +101,7 @@ namespace QueryFirst
         }
         private void ProcessAllItems(ProjectItems items, VSOutputWindow vsOutputWindow)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (items != null)
             {
 
@@ -114,8 +116,7 @@ namespace QueryFirst
                             var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                             if (text.Contains("managed by QueryFirst"))
                             {
-                                var ctx = TinyIoC.TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
-                                new Conductor(vsOutputWindow, ctx).ProcessOneQuery(item.Document);
+                                new Conductor(vsOutputWindow).ProcessOneQuery(item.Document);
                             }
                             
                         }

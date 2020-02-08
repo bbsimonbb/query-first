@@ -174,9 +174,6 @@ namespace QueryFirst
             return result;
         }
 
-        public AdoSchemaFetcher()
-        {
-        }
 
         // Perform the query, extract the results
         private DataTable GetQuerySchema(IDbConnection connection, IProvider prov, string strSQL)

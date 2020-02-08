@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TemplateWizard;
 using System.Windows.Forms;
 using EnvDTE;
+using System.IO;
+using Microsoft.VisualStudio.Shell;
 
 namespace QueryFirst
 {
@@ -26,12 +28,20 @@ namespace QueryFirst
         public void ProjectItemFinishedGenerating(ProjectItem
             item)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             string path = item.FileNames[0];
             string parentPath = null;
             if (path.EndsWith(".gen.cs"))
                 parentPath = path.Replace(".gen.cs", ".sql");
             if (path.EndsWith("Results.cs"))
+            {
                 parentPath = path.Replace("Results.cs", ".sql");
+                // correct class names
+                var _userPartialClass = File.ReadAllText(path);
+                _userPartialClass = _userPartialClass.Replace("Results","");
+                _userPartialClass = _userPartialClass.Replace("¤", "Results");
+                File.WriteAllText(path, _userPartialClass);
+            }
             if (!string.IsNullOrEmpty(parentPath))
             {
                 ProjectItem parent = item.DTE.Solution.FindProjectItem(parentPath);

@@ -15,10 +15,10 @@ namespace QueryFirst.Providers
         {
             return new SqlConnection(connectionString);
         }
-        public virtual List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
+        public virtual List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
             int i = 0;
-            var queryParams = new List<IQueryParamInfo>();
+            var queryParams = new List<QueryParamInfo>();
             // get design time section
             var dt = Regex.Match(queryText, "-- designTime(?<designTime>.*)-- endDesignTime", RegexOptions.Singleline).Value;
             // extract declared parameters
@@ -27,17 +27,16 @@ namespace QueryFirst.Providers
             while (m.Success)
             {
                 string[] parts = m.Value.Split(new[] { ' ', '	' }, StringSplitOptions.RemoveEmptyEntries);
-                var qp = TinyIoC.TinyIoCContainer.Current.Resolve<IQueryParamInfo>();
-                FillParamInfo(qp, parts[1].Substring(1), parts[2]);
+                var qp = GetParamInfo(parts[1].Substring(1), parts[2]);
                 queryParams.Add(qp);
                 m = m.NextMatch();
                 i++;
             }
             return queryParams;
         }
-        private List<string> typesWithLength = new List<string>() { "char", "varchar", "nchar", "nvarchar" };
-        private void FillParamInfo(IQueryParamInfo qp, string name, string sqlTypeAndLength)
+        QueryParamInfo GetParamInfo(string name, string sqlTypeAndLength)
         {
+            var qp = new QueryParamInfo();
             var m = Regex.Match(sqlTypeAndLength, @"(?'type'^\w*)\(?(?'firstNum'\d*),?(?'secondNum'\d*)");
             var typeOnly = m.Groups["type"].Value;
             int.TryParse(m.Groups["firstNum"].Value, out int firstNum);
@@ -62,36 +61,45 @@ namespace QueryFirst.Providers
             qp.DbType = normalizedType;
             qp.CSName = name;
             qp.DbName = '@' + name;
+            return qp;
         }
-        public virtual List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString)
+        public virtual List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
         {
-            var myParams = new List<IQueryParamInfo>();
+            outputMessage = null;
+            var myParams = new List<QueryParamInfo>();
             // sp_describe_undeclared_parameters
-            using (IDbConnection conn = GetConnection(connectionString))
+            try
             {
-                IDbCommand cmd = conn.CreateCommand();
-                cmd.CommandText = "sp_describe_undeclared_parameters @tsql";
-                var tsql = new SqlParameter("@tsql", System.Data.SqlDbType.NChar);
-                tsql.Value = queryText;
-                cmd.Parameters.Add(tsql);
-
-                conn.Open();
-                var rdr = cmd.ExecuteReader();
-                while (rdr.Read())
+                using (IDbConnection conn = GetConnection(connectionString))
                 {
-                    // ignore global variables
-                    if (rdr.GetString(1).Substring(0, 2) != "@@")
+                    IDbCommand cmd = conn.CreateCommand();
+                    cmd.CommandText = "sp_describe_undeclared_parameters @tsql";
+                    var tsql = new SqlParameter("@tsql", System.Data.SqlDbType.NChar);
+                    tsql.Value = queryText;
+                    cmd.Parameters.Add(tsql);
+
+                    conn.Open();
+                    var rdr = cmd.ExecuteReader();
+                    while (rdr.Read())
                     {
-                        // build declaration.
-                        myParams.Add(new QueryParamInfo()
+                        // ignore global variables
+                        if (rdr.GetString(1).Substring(0, 2) != "@@")
                         {
-                            DbName = rdr.GetString(1),
-                            DbType = rdr.GetString(3),
-                            Length = rdr.GetInt16(4)
+                            // build declaration.
+                            myParams.Add(new QueryParamInfo()
+                            {
+                                DbName = rdr.GetString(1),
+                                DbType = rdr.GetString(3),
+                                Length = rdr.GetInt16(4)
+                            }
+                                );
                         }
-                            );
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                outputMessage = "Unable to find undeclared parameters. Make sure your parameters are declared in the designTime section\n";
             }
             return myParams;
         }
@@ -100,7 +108,7 @@ namespace QueryFirst.Providers
             // nothing to do here.
         }
 
-        public string ConstructParameterDeclarations(List<IQueryParamInfo> foundParams)
+        public string ConstructParameterDeclarations(List<QueryParamInfo> foundParams)
         {
             StringBuilder bldr = new StringBuilder();
 
@@ -112,11 +120,11 @@ namespace QueryFirst.Providers
                 //{
                 //    bldr.Append("(" + qp.Length + ")");
                 //}
-                bldr.Append(";\n");
+                bldr.Append(";\r\n");
             }
             return bldr.ToString();
         }
-        public virtual string MakeAddAParameter(ICodeGenerationContext ctx)
+        public virtual string MakeAddAParameter(State state)
         {
             StringBuilder code = new StringBuilder();
             code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length, byte Scale, byte Precision)\n{");
@@ -142,22 +150,22 @@ namespace QueryFirst.Providers
             {
                 case "bigint":
                     DBTypeNormalized = "BigInt";
-                    return nullable ? "long?" : "long";
+                    return nullable ? "System.Int64?" : "System.Int64";
                 case "binary":
                     DBTypeNormalized = "Binary";
-                    return "byte[]";
+                    return "System.Byte[]";
                 case "image":
                     DBTypeNormalized = "Image";
-                    return "byte[]";
+                    return "System.Byte[]";
                 case "timestamp":
                     DBTypeNormalized = "Timestamp";
-                    return "byte[]";
+                    return "System.Byte[]";
                 case "varbinary":
                     DBTypeNormalized = "Varbinary";
-                    return "byte[]";
+                    return "System.Byte[]";
                 case "bit":
                     DBTypeNormalized = "Bit";
-                    return nullable ? "bool?" : "bool";
+                    return nullable ? "System.Boolean?" : "System.Boolean";
                 case "date":
                     DBTypeNormalized = "Date";
                     return nullable ? "DateTime?" : "DateTime";
@@ -178,58 +186,58 @@ namespace QueryFirst.Providers
                     return nullable ? "DateTimeOffset?" : "DateTimeOffset";
                 case "decimal":
                     DBTypeNormalized = "Decimal";
-                    return nullable ? "decimal?" : "decimal";
+                    return nullable ? "System.Decimal?" : "System.Decimal";
                 case "money":
                     DBTypeNormalized = "Money";
-                    return nullable ? "decimal?" : "decimal";
+                    return nullable ? "System.Decimal?" : "System.Decimal";
                 case "smallmoney":
                     DBTypeNormalized = "SmallMoney";
-                    return nullable ? "decimal?" : "decimal";
+                    return nullable ? "System.Decimal?" : "System.Decimal";
                 case "float":
                     DBTypeNormalized = "Float";
-                    return nullable ? "double?" : "double";
+                    return nullable ? "System.Double?" : "System.Double";
                 case "real":
                     DBTypeNormalized = "Real";
-                    return nullable ? "float?" : "float";
+                    return nullable ? "System.Single?" : "System.Single";
                 case "smallint":
                     DBTypeNormalized = "SmallInt";
-                    return nullable ? "short?" : "short";
+                    return nullable ? "System.Single?" : "System.Single";
                 case "tinyint":
                     DBTypeNormalized = "TinyInt";
-                    return nullable ? "byte?" : "byte";
+                    return nullable ? "System.Byte?" : "System.Byte";
                 case "int":
                     DBTypeNormalized = "Int";
-                    return nullable ? "int?" : "int";
+                    return nullable ? "System.Int32?" : "System.Int32";
                 case "char":
                     DBTypeNormalized = "Char";
-                    return "string";
+                    return "System.String";
                 case "nchar":
                     DBTypeNormalized = "NChar";
-                    return "string";
+                    return "System.String";
                 case "ntext":
                     DBTypeNormalized = "NText";
-                    return "string";
+                    return "System.String";
                 case "nvarchar":
                     DBTypeNormalized = "NVarChar";
-                    return "string";
+                    return "System.String";
                 case "varchar":
                     DBTypeNormalized = "VarChar";
-                    return "string";
+                    return "System.String";
                 case "text":
                     DBTypeNormalized = "Text";
-                    return "string";
+                    return "System.String";
                 case "xml":
                     DBTypeNormalized = "Xml";
-                    return "string";
+                    return "System.String";
                 case "sql_variant":
                     DBTypeNormalized = "Variant";
-                    return "object";
+                    return "System.Object";
                 case "variant":
                     DBTypeNormalized = "Variant";
-                    return "object";
+                    return "System.Object";
                 case "udt":
                     DBTypeNormalized = "Udt";
-                    return "object";
+                    return "System.Object";
                 case "structured":
                     DBTypeNormalized = "Structured";
                     return "DataTable";
@@ -240,6 +248,51 @@ namespace QueryFirst.Providers
                     throw new Exception("type not matched : " + DBType);
                     // todo : keep going here. old method had a second switch on ResultFieldDetails.DataType to catch a bunch of never seen types
 
+            }
+        }
+
+        public List<ResultFieldDetails> GetQuerySchema2ndAttempt(string sql, string connectionString)
+        {
+            using (var conn = GetConnection(connectionString))
+            {
+                var command = conn.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "SP_DESCRIBE_FIRST_RESULT_SET";
+
+                var tsql = new SqlParameter("@TSQL", sql);
+                tsql.Direction = ParameterDirection.Input;
+                command.Parameters.Add(tsql);
+                var returnVal = new List<ResultFieldDetails>();
+                using (DataTable dt = new DataTable())
+                {
+                    conn.Open();
+                    var dr = command.ExecuteReader();
+                    dt.Load(dr);
+                    foreach (DataRow rec in dt.Rows)
+                    {
+                        string colName = rec.Field<string>("name");
+                        string csColName;
+                        if (Regex.Match((colName.Substring(0, 1)), "[0-9]").Success)
+                            csColName = "_" + colName;
+                        else
+                            csColName = colName;
+                        var qp = GetParamInfo("dontCare", rec.Field<string>("system_type_name"));
+                        returnVal.Add(new ResultFieldDetails
+                            {
+                                ColumnName = colName,
+                                AllowDBNull = rec.Field<bool>("is_nullable"),
+                                BaseColumnName = rec.Field<string>("name"),
+                                ColumnOrdinal = rec.Field<int>("column_ordinal"),
+                                CSColumnName = csColName,
+                                IsIdentity = rec.Field<bool>("is_identity_column"),
+                                NumericPrecision = qp.Precision,
+                                NumericScale = qp.Scale,
+                                TypeCs = qp.CSType.TrimEnd(new char[] { '?' }) // qp may have the question mark on the end, but on the result side it's managed separately. Bit flaky.
+                            }
+                        );
+                    }
+                }
+                return returnVal;
             }
         }
     }

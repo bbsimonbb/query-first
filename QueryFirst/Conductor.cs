@@ -1,25 +1,31 @@
 ﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.Data.SqlClient;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using TinyIoC;
 
+//[assembly: InternalsVisibleTo("QueryFirstTests")]
 
 
 namespace QueryFirst
 {
+    
     class Conductor
     {
+        private State _state;
         private TinyIoCContainer _tiny;
         private VSOutputWindow _vsOutputWindow;
-        private ICodeGenerationContext _ctx;
+        private Document _queryDoc;
+        private ProjectItem _item;
+        private IProvider _provider;
 
-        public Conductor(VSOutputWindow vsOutpuWindow, ICodeGenerationContext ctx)
+        public Conductor(VSOutputWindow vsOutpuWindow)
         {
             _vsOutputWindow = vsOutpuWindow;
-            _ctx = ctx;
         }
 
 
@@ -27,47 +33,71 @@ namespace QueryFirst
 
         public void ProcessOneQuery(Document queryDoc)
         {
-            _tiny = TinyIoCContainer.Current;
-            _ctx.InitForQuery(queryDoc);
-            // Test this! If I can get source control exclusions working, team members won't get the generated file.
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (!File.Exists(_ctx.GeneratedClassFullFilename))
-                File.Create(_ctx.GeneratedClassFullFilename);
-            if (GetItemByFilename(queryDoc.ProjectItem, _ctx.GeneratedClassFullFilename) != null)
-                queryDoc.ProjectItem.Collection.AddFromFile(_ctx.GeneratedClassFullFilename);
+            _tiny = TinyIoCContainer.Current;
+            _state = new State();
+            _queryDoc = queryDoc;
+            _item = queryDoc.ProjectItem;
+
+
+            new _1ProcessQueryPath().Go(_state, (string)queryDoc.ProjectItem.Properties.Item("FullPath").Value);
+
+            // Test this! If I can get source control exclusions working, team members won't get the generated file.
+            if (!File.Exists(_state._1GeneratedClassFullFilename))
+            {
+                var _ = File.Create(_state._1GeneratedClassFullFilename);
+                _.Dispose();
+            }                
+            if (GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename) != null)
+                queryDoc.ProjectItem.Collection.AddFromFile(_state._1GeneratedClassFullFilename);
+
             // copy namespace of generated partial class from user partial class
-            // backward compatible...
-            var textDoc = ((TextDocument)_ctx.QueryDoc.Object());
-            textDoc.ReplacePattern("--designTime", "-- designTime");
-            textDoc.ReplacePattern("--endDesignTime", "-- endDesignTime");
+            var userPartialClass = File.ReadAllText(_state._1UserPartialClassFullFilename);
+            new _2ExtractNamesFromUserPartialClass().Go(_state, userPartialClass);
+
+            var textDoc = ((TextDocument)queryDoc.Object());
+            var start = textDoc.StartPoint;
+            var text = start.CreateEditPoint().GetText(textDoc.EndPoint);
+            new _3ReadQuery().Go(_state, text);
+            var _4 = (_4ResolveConfig)_tiny.Resolve(typeof(_4ResolveConfig));
+            _4.Go(_state);
+
+
+            // We have the config, we can instantiate our provider...
+            if (_tiny.CanResolve<IProvider>(_state._4Config.Provider))
+                _provider = _tiny.Resolve<IProvider>(_state._4Config.Provider);
+            else
+                _vsOutputWindow.Write(@"After resolving the config, we have no provider\n");
+
+
             try
             {
-                if (string.IsNullOrEmpty(_ctx.Config.DefaultConnection))
+                if (string.IsNullOrEmpty(_state._4Config.DefaultConnection))
                 {
-                    _vsOutputWindow.Write(@"QueryFirst would like to help you, but you need to tell it where your DB is.
-Breaking change in 1.0.0: QueryFirst now has it's own config file. You need to create qfconfig.json beside or above your query 
+                    _vsOutputWindow.Write(@"No design time connection string. You need to create qfconfig.json beside or above your query 
 or put --QfDefaultConnection=myConnectionString somewhere in your query file.
 See the Readme section at https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst    
 ");
                     return; // nothing to be done
 
                 }
-                if (!_tiny.CanResolve<IProvider>(_ctx.Config.Provider))
+                if (!_tiny.CanResolve<IProvider>(_state._4Config.Provider))
                 {
                     _vsOutputWindow.Write(string.Format(
 @"No Implementation of IProvider for providerName {0}. 
-The query {1} may not run and the wrapper has not been regenerated.",
-                    _ctx.Config.Provider, _ctx.BaseName
+The query {1} may not run and the wrapper has not been regenerated.\n",
+                    _state._4Config.Provider, _state._1BaseName
                     ));
                     return;
                 }
                 // Use QueryFirst within QueryFirst !
                 // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
-                QfRuntimeConnection.CurrentConnectionString = _ctx.Config.DefaultConnection;
+                QfRuntimeConnection.CurrentConnectionString = _state._4Config.DefaultConnection;
 
 
-                var matchInsert = Regex.Match(_ctx.Query.Text, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                var matchUpdate = Regex.Match(_ctx.Query.Text, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var matchInsert = Regex.Match(_state._3InitialQueryText, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                var matchUpdate = Regex.Match(_state._3InitialQueryText, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 if (matchInsert.Success)
                 {
                     var statement = new ScaffoldInsert().ExecuteScalar(matchInsert.Groups["tableName"].Value);
@@ -79,7 +109,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                     else
                     {
                         var ep = textDoc.CreateEditPoint();
-                        ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
+                        ep.ReplaceText(_state._3InitialQueryText.Length, statement, 0);
                         //ctx.QueryDoc.Save();
                     }
 
@@ -95,7 +125,7 @@ The query {1} may not run and the wrapper has not been regenerated.",
                     else
                     {
                         var ep = textDoc.CreateEditPoint();
-                        ep.ReplaceText(_ctx.Query.Text.Length, statement, 0);
+                        ep.ReplaceText(_state._3InitialQueryText.Length, statement, 0);
                         //ctx.QueryDoc.Save();
                     }
                 }
@@ -105,24 +135,18 @@ The query {1} may not run and the wrapper has not been regenerated.",
                     // Execute query
                     try
                     {
-                        // also called in the bowels of schema fetching, for Postgres, because no notion of declarations.
-                        try
+                        new _6FindUndeclaredParameters(_provider).Go(ref _state, out string outputMessage);
+                        // if message returned, write it to output.
+                        if(!string.IsNullOrEmpty(outputMessage))
+                            _vsOutputWindow.Write(outputMessage);
+                        // if undeclared params were found, add them to the .sql
+                        if (!string.IsNullOrEmpty(_state._6NewParamDeclarations))
                         {
-                            var undeclared = _ctx.Provider.FindUndeclaredParameters(_ctx.Query.Text, _ctx.Config.DefaultConnection);
-                            var newParamDeclarations = _ctx.Provider.ConstructParameterDeclarations(undeclared);
-                            if (!string.IsNullOrEmpty(newParamDeclarations))
-                            {
-                                _ctx.Query.ReplacePattern("-- endDesignTime", newParamDeclarations + "-- endDesignTime");
-                            }
-                        }
-                        catch (SqlException ex)
-                        {
-                            if (ex.Message.Contains("sp_describe_undeclared_parameters"))
-                                _vsOutputWindow.Write("Unable to find undeclared parameters. You will have to do this yourself.\n");
-                            else throw;
+                            ReplacePattern("-- endDesignTime", _state._6NewParamDeclarations + "-- endDesignTime");
                         }
 
-                        _ctx.ResultFields = _ctx.SchemaFetcher.GetFields(_ctx.Config.DefaultConnection, _ctx.Config.Provider, _ctx.Query.Text);
+                        new _7RunQueryAndGetResultSchema(new AdoSchemaFetcher(), _provider).Go(ref _state);
+                        new _8ParseOrFindDeclaredParams(_provider).Go(ref _state);
                     }
                     catch (Exception ex)
                     {
@@ -136,55 +160,55 @@ The query {1} may not run and the wrapper has not been regenerated.",
                         bldr.AppendLine("-----------------------------------------------------------");
                         bldr.AppendLine(ex.StackTrace);
                         bldr.AppendLine("*/");
-                        File.AppendAllText(_ctx.GeneratedClassFullFilename, bldr.ToString());
+                        File.AppendAllText(_state._1GeneratedClassFullFilename, bldr.ToString());
                         throw;
                     }
-                    _ctx.QueryHasRun = true;
                     StringBuilder Code = new StringBuilder();
 
                     var wrapper = _tiny.Resolve<IWrapperClassMaker>();
                     var results = _tiny.Resolve<IResultClassMaker>();
 
-                    Code.Append(wrapper.StartNamespace(_ctx));
-                    Code.Append(wrapper.Usings(_ctx));
-                    if (_ctx.Config.MakeSelfTest)
-                        Code.Append(wrapper.SelfTestUsings(_ctx));
-                    if (_ctx.ResultFields != null && _ctx.ResultFields.Count > 0)
+                    Code.Append(wrapper.StartNamespace(_state));
+                    Code.Append(wrapper.Usings(_state));
+                    if (_state._4Config.MakeSelfTest)
+                        Code.Append(wrapper.SelfTestUsings(_state));
+                    if (_state._7ResultFields != null && _state._7ResultFields.Count > 0)
                         Code.Append(results.Usings());
-                    Code.Append(wrapper.MakeInterface(_ctx));
-                    Code.Append(wrapper.StartClass(_ctx));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(_ctx));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(_ctx));
-                    Code.Append(wrapper.MakeGetCommandTextMethod(_ctx));
-                    Code.Append(_ctx.Provider.MakeAddAParameter(_ctx));
+                    Code.Append(wrapper.MakeInterface(_state));
+                    Code.Append(wrapper.StartClass(_state));
+                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(_state));
+                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(_state));
+                    Code.Append(wrapper.MakeGetCommandTextMethod(_state));
+                    Code.Append(_provider.MakeAddAParameter(_state));
 
-                    if (_ctx.Config.MakeSelfTest)
-                        Code.Append(wrapper.MakeSelfTestMethod(_ctx));
-                    if (_ctx.ResultFields != null && _ctx.ResultFields.Count > 0)
+                    if (_state._4Config.MakeSelfTest)
+                        Code.Append(wrapper.MakeSelfTestMethod(_state));
+                    if (_state._7ResultFields != null && _state._7ResultFields.Count > 0)
                     {
-                        Code.Append(wrapper.MakeExecuteWithoutConn(_ctx));
-                        Code.Append(wrapper.MakeExecuteWithConn(_ctx));
-                        Code.Append(wrapper.MakeGetOneWithoutConn(_ctx));
-                        Code.Append(wrapper.MakeGetOneWithConn(_ctx));
-                        Code.Append(wrapper.MakeExecuteScalarWithoutConn(_ctx));
-                        Code.Append(wrapper.MakeExecuteScalarWithConn(_ctx));
+                        Code.Append(wrapper.MakeExecuteWithoutConn(_state));
+                        Code.Append(wrapper.MakeExecuteWithConn(_state));
+                        Code.Append(wrapper.MakeGetOneWithoutConn(_state));
+                        Code.Append(wrapper.MakeGetOneWithConn(_state));
+                        Code.Append(wrapper.MakeExecuteScalarWithoutConn(_state));
+                        Code.Append(wrapper.MakeExecuteScalarWithConn(_state));
 
-                        Code.Append(wrapper.MakeCreateMethod(_ctx));
-                        Code.Append(wrapper.MakeOtherMethods(_ctx));
-                        Code.Append(wrapper.CloseClass(_ctx));
-                        Code.Append(results.StartClass(_ctx));
-                        foreach (var fld in _ctx.ResultFields)
+                        Code.Append(wrapper.MakeCreateMethod(_state));
+                        Code.Append(wrapper.MakeOtherMethods(_state));
+                        Code.Append(wrapper.CloseClass(_state));
+                        Code.Append(results.StartClass(_state));
+                        foreach (var fld in _state._7ResultFields)
                         {
                             Code.Append(results.MakeProperty(fld));
                         }
                     }
                     Code.Append(results.CloseClass()); // closes wrapper class if no results !
-                    Code.Append(wrapper.CloseNamespace(_ctx));
+                    Code.Append(wrapper.CloseNamespace(_state));
                     //File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
-                    _ctx.PutCodeHere.WriteAndFormat(Code.ToString());
-                    var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem, _ctx.CurrDir + _ctx.BaseName + "Results.cs");
-                    new BackwardCompatibility().InjectPOCOFactory(_ctx, partialClassFile);
-                    _vsOutputWindow.Write(Environment.NewLine + "QueryFirst generated wrapper class for " + _ctx.BaseName + ".sql");
+                    var genFile = GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename);
+                    WriteAndFormat(genFile, Code.ToString());
+                    // what was this for ????
+                    //var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem, _state._1CurrDir + _state._1BaseName + "Results.cs");
+                    _vsOutputWindow.Write("QueryFirst generated wrapper class for " + _state._1BaseName + ".sql" + Environment.NewLine);
                 }
 
             }
@@ -193,10 +217,31 @@ The query {1} may not run and the wrapper has not been regenerated.",
                 _vsOutputWindow.Write(ex.TellMeEverything());
             }
         }
+        private void WriteAndFormat(ProjectItem genFile, string code)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            bool rememberToClose = false;
+            if (!genFile.IsOpen)
+            {
+                genFile.Open();
+                rememberToClose = true;
+            }
+            var textDoc = ((TextDocument)genFile.Document.Object());
+            var ep = textDoc.CreateEditPoint();
+            ep.ReplaceText(textDoc.EndPoint, code, 0);
+            ep.SmartFormat(textDoc.EndPoint);
+            genFile.Save();
+            if (rememberToClose)
+            {
+                genFile.Document.Close();
+            }
+        }
 
         // Doesn't recurse into folders. Prefer items.Item("")
         public static ProjectItem GetItemByFilename(ProjectItem item, string filename)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             foreach (ProjectItem childItem in item.ProjectItems)
             {
                 for (short i = 0; i < childItem.FileCount; i++)
@@ -215,6 +260,12 @@ The query {1} may not run and the wrapper has not been regenerated.",
                 }
             }
             return null;
+        }
+        private void ReplacePattern(string pattern, string replaceWith)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var textDoc = ((TextDocument)_queryDoc.Object());
+            textDoc.ReplacePattern(pattern, replaceWith);
         }
     }
 }

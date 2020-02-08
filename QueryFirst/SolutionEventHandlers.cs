@@ -5,6 +5,7 @@ using EnvDTE80;
 using System.IO;
 using System.Reflection;
 using TinyIoC;
+using Microsoft.VisualStudio.Shell;
 
 namespace QueryFirst
 {
@@ -31,6 +32,7 @@ namespace QueryFirst
         // constructor
         private SolutionEventHandlers(DTE dte, DTE2 dte2)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _dte = dte;
             _dte2 = dte2;
             myEvents = dte.Events;
@@ -44,12 +46,14 @@ namespace QueryFirst
 
         private void SolutionEvents_Opened()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             RegisterTypes(true);
         }
         private void RegisterTypes(bool force = false)
         {
             try
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
                 var ctr = TinyIoCContainer.Current;
                 _VSOutputWindow.Write(@"If you're using and enjoying QueryFirst, please leave a review!
 https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-details
@@ -89,6 +93,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
         void CSharpItemRenamed(ProjectItem renamedQuery, string OldName)
 
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (OldName.EndsWith(".sql"))
             {
                 int fuxed = 0;
@@ -108,19 +113,32 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                             item.Name = renamedQuery.Name.Replace(".sql", "Results.cs");
                             var oldBaseName = OldName.Replace(".sql", "");
                             var newBaseName = renamedQuery.Name.Replace(".sql", "");
-                            var userFile = ((TextDocument)item.Document.Object());
+                            bool rememberToClose = false;
                             if (!item.IsOpen)
+                            {
                                 item.Open();
+                                rememberToClose = true;
+                            }                            
+                            var userFile = ((TextDocument)item.Document.Object());
                             userFile.ReplacePattern(oldBaseName, newBaseName);
                             item.Document.Save();
 
+                            if (rememberToClose)
+                                item.Document.Close();
                             fuxed++;
                         }
                         if (fuxed == 2)
                         {
-                            // regenerate query in new location to get new path to manifest stream.
-                            var ctx = TinyIoC.TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
-                            new Conductor(_VSOutputWindow, ctx).ProcessOneQuery(renamedQuery.Document);
+                            // regenerate query in new location.
+                            var rememberToClose1 = false;
+                            if (!renamedQuery.IsOpen)
+                            {
+                                renamedQuery.Open();
+                                rememberToClose1 = true;
+                            }
+                            new Conductor(_VSOutputWindow).ProcessOneQuery(renamedQuery.Document);
+                            if (rememberToClose1)
+                                renamedQuery.Document.Close();
                             return; //2 files to rename, then we're finished.
                         }
                     }
@@ -129,8 +147,9 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
         }
         void myDocumentEvents_DocumentSaved(Document Document)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             //kludge
-            if (!TinyIoCContainer.Current.CanResolve<ICodeGenerationContext>())
+            if (!TinyIoCContainer.Current.CanResolve<IProvider>())
                 RegisterTypes();
             if (Document.FullName.EndsWith(".sql"))
                 try
@@ -139,8 +158,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                     var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                     if (text.Contains("managed by QueryFirst"))
                     {
-                        var ctx = TinyIoCContainer.Current.Resolve<ICodeGenerationContext>();
-                        var cdctr = new Conductor(_VSOutputWindow, ctx);
+                        var cdctr = new Conductor(_VSOutputWindow);
                         cdctr.ProcessOneQuery(Document);
                     }
 

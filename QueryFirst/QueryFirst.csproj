@@ -83,12 +83,21 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BackwardCompatibility.cs" />
     <Compile Include="DesignTimeConnectionString.cs" />
-    <Compile Include="ICodeGenerationContext.cs" />
     <Compile Include="IConfigFileReader.cs" />
-    <Compile Include="IConfigResolver.cs" />
     <Compile Include="QFConfig.cs" />
+    <Compile Include="SchemaFetching\TypeMappings\IDB2CS.cs" />
+    <Compile Include="SchemaFetching\TypeMappings\Postgres2CS.cs" />
+    <Compile Include="SchemaFetching\TypeMappings\SqlServer2CS.cs" />
+    <Compile Include="StateAndTransitions\State.cs" />
+    <Compile Include="StateAndTransitions\_1ProcessQueryPath.cs" />
+    <Compile Include="StateAndTransitions\_2ExtractNamesFromUserPartialClass.cs" />
+    <Compile Include="StateAndTransitions\_3ReadQuery.cs" />
+    <Compile Include="StateAndTransitions\_4ResolveConfig.cs" />
+    <Compile Include="StateAndTransitions\_5ScaffoldUpdateOrInsert.cs" />
+    <Compile Include="StateAndTransitions\_6FindUndeclaredParameters.cs" />
+    <Compile Include="StateAndTransitions\_7RunQueryAndGetResultSchema.cs" />
+    <Compile Include="StateAndTransitions\_8ParseOrFindDeclaredParams.cs" />
     <Compile Include="VSOutputWindow.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Providers\MySqlClient.cs" />
@@ -101,7 +110,6 @@
     </Compile>
     <Compile Include="Providers\SqlClient.cs" />
     <Compile Include="SchemaFetching\AdoSchemaFetcher.cs" />
-    <Compile Include="CodeGenerationContext.cs" />
     <Compile Include="SchemaFetching\TypeMappings\System2Alias.cs" />
     <Compile Include="InsertsAndUpdates\ScaffoldUpdate.gen.cs">
       <DependentUpon>ScaffoldUpdate.sql</DependentUpon>
@@ -109,7 +117,6 @@
     <Compile Include="InsertsAndUpdates\ScaffoldUpdateResults.cs">
       <DependentUpon>ScaffoldUpdate.sql</DependentUpon>
     </Compile>
-    <Compile Include="IQueryParamInfo.cs" />
     <Compile Include="ISignatureMaker.cs" />
     <Compile Include="SchemaFetching\ISchemaFetcher.cs" />
     <Compile Include="IWrapperClassMaker.cs" />
@@ -118,7 +125,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="PutCodeHere.cs" />
     <Compile Include="QfRuntimeConnection.cs" />
     <Compile Include="QueryParam.cs" />
     <Compile Include="Query.cs" />
@@ -164,6 +170,7 @@
     </VSCTCompile>
     <EmbeddedResource Include="InsertsAndUpdates\ScaffoldUpdate.sql" />
     <EmbeddedResource Include="Providers\sp_describe_undeclared_parameters.sql" />
+    <Content Include="license.txt" />
     <Content Include="ReadMe.txt" />
     <Content Include="Resources\16.bmp" />
     <Content Include="Resources\QueryFirstCmd.png" />
@@ -370,6 +377,7 @@
     <Analyzer Include="..\packages\Microsoft.VisualStudio.Threading.Analyzers.15.8.209\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\Microsoft.VisualStudio.Threading.Analyzers.15.8.209\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.dll" />
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

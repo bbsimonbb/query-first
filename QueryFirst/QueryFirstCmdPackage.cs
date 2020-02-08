@@ -92,6 +92,7 @@ namespace QueryFirst
         #endregion
         public int OnShellPropertyChange(int propid, object var)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // when zombie state changes to false, finish package initialization
             if ((int)__VSSPROPID.VSSPROPID_Zombie == propid)
             {
@@ -112,6 +113,7 @@ namespace QueryFirst
         }
         private bool zombieProofInitialization()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             dte = GetService(typeof(SDTE)) as DTE;
             DTE2 dte2 = GetService(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;//Package.GetGlobalService(typeof(DTE)) as DTE2;
             if (dte != null && dte2 != null)

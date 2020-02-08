@@ -21,9 +21,9 @@ namespace QueryFirst.Providers
             return new MySqlConnection(connectionString);
         }
         
-        public override List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
+        public override List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
-            var queryParams = new List<IQueryParamInfo>();
+            var queryParams = new List<QueryParamInfo>();
             // get design time section
             var dt = Regex.Match(queryText, "-- designTime(?<designTime>.*)-- endDesignTime", RegexOptions.Singleline).Value;
             // extract declared parameters
@@ -45,7 +45,7 @@ namespace QueryFirst.Providers
 
             return queryParams;
         }
-        public override string MakeAddAParameter(ICodeGenerationContext ctx)
+        public override string MakeAddAParameter(State state)
         {
             StringBuilder code = new StringBuilder();
             code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length, int Scale, int Precision)\n{");
@@ -53,9 +53,10 @@ namespace QueryFirst.Providers
             code.AppendLine("}");
             return code.ToString();
         }
-        public override List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString)
+        public override List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
         {
-            return new List<IQueryParamInfo>();
+            outputMessage = null;
+            return new List<QueryParamInfo>();
         }
     }
 }

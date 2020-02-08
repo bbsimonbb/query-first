@@ -1,5 +1,6 @@
 ﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
 using System;
 
 namespace QueryFirst
@@ -9,6 +10,7 @@ namespace QueryFirst
         private OutputWindowPane _outPane;
         public VSOutputWindow(DTE2 env)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             OutputWindow outputWindow = env.ToolWindows.OutputWindow;
 
             for (uint i = 1; i <= outputWindow.OutputWindowPanes.Count; i++)
@@ -26,6 +28,7 @@ namespace QueryFirst
         }
         public void Write(string message)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _outPane.OutputString(message);
         }
     }

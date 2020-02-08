@@ -18,13 +18,13 @@ namespace QueryFirst.Providers
         {
             return new NpgsqlConnection(connectionString);
         }
-        public List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
+        public List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
-            return FindUndeclaredParameters(queryText, connectionString);
+            return FindUndeclaredParameters(queryText, connectionString, out string outputMessage);
         }
-        public List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString)
+        public List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
         {
-            var queryParams = new List<IQueryParamInfo>();
+            var queryParams = new List<QueryParamInfo>();
             var matchParams = Regex.Matches(queryText, "(:|@)\\w*");
             if (matchParams.Count > 0)
             {
@@ -47,7 +47,7 @@ namespace QueryFirst.Providers
                         csName = foundOne.Value.Substring(1);
                         UserDeclaredType = "";
                     }
-                    var qp = TinyIoC.TinyIoCContainer.Current.Resolve<IQueryParamInfo>();
+                    var qp = TinyIoC.TinyIoCContainer.Current.Resolve<QueryParamInfo>();
                     qp.CSName = csName;
                     qp.DbName = foundOne.Value;
                     qp.DbType = UserDeclaredType;
@@ -58,9 +58,10 @@ namespace QueryFirst.Providers
                     queryParams.Add(qp);
                 }
             }
+            outputMessage = null;
             return queryParams;
         }
-        public string ConstructParameterDeclarations(List<IQueryParamInfo> foundParams)
+        public string ConstructParameterDeclarations(List<QueryParamInfo> foundParams)
         {
             // nothing to do here.
             return null;
@@ -69,7 +70,7 @@ namespace QueryFirst.Providers
         {
             // no notion of declaring parameters in Postgres
             // refacto, will this work harvesting connection string from passed command !
-            foreach (var queryParam in FindUndeclaredParameters(cmd.CommandText, cmd.Connection.ConnectionString))
+            foreach (var queryParam in FindUndeclaredParameters(cmd.CommandText, cmd.Connection.ConnectionString, out string outputMessage))
             {
                 var myParam = new global::Npgsql.NpgsqlParameter();
                 myParam.ParameterName = queryParam.DbName;
@@ -82,7 +83,7 @@ namespace QueryFirst.Providers
             }
 
         }
-        public virtual string MakeAddAParameter(ICodeGenerationContext ctx)
+        public virtual string MakeAddAParameter(State state)
         {
             StringBuilder code = new StringBuilder();
             code.AppendLine("private void AddAParameter(IDbCommand Cmd, string DbType, string DbName, object Value, int Length, int Scale, int Precision)\n{");
@@ -223,7 +224,15 @@ namespace QueryFirst.Providers
             //InternalChar internalchar byte
             //Geometry geometry PostgisGeometry
         }
-
-
+        /// <summary>
+        /// No implementation for Postgres
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        public List<ResultFieldDetails> GetQuerySchema2ndAttempt(string sql, string connectionString)
+        {
+            return null;
+        }
     }
 }

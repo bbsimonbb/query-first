@@ -15,15 +15,15 @@ namespace QueryFirst
         /// </summary>
         /// <param name="queryText">The text of the query from which parameters are to be extracted.</param>
         /// <returns></returns>
-        List<IQueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString);
-        List<IQueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString);
+        List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString);
+        List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage);
         /// <summary>
         /// Find undeclared parameters and add them, either in the declarations section of the text (SqlServer, MySql)
         /// or as regular parameters on the command.
         /// </summary>
         /// <param name="cmd">The command to add parameters to. CommandText must already be assigned.</param>
         void PrepareParametersForSchemaFetching(IDbCommand cmd);
-        string ConstructParameterDeclarations(List<IQueryParamInfo> foundParams);
+        string ConstructParameterDeclarations(List<QueryParamInfo> foundParams);
 
         /// <summary>
         /// Creates and returns a provider-specific connection instance.
@@ -48,6 +48,15 @@ namespace QueryFirst
         /// </summary>
         /// <param name="ctx">The code generation context</param>
         /// <returns></returns>
-        string MakeAddAParameter(ICodeGenerationContext ctx);
+        string MakeAddAParameter(State state);
+
+        /// <summary>
+        /// The ADO way is not working for Sql Server table valued functions. Here we give providers a chance to 
+        /// do better if the initial attempt returns no rows.
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="sql">The query whose schema we are interested in</param>
+        /// <returns></returns>
+        List<ResultFieldDetails> GetQuerySchema2ndAttempt(string sql, string connectionString);
     }
 }
