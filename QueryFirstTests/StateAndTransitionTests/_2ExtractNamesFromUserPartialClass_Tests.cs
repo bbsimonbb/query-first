@@ -41,7 +41,8 @@ namespace QfTestConsoleFramework
             new _2ExtractNamesFromUserPartialClass().Go(state, userPartial);
             // Assert
             state._2ResultClassName.Should().Be("SharesightTrade");
-            state._2ResultInterfaceName.Should().Be("");
+            // no interface, so we should see the class name
+            state._2ResultInterfaceName.Should().Be("SharesightTrade"); 
             state._2Namespace.Should().Be("QfTestConsoleFramework");
 
         }

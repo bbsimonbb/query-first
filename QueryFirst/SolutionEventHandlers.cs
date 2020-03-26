@@ -136,7 +136,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                                 renamedQuery.Open();
                                 rememberToClose1 = true;
                             }
-                            new Conductor(_VSOutputWindow).ProcessOneQuery(renamedQuery.Document);
+                            new Conductor(_VSOutputWindow, null,null).ProcessOneQuery(renamedQuery.Document);
                             if (rememberToClose1)
                                 renamedQuery.Document.Close();
                             return; //2 files to rename, then we're finished.
@@ -158,7 +158,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                     var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                     if (text.Contains("managed by QueryFirst"))
                     {
-                        var cdctr = new Conductor(_VSOutputWindow);
+                        var cdctr = new Conductor(_VSOutputWindow, null, null);
                         cdctr.ProcessOneQuery(Document);
                     }
 

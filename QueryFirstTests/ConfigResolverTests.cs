@@ -1,7 +1,9 @@
 ﻿using QueryFirst;
-using Newtonsoft.Json;
 using Xunit;
 using FluentAssertions;
+using System.Runtime.Serialization.Json;
+using System.IO;
+using System.Text;
 
 namespace QueryFirstTests
 {
@@ -24,9 +26,9 @@ namespace QueryFirstTests
             // act
             var config = _configResolver.Go(state)._4Config;
             // assert
-            config.DefaultConnection.Should().Be("connectionFromFake");
-            config.Provider.Should().Be("providerFromFake");
-            config.HelperAssembly.Should().Be("helperAssemblyFromFake");
+            config.defaultConnection.Should().Be("connectionFromFake");
+            config.provider.Should().Be("providerFromFake");
+            config.helperAssembly.Should().Be("helperAssemblyFromFake");
         }
         [Fact]
         public void When_ConnectionAndProviderInQuery_ReturnsValueFromQuery()
@@ -49,9 +51,9 @@ endDesignTime*/
             // act
             var config = _configResolver.Go(state)._4Config;
             // assert
-            config.DefaultConnection.Should().Be("connectionFromQuery");
-            config.Provider.Should().Be("providerFromQuery");
-            config.HelperAssembly.Should().Be("helperAssemblyFromFake");
+            config.defaultConnection.Should().Be("connectionFromQuery");
+            config.provider.Should().Be("providerFromQuery");
+            config.helperAssembly.Should().Be("helperAssemblyFromFake");
         }
         [Fact]
         public void When_ConnectionInQueryWOProvider_ReturnsDefaultProvider()
@@ -73,9 +75,9 @@ endDesignTime*/
             // act
             var config = _configResolver.Go(state)._4Config;
             // assert
-            config.DefaultConnection.Should().Be("connectionFromQuery");
-            config.Provider.Should().Be("System.Data.SqlClient");
-            config.HelperAssembly.Should().Be("helperAssemblyFromFake");
+            config.defaultConnection.Should().Be("connectionFromQuery");
+            config.provider.Should().Be("System.Data.SqlClient");
+            config.helperAssembly.Should().Be("helperAssemblyFromFake");
         }
 
         // todo we need some tests that target config files and the overriding of values.
@@ -84,14 +86,23 @@ endDesignTime*/
     {
         public string GetConfigFile(string filePath)
         {
-            return JsonConvert.SerializeObject(
-                new QFConfigModel
-                {
-                    DefaultConnection = "connectionFromFake",
-                    Provider = "providerFromFake",
-                    HelperAssembly = "helperAssemblyFromFake"
-                }
-            );
+            var config = new QFConfigModel
+            {
+                defaultConnection = "connectionFromFake",
+                provider = "providerFromFake",
+                helperAssembly = "helperAssemblyFromFake"
+            };
+
+            using (var ms = new MemoryStream())
+            {
+                var ser = new DataContractJsonSerializer(typeof(QFConfigModel));
+                ser.WriteObject(ms, config);
+                byte[] json = ms.ToArray();
+                ms.Close();
+                return Encoding.UTF8.GetString(json, 0, json.Length);
+            }
+
+
         }
     }
 }

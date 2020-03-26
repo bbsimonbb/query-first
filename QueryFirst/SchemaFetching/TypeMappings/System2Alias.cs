@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace QueryFirst.TypeMappings
+namespace QueryFirst
 {
     public static class System2Alias
     {
@@ -29,18 +25,18 @@ namespace QueryFirst.TypeMappings
                 {"System.DateTime","DateTime" }
             };
 
-        public static string Map(string CSType, bool AllowDBNull)
+        public static string Map(string csType, bool nullable)
         {
-            if (_map.ContainsKey(CSType))
+            if (_map.ContainsKey(csType))
             {
-                var nullable = "?";
-                if (!AllowDBNull || CSType == "System.String" || CSType == "System.Object")
-                    nullable = "";
-                return _map[CSType] + nullable;
+                var qm = "?";
+                if (!nullable || csType == "System.String" || csType == "System.Object")
+                    qm = "";
+                return _map[csType] + qm;
             }
             else
             {
-                return CSType;
+                return csType;
             }
         }
     }

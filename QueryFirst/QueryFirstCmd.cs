@@ -1,11 +1,8 @@
-﻿using System;
-using System.ComponentModel.Design;
-using System.Globalization;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-//sby
-using EnvDTE;
+﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
+using System;
+using System.ComponentModel.Design;
 
 namespace QueryFirst
 {
@@ -116,7 +113,7 @@ namespace QueryFirst
                             var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                             if (text.Contains("managed by QueryFirst"))
                             {
-                                new Conductor(vsOutputWindow).ProcessOneQuery(item.Document);
+                                new Conductor(vsOutputWindow, null, null).ProcessOneQuery(item.Document);
                             }
                             
                         }

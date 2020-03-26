@@ -40,5 +40,6 @@
         string MakeInterface(State sate);
         string SelfTestUsings(State sate);
         string MakeSelfTestMethod(State sate);
+        string MakeTvpPocos(State state);
     }
 }
