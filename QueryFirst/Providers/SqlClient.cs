@@ -31,7 +31,14 @@ namespace QueryFirst.Providers
                 }
                 catch (TypeNotMatchedException)
                 {
-                    qp = GetParamInfoSecondAttempt(textParams[i].SqlTypeAndLength, connectionString);
+                    try
+                    {
+                        qp = GetParamInfoSecondAttempt(textParams[i].SqlTypeAndLength, connectionString);
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new TypeNotMatchedException("Unable to find a type for " + textParams[i].SqlTypeAndLength, ex);
+                    }
                 }
                 // direction
                 if ((textParams[i].Direction ?? "").ToLower() == "--inout")
@@ -128,7 +135,6 @@ namespace QueryFirst.Providers
         {
             // ToDo. I'm mixing Smo calls with string manip. This will not do.
             // Table Valued Parameters...
-            //throw new NotImplementedException();
             SqlConnection conn = new SqlConnection(connectionString);
             Server s = new Server(new ServerConnection(conn));
             var myDb = s.Databases.Cast<Database>().Where(db => db.ActiveConnections > 0).FirstOrDefault();
@@ -439,6 +445,7 @@ namespace QueryFirst.Providers
     public class TypeNotMatchedException : Exception
     {
         public TypeNotMatchedException(string message) : base(message) { }
+        public TypeNotMatchedException(string message, Exception ex) : base(message, ex) { }
     }
 
 }

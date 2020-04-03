@@ -12,7 +12,7 @@ namespace QueryFirst
     class SolutionEventHandlers
     {
         // singleton
-        private static SolutionEventHandlers _inst = null;
+        private static SolutionEventHandlers _inst = null;        
         public static SolutionEventHandlers Inst(DTE dte, DTE2 dte2)
         {
             if (_inst == null)
@@ -27,6 +27,7 @@ namespace QueryFirst
         private EnvDTE.Events myEvents;
         private EnvDTE.DocumentEvents myDocumentEvents;
         private VSOutputWindow _VSOutputWindow;
+        private bool spammed = false;
         ProjectItemsEvents CSharpProjectItemsEvents;
         #endregion
         // constructor
@@ -55,9 +56,16 @@ namespace QueryFirst
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
                 var ctr = TinyIoCContainer.Current;
-                _VSOutputWindow.Write(@"If you're using and enjoying QueryFirst, please leave a review!
+                if (!spammed)
+                {
+                    _VSOutputWindow.Write(
+@"If you're using and enjoying QueryFirst, please leave a review!
 https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-details
-");
+"
+                    );
+                    spammed = true;
+                }
+
                 //kludge
                 if (force == true)
                 {

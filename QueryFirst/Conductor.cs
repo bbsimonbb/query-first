@@ -49,7 +49,7 @@ namespace QueryFirst
             _queryDoc = queryDoc;
             _item = queryDoc.ProjectItem;
 
-
+            // todo: if a .sql is not in the project, this throws null exception. What should it do?
             new _1ProcessQueryPath().Go(_state, (string)queryDoc.ProjectItem.Properties.Item("FullPath").Value);
 
             // Test this! If I can get source control exclusions working, team members won't get the generated file.
