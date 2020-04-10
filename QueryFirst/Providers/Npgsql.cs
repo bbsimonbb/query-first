@@ -32,7 +32,7 @@ namespace QueryFirst.Providers
                 foreach (Match foundOne in matchParams)
                 {
                     DbType myDbType;
-                    string csName;
+                    string name;
                     string UserDeclaredType = null;
                     var parts = foundOne.Value.Split('_');
                     if (parts.Length > 1)
@@ -40,15 +40,17 @@ namespace QueryFirst.Providers
                         UserDeclaredType = parts[parts.Length - 1];
                         // just to verify. Does this throw?
                         myDbType = (DbType)System.Enum.Parse(typeof(DbType), UserDeclaredType);
-                        csName = foundOne.Value.Substring(1, foundOne.Value.Length - UserDeclaredType.Length - 2); // strip type to form csName
+                        name = foundOne.Value.Substring(1, foundOne.Value.Length - UserDeclaredType.Length - 2); // strip type to form csName
                     }
                     else
                     {
-                        csName = foundOne.Value.Substring(1);
+                        name = foundOne.Value.Substring(1);
                         UserDeclaredType = "";
                     }
                     var qp = TinyIoC.TinyIoCContainer.Current.Resolve<QueryParamInfo>();
-                    qp.CSName = csName;
+                    qp.CSNameCamel = char.ToLower(name.First()) + name.Substring(1);
+                    qp.CSNamePascal = char.ToUpper(name.First()) + name.Substring(1);
+                    qp.CSNamePrivate = "_" + qp.CSNameCamel;
                     qp.DbName = foundOne.Value;
                     qp.DbType = UserDeclaredType;
                     if (DBType2CSType.ContainsKey(UserDeclaredType))
@@ -233,6 +235,11 @@ namespace QueryFirst.Providers
         public List<ResultFieldDetails> GetQuerySchema2ndAttempt(string sql, string connectionString)
         {
             return null;
+        }
+
+        public string HookUpForExecutionMessages()
+        {
+            return "";
         }
     }
 }

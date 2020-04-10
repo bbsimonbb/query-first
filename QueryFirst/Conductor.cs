@@ -1,11 +1,9 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using System;
-using System.Data.SqlClient;
 using System.IO;
-using System.Runtime.CompilerServices;
+using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Text.RegularExpressions;
 using TinyIoC;
 
 //[assembly: InternalsVisibleTo("QueryFirstTests")]
@@ -13,8 +11,8 @@ using TinyIoC;
 
 namespace QueryFirst
 {
-    
-    class Conductor
+
+    public class Conductor
     {
         private State _state;
         private TinyIoCContainer _tiny;
@@ -22,25 +20,36 @@ namespace QueryFirst
         private Document _queryDoc;
         private ProjectItem _item;
         private IProvider _provider;
+        private IWrapperClassMaker _wrapper;
+        private IResultClassMaker _results;
 
-        public Conductor(VSOutputWindow vsOutpuWindow)
+        //public Conductor(VSOutputWindow vsOutpuWindow):this(vsOutpuWindow, null, null)
+        //{
+        //    _vsOutputWindow = vsOutpuWindow;
+        //}
+
+        //public Conductor() : this(null,null,null)
+        //{
+        //    // just used for testing
+        //}
+        public Conductor(VSOutputWindow vSOutputWindow, IWrapperClassMaker wrapperClassMaker, IResultClassMaker resultClassMaker)
         {
-            _vsOutputWindow = vsOutpuWindow;
+            _tiny = TinyIoCContainer.Current;
+            _wrapper = wrapperClassMaker ?? _tiny.Resolve<IWrapperClassMaker>();
+            _results = resultClassMaker ?? _tiny.Resolve<IResultClassMaker>();
+
+            _vsOutputWindow = vSOutputWindow;
         }
-
-
-
 
         public void ProcessOneQuery(Document queryDoc)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _tiny = TinyIoCContainer.Current;
             _state = new State();
             _queryDoc = queryDoc;
             _item = queryDoc.ProjectItem;
 
-
+            // todo: if a .sql is not in the project, this throws null exception. What should it do?
             new _1ProcessQueryPath().Go(_state, (string)queryDoc.ProjectItem.Properties.Item("FullPath").Value);
 
             // Test this! If I can get source control exclusions working, team members won't get the generated file.
@@ -48,7 +57,7 @@ namespace QueryFirst
             {
                 var _ = File.Create(_state._1GeneratedClassFullFilename);
                 _.Dispose();
-            }                
+            }
             if (GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename) != null)
                 queryDoc.ProjectItem.Collection.AddFromFile(_state._1GeneratedClassFullFilename);
 
@@ -65,15 +74,15 @@ namespace QueryFirst
 
 
             // We have the config, we can instantiate our provider...
-            if (_tiny.CanResolve<IProvider>(_state._4Config.Provider))
-                _provider = _tiny.Resolve<IProvider>(_state._4Config.Provider);
+            if (_tiny.CanResolve<IProvider>(_state._4Config.provider))
+                _provider = _tiny.Resolve<IProvider>(_state._4Config.provider);
             else
                 _vsOutputWindow.Write(@"After resolving the config, we have no provider\n");
 
 
             try
             {
-                if (string.IsNullOrEmpty(_state._4Config.DefaultConnection))
+                if (string.IsNullOrEmpty(_state._4Config.defaultConnection))
                 {
                     _vsOutputWindow.Write(@"No design time connection string. You need to create qfconfig.json beside or above your query 
 or put --QfDefaultConnection=myConnectionString somewhere in your query file.
@@ -82,134 +91,76 @@ See the Readme section at https://marketplace.visualstudio.com/items?itemName=bb
                     return; // nothing to be done
 
                 }
-                if (!_tiny.CanResolve<IProvider>(_state._4Config.Provider))
+                if (!_tiny.CanResolve<IProvider>(_state._4Config.provider))
                 {
                     _vsOutputWindow.Write(string.Format(
 @"No Implementation of IProvider for providerName {0}. 
 The query {1} may not run and the wrapper has not been regenerated.\n",
-                    _state._4Config.Provider, _state._1BaseName
+                    _state._4Config.provider, _state._1BaseName
                     ));
                     return;
                 }
-                // Use QueryFirst within QueryFirst !
-                // ToDo, to make this work with Postgres, store as ConnectionStringSettings with provider name.
-                QfRuntimeConnection.CurrentConnectionString = _state._4Config.DefaultConnection;
+                // Scaffold inserts and updates
+                _tiny.Resolve<_5ScaffoldUpdateOrInsert>().Go(ref _state);
 
-
-                var matchInsert = Regex.Match(_state._3InitialQueryText, "^insert\\s+into\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                var matchUpdate = Regex.Match(_state._3InitialQueryText, "^update\\s+(?<tableName>\\w+)\\.\\.\\.", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                if (matchInsert.Success)
+                if (_state._3InitialQueryText != _state._5QueryAfterScaffolding)
                 {
-                    var statement = new ScaffoldInsert().ExecuteScalar(matchInsert.Groups["tableName"].Value);
-                    if (string.IsNullOrEmpty(statement))
-                    {
-                        _vsOutputWindow.Write("Unknown problem generating insert.\n");
-
-                    }
-                    else
-                    {
-                        var ep = textDoc.CreateEditPoint();
-                        ep.ReplaceText(_state._3InitialQueryText.Length, statement, 0);
-                        //ctx.QueryDoc.Save();
-                    }
-
+                    var ep = textDoc.CreateEditPoint();
+                    ep.ReplaceText(_state._3InitialQueryText.Length, _state._5QueryAfterScaffolding, 0);
                 }
-                else if (matchUpdate.Success)
+
+
+                // Execute query
+                try
                 {
-                    var statement = new ScaffoldUpdate().ExecuteScalar(matchUpdate.Groups["tableName"].Value);
-                    if (string.IsNullOrEmpty(statement))
+                    new _6FindUndeclaredParameters(_provider).Go(ref _state, out string outputMessage);
+                    // if message returned, write it to output.
+                    if (!string.IsNullOrEmpty(outputMessage))
+                        _vsOutputWindow.Write(outputMessage);
+                    // if undeclared params were found, add them to the .sql
+                    if (!string.IsNullOrEmpty(_state._6NewParamDeclarations))
                     {
-                        _vsOutputWindow.Write("Unknown problem generating update.\n");
+                        ReplacePattern("-- endDesignTime", _state._6NewParamDeclarations + "-- endDesignTime");
+                    }
 
-                    }
-                    else
-                    {
-                        var ep = textDoc.CreateEditPoint();
-                        ep.ReplaceText(_state._3InitialQueryText.Length, statement, 0);
-                        //ctx.QueryDoc.Save();
-                    }
+                    new _7RunQueryAndGetResultSchema(new AdoSchemaFetcher(), _provider).Go(ref _state);
+                    new _8ParseOrFindDeclaredParams(_provider).Go(ref _state);
                 }
-                else
+                catch (Exception ex)
                 {
-
-                    // Execute query
-                    try
-                    {
-                        new _6FindUndeclaredParameters(_provider).Go(ref _state, out string outputMessage);
-                        // if message returned, write it to output.
-                        if(!string.IsNullOrEmpty(outputMessage))
-                            _vsOutputWindow.Write(outputMessage);
-                        // if undeclared params were found, add them to the .sql
-                        if (!string.IsNullOrEmpty(_state._6NewParamDeclarations))
-                        {
-                            ReplacePattern("-- endDesignTime", _state._6NewParamDeclarations + "-- endDesignTime");
-                        }
-
-                        new _7RunQueryAndGetResultSchema(new AdoSchemaFetcher(), _provider).Go(ref _state);
-                        new _8ParseOrFindDeclaredParams(_provider).Go(ref _state);
-                    }
-                    catch (Exception ex)
-                    {
-                        StringBuilder bldr = new StringBuilder();
-                        bldr.AppendLine("Error running query.");
-                        bldr.AppendLine();
-                        bldr.AppendLine("/*The last attempt to run this query failed with the following error. This class is no longer synced with the query");
-                        bldr.AppendLine("You can compile the class by deleting this error information, but it will likely generate runtime errors.");
-                        bldr.AppendLine("-----------------------------------------------------------");
-                        bldr.AppendLine(ex.Message);
-                        bldr.AppendLine("-----------------------------------------------------------");
-                        bldr.AppendLine(ex.StackTrace);
-                        bldr.AppendLine("*/");
-                        File.AppendAllText(_state._1GeneratedClassFullFilename, bldr.ToString());
-                        throw;
-                    }
-                    StringBuilder Code = new StringBuilder();
-
-                    var wrapper = _tiny.Resolve<IWrapperClassMaker>();
-                    var results = _tiny.Resolve<IResultClassMaker>();
-
-                    Code.Append(wrapper.StartNamespace(_state));
-                    Code.Append(wrapper.Usings(_state));
-                    if (_state._4Config.MakeSelfTest)
-                        Code.Append(wrapper.SelfTestUsings(_state));
-                    if (_state._7ResultFields != null && _state._7ResultFields.Count > 0)
-                        Code.Append(results.Usings());
-                    Code.Append(wrapper.MakeInterface(_state));
-                    Code.Append(wrapper.StartClass(_state));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithoutConn(_state));
-                    Code.Append(wrapper.MakeExecuteNonQueryWithConn(_state));
-                    Code.Append(wrapper.MakeGetCommandTextMethod(_state));
-                    Code.Append(_provider.MakeAddAParameter(_state));
-
-                    if (_state._4Config.MakeSelfTest)
-                        Code.Append(wrapper.MakeSelfTestMethod(_state));
-                    if (_state._7ResultFields != null && _state._7ResultFields.Count > 0)
-                    {
-                        Code.Append(wrapper.MakeExecuteWithoutConn(_state));
-                        Code.Append(wrapper.MakeExecuteWithConn(_state));
-                        Code.Append(wrapper.MakeGetOneWithoutConn(_state));
-                        Code.Append(wrapper.MakeGetOneWithConn(_state));
-                        Code.Append(wrapper.MakeExecuteScalarWithoutConn(_state));
-                        Code.Append(wrapper.MakeExecuteScalarWithConn(_state));
-
-                        Code.Append(wrapper.MakeCreateMethod(_state));
-                        Code.Append(wrapper.MakeOtherMethods(_state));
-                        Code.Append(wrapper.CloseClass(_state));
-                        Code.Append(results.StartClass(_state));
-                        foreach (var fld in _state._7ResultFields)
-                        {
-                            Code.Append(results.MakeProperty(fld));
-                        }
-                    }
-                    Code.Append(results.CloseClass()); // closes wrapper class if no results !
-                    Code.Append(wrapper.CloseNamespace(_state));
-                    //File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
-                    var genFile = GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename);
-                    WriteAndFormat(genFile, Code.ToString());
-                    // what was this for ????
-                    //var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem, _state._1CurrDir + _state._1BaseName + "Results.cs");
-                    _vsOutputWindow.Write("QueryFirst generated wrapper class for " + _state._1BaseName + ".sql" + Environment.NewLine);
+                    StringBuilder bldr = new StringBuilder();
+                    bldr.AppendLine("Error running query.");
+                    bldr.AppendLine();
+                    bldr.AppendLine("/*The last attempt to run this query failed with the following error. This class is no longer synced with the query");
+                    bldr.AppendLine("You can compile the class by deleting this error information, but it will likely generate runtime errors.");
+                    bldr.AppendLine("-----------------------------------------------------------");
+                    bldr.AppendLine(ex.Message);
+                    bldr.AppendLine("-----------------------------------------------------------");
+                    bldr.AppendLine(ex.StackTrace);
+                    bldr.AppendLine("*/");
+                    File.AppendAllText(_state._1GeneratedClassFullFilename, bldr.ToString());
+                    throw;
                 }
+
+                // dump state for reproducing issues
+#if DEBUG
+                using (var ms = new MemoryStream())
+                {
+                    var ser = new DataContractJsonSerializer(typeof(State));
+                    ser.WriteObject(ms, _state);
+                    byte[] json = ms.ToArray();
+                    ms.Close();
+                    File.WriteAllText(_state._1CurrDir + "qfDumpState.json", Encoding.UTF8.GetString(json, 0, json.Length));
+                }
+#endif
+
+                var code = GenerateCode(_state);
+                //File.WriteAllText(ctx.GeneratedClassFullFilename, Code.ToString());
+                var genFile = GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename);
+                WriteAndFormat(genFile, code);
+                // what was this for ????
+                //var partialClassFile = GetItemByFilename(_ctx.QueryDoc.ProjectItem, _state._1CurrDir + _state._1BaseName + "Results.cs");
+                _vsOutputWindow.Write("QueryFirst generated wrapper class for " + _state._1BaseName + ".sql" + Environment.NewLine);
 
             }
             catch (Exception ex)
@@ -266,6 +217,50 @@ The query {1} may not run and the wrapper has not been regenerated.\n",
             ThreadHelper.ThrowIfNotOnUIThread();
             var textDoc = ((TextDocument)_queryDoc.Object());
             textDoc.ReplacePattern(pattern, replaceWith);
+        }
+
+        public string GenerateCode(State state)
+        {
+            StringBuilder Code = new StringBuilder();
+
+            Code.Append(_wrapper.StartNamespace(state));
+            Code.Append(_wrapper.Usings(state));
+            if (state._4Config.makeSelfTest)
+                Code.Append(_wrapper.SelfTestUsings(state));
+            if (state._7ResultFields != null && state._7ResultFields.Count > 0)
+                Code.Append(_results.Usings());
+            Code.Append(_wrapper.MakeInterface(state));
+            Code.Append(_wrapper.StartClass(state));
+            Code.Append(_wrapper.MakeExecuteNonQueryWithoutConn(state));
+            Code.Append(_wrapper.MakeExecuteNonQueryWithConn(state));
+            Code.Append(_wrapper.MakeGetCommandTextMethod(state));
+            //Code.Append(_provider.MakeAddAParameter(state));
+            Code.Append(_wrapper.MakeTvpPocos(state));
+
+            if (state._4Config.makeSelfTest)
+                Code.Append(_wrapper.MakeSelfTestMethod(state));
+            if (state._7ResultFields != null && state._7ResultFields.Count > 0)
+            {
+                Code.Append(_wrapper.MakeExecuteWithoutConn(state));
+                Code.Append(_wrapper.MakeExecuteWithConn(state));
+                Code.Append(_wrapper.MakeGetOneWithoutConn(state));
+                Code.Append(_wrapper.MakeGetOneWithConn(state));
+                Code.Append(_wrapper.MakeExecuteScalarWithoutConn(state));
+                Code.Append(_wrapper.MakeExecuteScalarWithConn(state));
+
+                Code.Append(_wrapper.MakeCreateMethod(state));
+                Code.Append(_wrapper.MakeOtherMethods(state));
+                Code.Append(_wrapper.CloseClass(state));
+                Code.Append(_results.StartClass(state));
+                foreach (var fld in state._7ResultFields)
+                {
+                    Code.Append(_results.MakeProperty(fld));
+                }
+            }
+            Code.Append(_results.CloseClass()); // closes wrapper class if no results !
+            Code.Append(_wrapper.CloseNamespace(state));
+
+            return Code.ToString();
         }
     }
 }

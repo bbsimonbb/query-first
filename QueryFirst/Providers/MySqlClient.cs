@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using TinyIoC;
@@ -20,7 +16,7 @@ namespace QueryFirst.Providers
         {
             return new MySqlConnection(connectionString);
         }
-        
+
         public override List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
             var queryParams = new List<QueryParamInfo>();
@@ -29,14 +25,17 @@ namespace QueryFirst.Providers
             // extract declared parameters
             string pattern = "\\bset\\s+(?<param>@\\w+)";
             var myParams = Regex.Matches(dt, pattern, RegexOptions.IgnoreCase);
-            if(myParams.Count > 0)
+            if (myParams.Count > 0)
             {
-                foreach(Match m in myParams)
+                foreach (Match m in myParams)
                 {
+                    var name = m.Groups["param"].Value.Substring(1);
                     queryParams.Add(new QueryParamInfo()
                     {
                         DbName = m.Groups["param"].Value,
-                        CSName = m.Groups["param"].Value.Substring(1),
+                        CSNameCamel = char.ToLower(name.First()) + name.Substring(1),
+                        CSNamePascal = char.ToUpper(name.First()) + name.Substring(1),
+                        CSNamePrivate = "_" + char.ToLower(name.First()) + name.Substring(1),
                         CSType = "object",
                         DbType = "Object"
                     });
@@ -57,6 +56,10 @@ namespace QueryFirst.Providers
         {
             outputMessage = null;
             return new List<QueryParamInfo>();
+        }
+        public override string HookUpForExecutionMessages()
+        {
+            return "";
         }
     }
 }

@@ -12,7 +12,7 @@ namespace QueryFirstTests
     {
         public string ConstructParameterDeclarations(List<QueryParamInfo> foundParams)
         {
-            throw new NotImplementedException();
+            return "declare @myParam int;\r\n";
         }
         public bool FindUndeclaredParameters_WasCalled = false;
         public List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
@@ -23,7 +23,7 @@ namespace QueryFirstTests
             {
                 { new QueryParamInfo
                     {
-                        CSName = "custNum",
+                        CSNameCamel = "custNum",
                         CSType = "int",
                         DbName = "CustNum",
                         Length = 20,
@@ -61,6 +61,11 @@ namespace QueryFirstTests
         public List<ResultFieldDetails> GetQuerySchema2ndAttempt(string sql, string connectionString)
         {
             return null;
+        }
+
+        public string HookUpForExecutionMessages()
+        {
+            throw new NotImplementedException();
         }
     }
 }

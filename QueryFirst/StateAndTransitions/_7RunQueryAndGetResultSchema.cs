@@ -18,11 +18,11 @@ namespace QueryFirst
             if (state == null)
                 throw new ArgumentNullException(nameof(state));
 
-            var fields = _schemaFetcher.GetFields(state._4Config.DefaultConnection, state._4Config.Provider, state._6QueryWithParamsAdded);
+            var fields = _schemaFetcher.GetFields(state._4Config.defaultConnection, state._4Config.provider, state._6QueryWithParamsAdded);
 
             if (fields.Count == 0)
             {
-                fields = _provider.GetQuerySchema2ndAttempt(state._6QueryWithParamsAdded, state._4Config.DefaultConnection);
+                fields = _provider.GetQuerySchema2ndAttempt(state._6QueryWithParamsAdded, state._4Config.defaultConnection);
             }
             fields.ForEach(field =>
             {
@@ -67,7 +67,7 @@ namespace QueryFirst
             return state;
         }
 
-        bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
+        bool IsNullable(Type type) => type == null || Nullable.GetUnderlyingType(type) != null;
 
     }
 }

@@ -18,9 +18,9 @@ namespace QueryFirst
             if (state == null)
                 throw new ArgumentNullException( nameof(state) );
             // also called in the bowels of schema fetching, for Postgres, because no notion of declarations.
-            var undeclared = _provider.FindUndeclaredParameters(state._3InitialQueryText, state._4Config.DefaultConnection, out outputMessage);
+            var undeclared = _provider.FindUndeclaredParameters(state._5QueryAfterScaffolding, state._4Config.defaultConnection, out outputMessage);
             state._6NewParamDeclarations = _provider.ConstructParameterDeclarations(undeclared);            
-            state._6QueryWithParamsAdded = state._3InitialQueryText.Replace("-- endDesignTime", state._6NewParamDeclarations + "-- endDesignTime");
+            state._6QueryWithParamsAdded = state._5QueryAfterScaffolding.Replace("-- endDesignTime", state._6NewParamDeclarations + "-- endDesignTime");
             state._6FinalQueryTextForCode = state._6QueryWithParamsAdded
                     .Replace("-- designTime", "/*designTime")
                     .Replace("-- endDesignTime", "endDesignTime*/")

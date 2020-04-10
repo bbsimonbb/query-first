@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace QueryFirst
@@ -28,25 +30,30 @@ namespace QueryFirst
             var configFileContents = _configFileReader.GetConfigFile(state._1CurrDir);
             if (!string.IsNullOrEmpty(configFileContents))
             {
-                config = JsonConvert.DeserializeObject<QFConfigModel>(configFileContents);
-                if (string.IsNullOrEmpty(config.Provider))
+                using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(configFileContents)))
                 {
-                    config.Provider = "System.Data.SqlClient";
+                    var ser = new DataContractJsonSerializer(typeof(QFConfigModel));
+                    config = ser.ReadObject(ms) as QFConfigModel;
+                    ms.Close();
+                }
+                if (string.IsNullOrEmpty(config.provider))
+                {
+                    config.provider = "System.Data.SqlClient";
                 }
             }
             // if the query defines a QfDefaultConnection, use it.
             var match = Regex.Match(state._3InitialQueryText, "^--QfDefaultConnection(=|:)(?<cstr>[^\r\n]*)", RegexOptions.Multiline);
             if (match.Success)
             {
-                config.DefaultConnection = match.Groups["cstr"].Value;
+                config.defaultConnection = match.Groups["cstr"].Value;
                 var matchProviderName = Regex.Match(state._3InitialQueryText, "^--QfDefaultConnectionProviderName(=|:)(?<pn>[^\r\n]*)", RegexOptions.Multiline);
                 if (matchProviderName.Success)
                 {
-                    config.Provider = matchProviderName.Groups["pn"].Value;
+                    config.provider = matchProviderName.Groups["pn"].Value;
                 }
                 else
                 {
-                    config.Provider = "System.Data.SqlClient";
+                    config.provider = "System.Data.SqlClient";
                 }
 
             }

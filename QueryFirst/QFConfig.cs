@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
 namespace QueryFirst
@@ -30,9 +29,9 @@ namespace QueryFirst
 
     public class QFConfigModel
     {
-        public string DefaultConnection { get; set; }
-        public string Provider { get; set; }
-        public string HelperAssembly { get; set; }
-        public bool MakeSelfTest { get; set; }
+        public string defaultConnection { get; set; }
+        public string provider { get; set; }
+        public string helperAssembly { get; set; }
+        public bool makeSelfTest { get; set; }
     }
 }

@@ -58,5 +58,11 @@ namespace QueryFirst
         /// <param name="sql">The query whose schema we are interested in</param>
         /// <returns></returns>
         List<ResultFieldDetails> GetQuerySchema2ndAttempt(string sql, string connectionString);
+        /// <summary>
+        /// Provider specific line in Execute methods to listen for execution messages.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        string HookUpForExecutionMessages();
     }
 }

@@ -5,7 +5,7 @@ using System;
 
 namespace QueryFirst
 {
-    class VSOutputWindow
+    public class VSOutputWindow
     {
         private OutputWindowPane _outPane;
         public VSOutputWindow(DTE2 env)

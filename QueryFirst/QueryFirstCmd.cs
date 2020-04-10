@@ -1,11 +1,8 @@
-﻿using System;
-using System.ComponentModel.Design;
-using System.Globalization;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-//sby
-using EnvDTE;
+﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
+using System;
+using System.ComponentModel.Design;
 
 namespace QueryFirst
 {
@@ -93,6 +90,8 @@ namespace QueryFirst
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 dte2 = ServiceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;//Package.GetGlobalService(typeof(DTE)) as DTE2;
             var vsOutputWindow = new VSOutputWindow(dte2);
+            RegisterTypes.Instance.Register(vsOutputWindow,false);
+
             foreach (Project proj in ((QueryFirstCmdPackage)_package).dte.Solution.Projects)
             {
                 ProcessAllItems(proj.ProjectItems, vsOutputWindow);
@@ -116,14 +115,17 @@ namespace QueryFirst
                             var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                             if (text.Contains("managed by QueryFirst"))
                             {
-                                new Conductor(vsOutputWindow).ProcessOneQuery(item.Document);
+                                new Conductor(vsOutputWindow, null, null).ProcessOneQuery(item.Document);
                             }
                             
                         }
                         if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                             ProcessAllItems(item.ProjectItems, vsOutputWindow);
                     }
-                    catch { }
+                    catch(Exception ex)
+                    {
+                        vsOutputWindow.Write(ex.ToString());
+                    }
                 }
             }
         }
