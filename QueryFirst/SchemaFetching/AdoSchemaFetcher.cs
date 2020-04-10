@@ -82,7 +82,10 @@ namespace QueryFirst
                             case "ColumnName":
                                 // sby : ColumnName might be null, in which case it will be created from ordinal.
                                 if (!string.IsNullOrEmpty(SchemaTable.Rows[i].Field<string>(j)))
-                                    qf.ColumnName = SchemaTable.Rows[i].Field<string>(j);
+                                {
+                                    var colName = SchemaTable.Rows[i].Field<string>(j);
+                                    qf.ColumnName = colName.StartsWith("JSON_") ? "Json" : colName; // rename column for 'FOR JSON' queries
+                                }
                                 break;
                             case "ColumnOrdinal":
                                 qf.ColumnOrdinal = (int)SchemaTable.Rows[i].Field<int>(j);

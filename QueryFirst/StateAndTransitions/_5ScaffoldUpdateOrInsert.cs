@@ -26,7 +26,7 @@ namespace QueryFirst
                     state._4Config.defaultConnection,
                     state._4Config.provider,
                     $"select * from {targetTable}"
-                ).Where(col => (!col.IsIdentity && !(new string[] { "text","ntext","image"}).Contains(col.TypeDb) /* && !col.IsComputed*/));
+                ).Where(col => (!col.IsIdentity && !(new string[] { "text","ntext","image","timestamp"}).Contains(col.TypeDb) /* && !col.IsComputed*/));
                 if (matchInsert.Success)
                 {
 

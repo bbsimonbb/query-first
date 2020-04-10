@@ -116,7 +116,7 @@ var myParam = cmd.CreateParameter();
 myParam.Direction = " + direction + @";
 myParam.ParameterName = """ + qp.DbName + @""";
 myParam.DbType = (DbType)Enum.Parse(typeof(DbType), """ + qp.DbType + "\");\r\n" +
-(qp.IsInput ? $"myParam.Value = {qp.CSNamePascal};" : "") + Environment.NewLine +
+(qp.IsInput ? $"myParam.Value = (object){qp.CSNamePascal} ?? DBNull.Value;" : "") + Environment.NewLine +
 @"cmd.Parameters.Add(myParam);
 }"
                 );
@@ -284,7 +284,7 @@ var myParam = cmd.CreateParameter();
 myParam.Direction = " + direction + @";
 myParam.ParameterName = """ + qp.DbName + @""";
 myParam.DbType = (DbType)Enum.Parse(typeof(DbType), """ + qp.DbType + "\");\r\n" +
-(qp.IsInput ? $"myParam.Value = {qp.CSNamePascal};" : "") + Environment.NewLine +
+(qp.IsInput ? $"myParam.Value = (object){qp.CSNamePascal} ?? DBNull.Value;" : "") + Environment.NewLine +
 @"cmd.Parameters.Add(myParam);
 }"
                 );
@@ -381,7 +381,7 @@ var myParam = cmd.CreateParameter();
 myParam.Direction = " + direction + @";
 myParam.ParameterName = """ + qp.DbName + @""";
 myParam.DbType = (DbType)Enum.Parse(typeof(DbType), """ + qp.DbType + "\");\r\n" +
-(qp.IsInput ? $"myParam.Value = {qp.CSNamePascal};" : "") + Environment.NewLine +
+(qp.IsInput ? $"myParam.Value = (object){qp.CSNamePascal} ?? DBNull.Value;" : "") + Environment.NewLine +
 @"cmd.Parameters.Add(myParam);
 }"
                 );

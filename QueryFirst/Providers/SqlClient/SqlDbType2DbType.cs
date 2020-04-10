@@ -36,67 +36,34 @@ namespace QueryFirst
 
         static TypeConvertor()
         {
-            DbTypeMapEntry dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(bool), DbType.Boolean, SqlDbType.Bit);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(byte), DbType.Double, SqlDbType.TinyInt);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(byte[]), DbType.Binary, SqlDbType.Image);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(DateTime), DbType.DateTime, SqlDbType.DateTime);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(Decimal), DbType.Decimal, SqlDbType.Decimal);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(double), DbType.Double, SqlDbType.Float);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(Guid), DbType.Guid, SqlDbType.UniqueIdentifier);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(Int16), DbType.Int16, SqlDbType.SmallInt);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(Int32), DbType.Int32, SqlDbType.Int);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(Int64), DbType.Int64, SqlDbType.BigInt);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(object), DbType.Object, SqlDbType.Variant);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(string), DbType.AnsiString, SqlDbType.VarChar);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            //sby
-            dbTypeMapEntry
-            = new DbTypeMapEntry(typeof(DateTime), DbType.DateTime2, SqlDbType.DateTime2);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry = new DbTypeMapEntry(typeof(string), DbType.String, SqlDbType.NVarChar);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry = new DbTypeMapEntry(typeof(string), DbType.StringFixedLength, SqlDbType.NChar);
-            _DbTypeList.Add(dbTypeMapEntry);
-
-            dbTypeMapEntry = new DbTypeMapEntry(typeof(string), DbType.AnsiStringFixedLength, SqlDbType.Char);
-            _DbTypeList.Add(dbTypeMapEntry);
+            // Adrian's
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Int64), DbType.Int64, SqlDbType.BigInt));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(byte[]), DbType.Binary, SqlDbType.Binary));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(bool), DbType.Boolean, SqlDbType.Bit));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(string), DbType.AnsiStringFixedLength, SqlDbType.Char));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(DateTime), DbType.Date, SqlDbType.Date));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(DateTime), DbType.DateTime, SqlDbType.DateTime));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(DateTime), DbType.DateTime2, SqlDbType.DateTime2));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Decimal), DbType.Decimal, SqlDbType.Decimal));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(double), DbType.Double, SqlDbType.Float));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(byte[]), DbType.Binary, SqlDbType.Image));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Int32), DbType.Int32, SqlDbType.Int));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Decimal), DbType.Decimal, SqlDbType.Money));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(string), DbType.StringFixedLength, SqlDbType.NChar));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(string), DbType.String, SqlDbType.NText));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(string), DbType.String, SqlDbType.NVarChar));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Single), DbType.Single, SqlDbType.Real));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(DateTime), DbType.DateTime, SqlDbType.SmallDateTime));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Int16), DbType.Int16, SqlDbType.SmallInt));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(decimal), DbType.Decimal, SqlDbType.SmallMoney));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(string), DbType.String, SqlDbType.Text));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(DateTime), DbType.Time, SqlDbType.Time));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(byte[]), DbType.Binary, SqlDbType.Timestamp));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(byte), DbType.Byte, SqlDbType.TinyInt));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(Guid), DbType.Guid, SqlDbType.UniqueIdentifier));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(byte[]), DbType.Binary, SqlDbType.VarBinary));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(object), DbType.Object, SqlDbType.Variant));
+            _DbTypeList.Add(new DbTypeMapEntry(typeof(string), DbType.AnsiString, SqlDbType.VarChar));
         }
 
         private TypeConvertor()

@@ -90,6 +90,8 @@ namespace QueryFirst
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 dte2 = ServiceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;//Package.GetGlobalService(typeof(DTE)) as DTE2;
             var vsOutputWindow = new VSOutputWindow(dte2);
+            RegisterTypes.Instance.Register(vsOutputWindow,false);
+
             foreach (Project proj in ((QueryFirstCmdPackage)_package).dte.Solution.Projects)
             {
                 ProcessAllItems(proj.ProjectItems, vsOutputWindow);
@@ -120,7 +122,10 @@ namespace QueryFirst
                         if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //folder
                             ProcessAllItems(item.ProjectItems, vsOutputWindow);
                     }
-                    catch { }
+                    catch(Exception ex)
+                    {
+                        vsOutputWindow.Write(ex.ToString());
+                    }
                 }
             }
         }

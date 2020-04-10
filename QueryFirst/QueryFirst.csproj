@@ -87,6 +87,7 @@
     <Compile Include="IConfigFileReader.cs" />
     <Compile Include="Providers\SqlClient\SqlDbType2DbType.cs" />
     <Compile Include="QFConfig.cs" />
+    <Compile Include="RegisterTypes.cs" />
     <Compile Include="SchemaFetching\TypeMappings\IDB2CS.cs" />
     <Compile Include="SchemaFetching\TypeMappings\Postgres2CS.cs" />
     <Compile Include="SchemaFetching\TypeMappings\SqlServer2CS.cs" />

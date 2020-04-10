@@ -35,7 +35,7 @@ namespace QueryFirst.Providers
                     {
                         qp = GetParamInfoSecondAttempt(textParams[i].SqlTypeAndLength, connectionString);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         throw new TypeNotMatchedException("Unable to find a type for " + textParams[i].SqlTypeAndLength, ex);
                     }
@@ -106,6 +106,9 @@ namespace QueryFirst.Providers
 
             try
             {
+                // hack
+                if (typeOnly == "sql_variant")
+                    typeOnly = "Variant";
                 var sqlDbType = (SqlDbType)Enum.Parse(typeof(SqlDbType), typeOnly, true);
                 var csType = TypeConvertor.ToNetType(sqlDbType);
                 var dbType = TypeConvertor.ToDbType(sqlDbType);
@@ -140,31 +143,38 @@ namespace QueryFirst.Providers
             var myDb = s.Databases.Cast<Database>().Where(db => db.ActiveConnections > 0).FirstOrDefault();
             var type = myDb.UserDefinedTableTypes.Cast<UserDefinedTableType>().Where(t => t.Name == paramName);
 
-            var returnVal = new QueryParamInfo
+            if (type.Count() > 0)
             {
-                CSNameCamel = paramName.First().ToString().ToLower() + paramName.Substring(1),
-                DbName = '@' + paramName,
-                DbType = type.First().Urn.Type,
-                CSType = $"IEnumerable<{paramName.First().ToString().ToUpper() + paramName.Substring(1)}>",
-                InnerCSType = paramName.First().ToString().ToUpper() + paramName.Substring(1),
-                IsTableType = true,
-                ParamSchema = new List<QueryParamInfo>()
-            };
-            foreach (Column col in type.First().Columns)
-            {
-                string normalizedType;
-                var csType = TypeMapDB2CS(col.DataType.Name, out normalizedType);
-
-                returnVal.ParamSchema.Add(new QueryParamInfo
+                var returnVal = new QueryParamInfo
                 {
-                    CSNameCamel = col.Name,
-                    DbType = normalizedType,
-                    CSType = csType,
-                    DbName = '@' + col.Name
+                    CSNameCamel = paramName.First().ToString().ToLower() + paramName.Substring(1),
+                    DbName = '@' + paramName,
+                    DbType = type.First().Urn.Type,
+                    CSType = $"IEnumerable<{paramName.First().ToString().ToUpper() + paramName.Substring(1)}>",
+                    InnerCSType = paramName.First().ToString().ToUpper() + paramName.Substring(1),
+                    IsTableType = true,
+                    ParamSchema = new List<QueryParamInfo>()
+                };
+                foreach (Column col in type.First().Columns)
+                {
+                    string normalizedType;
+                    var csType = TypeMapDB2CS(col.DataType.Name, out normalizedType);
 
-                });
+                    returnVal.ParamSchema.Add(new QueryParamInfo
+                    {
+                        CSNameCamel = col.Name,
+                        DbType = normalizedType,
+                        CSType = csType,
+                        DbName = '@' + col.Name
+
+                    });
+                }
+                return returnVal;
             }
-            return returnVal;
+            else
+            {
+                throw new TypeNotMatchedException("No user defined type to match " + paramName);
+            }
         }
         public virtual List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
         {
@@ -204,7 +214,7 @@ namespace QueryFirst.Providers
             }
             catch (Exception ex)
             {
-                outputMessage = "Unable to find undeclared parameters. Make sure your parameters are declared in the designTime section\n";
+                outputMessage = $"Unable to find undeclared parameters. ({ex.Message}) Make sure your parameters are declared in the designTime section\n";
             }
             return myParams;
         }
