@@ -12,7 +12,7 @@ namespace QueryFirst
     class SolutionEventHandlers
     {
         // singleton
-        private static SolutionEventHandlers _inst = null;        
+        private static SolutionEventHandlers _inst = null;
         public static SolutionEventHandlers Inst(DTE dte, DTE2 dte2)
         {
             if (_inst == null)
@@ -60,7 +60,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
             RegisterTypes.Instance.Register(_VSOutputWindow, true);
 
         }
- 
+
 
         #region methods
         // SBY composite items. Rename wrapper class if query name changes...
@@ -92,7 +92,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                             {
                                 item.Open();
                                 rememberToClose = true;
-                            }                            
+                            }
                             var userFile = ((TextDocument)item.Document.Object());
                             userFile.ReplacePattern(oldBaseName, newBaseName);
                             item.Document.Save();
@@ -110,7 +110,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                                 renamedQuery.Open();
                                 rememberToClose1 = true;
                             }
-                            new Conductor(_VSOutputWindow, null,null).ProcessOneQuery(renamedQuery.Document);
+                            new Conductor(_VSOutputWindow, null, null).ProcessOneQuery(renamedQuery.Document);
                             if (rememberToClose1)
                                 renamedQuery.Document.Close();
                             return; //2 files to rename, then we're finished.
@@ -132,8 +132,11 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                     var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                     if (text.Contains("managed by QueryFirst"))
                     {
-                        var cdctr = new Conductor(_VSOutputWindow, null, null);
-                        cdctr.ProcessOneQuery(Document);
+                        if (CheckPrerequisites.HasPrerequites(_dte.Solution, Document.ProjectItem))
+                        {
+                            var cdctr = new Conductor(_VSOutputWindow, null, null);
+                            cdctr.ProcessOneQuery(Document);
+                        }
                     }
 
                 }
