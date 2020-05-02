@@ -92,7 +92,6 @@
     <Compile Include="SchemaFetching\TypeMappings\IDB2CS.cs" />
     <Compile Include="SchemaFetching\TypeMappings\Postgres2CS.cs" />
     <Compile Include="SchemaFetching\TypeMappings\SqlServer2CS.cs" />
-    <Compile Include="Singleton.cs" />
     <Compile Include="StateAndTransitions\State.cs" />
     <Compile Include="StateAndTransitions\_1ProcessQueryPath.cs" />
     <Compile Include="StateAndTransitions\_2ExtractNamesFromUserPartialClass.cs" />
