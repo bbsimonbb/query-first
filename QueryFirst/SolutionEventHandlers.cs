@@ -133,15 +133,14 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                 var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
                 if (text.Contains("managed by QueryFirst"))
                 {
-                    if (_lastConnectedSqlWindow != Document.ActiveWindow)
+                    RegisterTypes.Instance.Register(_VSOutputWindow);
+                    // get connection string
+                    var state = new State();
+                    new Conductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document, ref state);
+
+                    if(_lastConnectedSqlWindow != Document.ActiveWindow && state._4Config.provider == "System.Data.SqlClient")
                     {
                         _lastConnectedSqlWindow = Document.ActiveWindow;
-                        RegisterTypes.Instance.Register(_VSOutputWindow);
-
-
-                        // get connection string
-                        var state = new State();
-                        new Conductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document, ref state);
 
                         IVsPackage sqlEditorPackageInstance = null;
                         IVsShell val = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
