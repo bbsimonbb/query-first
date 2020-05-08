@@ -23,15 +23,6 @@ namespace QueryFirst
         private IWrapperClassMaker _wrapper;
         private IResultClassMaker _results;
 
-        //public Conductor(VSOutputWindow vsOutpuWindow):this(vsOutpuWindow, null, null)
-        //{
-        //    _vsOutputWindow = vsOutpuWindow;
-        //}
-
-        //public Conductor() : this(null,null,null)
-        //{
-        //    // just used for testing
-        //}
         public Conductor(VSOutputWindow vSOutputWindow, IWrapperClassMaker wrapperClassMaker, IResultClassMaker resultClassMaker)
         {
             _tiny = TinyIoCContainer.Current;
@@ -49,8 +40,7 @@ namespace QueryFirst
             _queryDoc = queryDoc;
             _item = queryDoc.ProjectItem;
 
-            // todo: if a .sql is not in the project, this throws null exception. What should it do?
-            new _1ProcessQueryPath().Go(_state, (string)queryDoc.ProjectItem.Properties.Item("FullPath").Value);
+            ProcessUpToStep4(queryDoc, ref _state);
 
             // Test this! If I can get source control exclusions working, team members won't get the generated file.
             if (!File.Exists(_state._1GeneratedClassFullFilename))
@@ -60,18 +50,6 @@ namespace QueryFirst
             }
             if (GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename) != null)
                 queryDoc.ProjectItem.Collection.AddFromFile(_state._1GeneratedClassFullFilename);
-
-            // copy namespace of generated partial class from user partial class
-            var userPartialClass = File.ReadAllText(_state._1UserPartialClassFullFilename);
-            new _2ExtractNamesFromUserPartialClass().Go(_state, userPartialClass);
-
-            var textDoc = ((TextDocument)queryDoc.Object());
-            var start = textDoc.StartPoint;
-            var text = start.CreateEditPoint().GetText(textDoc.EndPoint);
-            new _3ReadQuery().Go(_state, text);
-            var _4 = (_4ResolveConfig)_tiny.Resolve(typeof(_4ResolveConfig));
-            _4.Go(_state);
-
 
             // We have the config, we can instantiate our provider...
             if (_tiny.CanResolve<IProvider>(_state._4Config.provider))
@@ -105,6 +83,7 @@ The query {1} may not run and the wrapper has not been regenerated.\n",
 
                 if (_state._3InitialQueryText != _state._5QueryAfterScaffolding)
                 {
+                    var textDoc = ((TextDocument)queryDoc.Object());
                     var ep = textDoc.CreateEditPoint();
                     ep.ReplaceText(_state._3InitialQueryText.Length, _state._5QueryAfterScaffolding, 0);
                 }
@@ -187,7 +166,28 @@ The query {1} may not run and the wrapper has not been regenerated.\n",
                 genFile.Document.Close();
             }
         }
+        /// <summary>
+        /// Now we can connect the editor window, we need to recover the connection string when we open a query.
+        /// This method is called on open and on save.
+        /// </summary>
+        /// <param name="queryDoc"></param>
+        /// <param name="state"></param>
+        internal void ProcessUpToStep4(Document queryDoc, ref State state)
+        {
+            // todo: if a .sql is not in the project, this throws null exception. What should it do?
+            new _1ProcessQueryPath().Go(state, (string)queryDoc.ProjectItem.Properties.Item("FullPath").Value);
 
+            // copy namespace of generated partial class from user partial class
+            var userPartialClass = File.ReadAllText(state._1UserPartialClassFullFilename);
+            new _2ExtractNamesFromUserPartialClass().Go(state, userPartialClass);
+
+            var textDoc = ((TextDocument)queryDoc.Object());
+            var start = textDoc.StartPoint;
+            var text = start.CreateEditPoint().GetText(textDoc.EndPoint);
+            new _3ReadQuery().Go(state, text);
+            var _4 = (_4ResolveConfig)_tiny.Resolve(typeof(_4ResolveConfig));
+            _4.Go(state);
+        }
         // Doesn't recurse into folders. Prefer items.Item("")
         public static ProjectItem GetItemByFilename(ProjectItem item, string filename)
         {
