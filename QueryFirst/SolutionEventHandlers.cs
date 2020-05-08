@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using TinyIoC;
 
 namespace QueryFirst
@@ -42,6 +43,7 @@ namespace QueryFirst
             _dte2 = dte2;
             myEvents = dte.Events;
             myDocumentEvents = dte.Events.DocumentEvents;
+
             myDocumentEvents.DocumentOpened += myDocumentEvents_DocumentOpened;
             myDocumentEvents.DocumentSaved += myDocumentEvents_DocumentSaved;
             CSharpProjectItemsEvents = (ProjectItemsEvents)dte.Events.GetObject("CSharpProjectItemsEvents");
@@ -126,7 +128,14 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
         }
         private void myDocumentEvents_DocumentOpened(Document Document)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            // we need to let the window initialise, otherwise intellisense is broken
+            var t = new System.Threading.Thread(()=>connectEditorWindow2DB(Document));
+            t.Start();
+        }
+        private void connectEditorWindow2DB(Document Document)
+        {
+            // on my machine, delays less than 700ms hang the environment. Better not do that to folk.
+            System.Threading.Thread.Sleep(1500);
             if (Document.FullName.EndsWith(".sql"))
             {
                 var textDoc = ((TextDocument)Document.Object());
