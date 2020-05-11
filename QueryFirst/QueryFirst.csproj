@@ -160,6 +160,7 @@
     <EmbeddedResource Include="Providers\sp_describe_undeclared_parameters.sql" />
     <Content Include="license.txt" />
     <Content Include="ReadMe.txt" />
+    <Content Include="Refs\ConnectionDlg.dll" />
     <Content Include="Refs\Microsoft.VisualStudio.Data.Tools.Design.Core.dll" />
     <Content Include="Resources\16.bmp" />
     <Content Include="Resources\QueryFirstCmd.png" />
@@ -470,6 +471,7 @@
     <Analyzer Include="..\packages\Microsoft.VisualStudio.Threading.Analyzers.15.8.209\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
