@@ -43,7 +43,7 @@ namespace QueryFirst
             _dte2 = dte2;
             myEvents = dte.Events;
             myDocumentEvents = dte.Events.DocumentEvents;
-
+            // hangs my environment in VS 2017
             myDocumentEvents.DocumentOpened += myDocumentEvents_DocumentOpened;
             myDocumentEvents.DocumentSaved += myDocumentEvents_DocumentSaved;
             CSharpProjectItemsEvents = (ProjectItemsEvents)dte.Events.GetObject("CSharpProjectItemsEvents");
