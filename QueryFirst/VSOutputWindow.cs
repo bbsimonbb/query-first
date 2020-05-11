@@ -28,7 +28,6 @@ namespace QueryFirst
         }
         public void Write(string message)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             _outPane.OutputString(message);
         }
     }
