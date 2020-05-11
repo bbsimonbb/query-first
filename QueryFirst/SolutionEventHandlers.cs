@@ -43,7 +43,7 @@ namespace QueryFirst
             _dte2 = dte2;
             myEvents = dte.Events;
             myDocumentEvents = dte.Events.DocumentEvents;
-
+            // hangs my environment in VS 2017
             myDocumentEvents.DocumentOpened += myDocumentEvents_DocumentOpened;
             myDocumentEvents.DocumentSaved += myDocumentEvents_DocumentSaved;
             CSharpProjectItemsEvents = (ProjectItemsEvents)dte.Events.GetObject("CSharpProjectItemsEvents");
@@ -134,58 +134,65 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
         }
         private void connectEditorWindow2DB(Document Document)
         {
-            // on my machine, delays less than 700ms hang the environment. Better not do that to folk.
-            System.Threading.Thread.Sleep(1500);
-            if (Document.FullName.EndsWith(".sql"))
+            try
             {
-                var textDoc = ((TextDocument)Document.Object());
-                var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
-                if (text.Contains("managed by QueryFirst"))
+                // on my machine, delays less than 700ms hang the environment. Better not do that to folk.
+                System.Threading.Thread.Sleep(1500);
+                if (Document.FullName.EndsWith(".sql"))
                 {
-                    RegisterTypes.Instance.Register(_VSOutputWindow);
-                    // get connection string
-                    var state = new State();
-                    new Conductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document, ref state);
-
-                    if(_lastConnectedSqlWindow != Document.ActiveWindow && state._4Config.provider == "System.Data.SqlClient")
+                    var textDoc = ((TextDocument)Document.Object());
+                    var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
+                    if (text.Contains("managed by QueryFirst"))
                     {
-                        _lastConnectedSqlWindow = Document.ActiveWindow;
+                        RegisterTypes.Instance.Register(_VSOutputWindow);
+                        // get connection string
+                        var state = new State();
+                        new Conductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document, ref state);
 
-                        IVsPackage sqlEditorPackageInstance = null;
-                        IVsShell val = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
-                        if (val != null)
+                        if (_lastConnectedSqlWindow != Document.ActiveWindow && state._4Config.provider == "System.Data.SqlClient")
                         {
-                            Guid guid = new Guid("fef13793-c947-4fb1-b864-c9f0be9d9cf6");
-                            val.LoadPackage(ref guid, out sqlEditorPackageInstance);
-                        }
+                            _lastConnectedSqlWindow = Document.ActiveWindow;
 
-                        var lastFocusedSqlEditor = sqlEditorPackageInstance.GetType().GetRuntimeProperties().Where(p => p.Name == "LastFocusedSqlEditor").FirstOrDefault().GetValue(sqlEditorPackageInstance);
+                            IVsPackage sqlEditorPackageInstance = null;
+                            IVsShell val = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
+                            if (val != null)
+                            {
+                                Guid guid = new Guid("fef13793-c947-4fb1-b864-c9f0be9d9cf6");
+                                val.LoadPackage(ref guid, out sqlEditorPackageInstance);
+                            }
 
-                        if (lastFocusedSqlEditor != null)
-                        {
-                            var getAuxillaryDocDataMethodInfo = sqlEditorPackageInstance.GetType().GetRuntimeMethods().Where(m => m.Name == "GetAuxillaryDocData").FirstOrDefault();
-                            var docData = lastFocusedSqlEditor.GetType().GetRuntimeProperties().Where(p => p.Name == "DocData").FirstOrDefault().GetValue(lastFocusedSqlEditor);
-                            var auxiliaryDocData = getAuxillaryDocDataMethodInfo.Invoke(sqlEditorPackageInstance, new object[] { docData });
+                            var lastFocusedSqlEditor = sqlEditorPackageInstance.GetType().GetRuntimeProperties().Where(p => p.Name == "LastFocusedSqlEditor").FirstOrDefault().GetValue(sqlEditorPackageInstance);
 
-                            var isQueryWindowInfo = auxiliaryDocData.GetType().GetRuntimeProperties().Where(p => p.Name == "IsQueryWindow").FirstOrDefault();
+                            if (lastFocusedSqlEditor != null)
+                            {
+                                var getAuxillaryDocDataMethodInfo = sqlEditorPackageInstance.GetType().GetRuntimeMethods().Where(m => m.Name == "GetAuxillaryDocData").FirstOrDefault();
+                                var docData = lastFocusedSqlEditor.GetType().GetRuntimeProperties().Where(p => p.Name == "DocData").FirstOrDefault().GetValue(lastFocusedSqlEditor);
+                                var auxiliaryDocData = getAuxillaryDocDataMethodInfo.Invoke(sqlEditorPackageInstance, new object[] { docData });
 
-                            var strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
-                            var ctors = strategyInfo.GetConstructors(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Instance);
-                            var strategyInstance = ctors[3].Invoke(new object[] { new SqlConnectionStringBuilder(state._4Config.defaultConnection), true });
+                                var isQueryWindowInfo = auxiliaryDocData.GetType().GetRuntimeProperties().Where(p => p.Name == "IsQueryWindow").FirstOrDefault();
 
-                            var strategySetterInfo = auxiliaryDocData.GetType().GetRuntimeProperties().Where(p => p.Name == "Strategy").FirstOrDefault();
-                            strategySetterInfo.SetValue(auxiliaryDocData, strategyInstance);
+                                var strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                                var ctors = strategyInfo.GetConstructors(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Instance);
+                                var strategyInstance = ctors[3].Invoke(new object[] { new SqlConnectionStringBuilder(state._4Config.defaultConnection), true });
 
-                            var queryExecutorInstance = auxiliaryDocData.GetType().GetRuntimeProperties().Where(p => p.Name == "QueryExecutor").FirstOrDefault().GetValue(auxiliaryDocData);
-                            var connectionStrategyInstance = queryExecutorInstance.GetType().GetRuntimeProperties().Where(p => p.Name == "ConnectionStrategy").FirstOrDefault().GetValue(queryExecutorInstance);
+                                var strategySetterInfo = auxiliaryDocData.GetType().GetRuntimeProperties().Where(p => p.Name == "Strategy").FirstOrDefault();
+                                strategySetterInfo.SetValue(auxiliaryDocData, strategyInstance);
 
-                            var ensureConnectionMethodInfo = connectionStrategyInstance.GetType().GetRuntimeMethods().Where(m => m.Name == "EnsureConnection").FirstOrDefault();
-                            ensureConnectionMethodInfo.Invoke(connectionStrategyInstance, new object[] { true });
+                                var queryExecutorInstance = auxiliaryDocData.GetType().GetRuntimeProperties().Where(p => p.Name == "QueryExecutor").FirstOrDefault().GetValue(auxiliaryDocData);
+                                var connectionStrategyInstance = queryExecutorInstance.GetType().GetRuntimeProperties().Where(p => p.Name == "ConnectionStrategy").FirstOrDefault().GetValue(queryExecutorInstance);
 
-                            isQueryWindowInfo.SetValue(auxiliaryDocData, true);
+                                var ensureConnectionMethodInfo = connectionStrategyInstance.GetType().GetRuntimeMethods().Where(m => m.Name == "EnsureConnection").FirstOrDefault();
+                                ensureConnectionMethodInfo.Invoke(connectionStrategyInstance, new object[] { true });
+
+                                isQueryWindowInfo.SetValue(auxiliaryDocData, true);
+                            }
                         }
                     }
                 }
+            }
+            catch( Exception ex)
+            {
+                _VSOutputWindow.Write("QueryFirst cannot connect editor window.\n" + ex.ToString());
             }
         }
         void myDocumentEvents_DocumentSaved(Document Document)

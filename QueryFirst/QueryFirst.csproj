@@ -160,6 +160,7 @@
     <EmbeddedResource Include="Providers\sp_describe_undeclared_parameters.sql" />
     <Content Include="license.txt" />
     <Content Include="ReadMe.txt" />
+    <Content Include="Refs\Microsoft.VisualStudio.Data.Tools.Design.Core.dll" />
     <Content Include="Resources\16.bmp" />
     <Content Include="Resources\QueryFirstCmd.png" />
     <Content Include="Resources\QueryFirstCmdPackage.ico" />
@@ -289,6 +290,10 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.VisualStudio.CoreUtility.15.5.27130\lib\net45\Microsoft.VisualStudio.CoreUtility.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Data.Tools.Design.Core, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Refs\Microsoft.VisualStudio.Data.Tools.Design.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Data.Tools.Package, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
