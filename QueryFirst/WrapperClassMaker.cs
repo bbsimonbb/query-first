@@ -202,7 +202,7 @@ $"public virtual {state._2ResultInterfaceName} GetOne(IDbConnection conn, IDbTra
 " + state._8HookupExecutionMessagesMethodText + @"
 {
 var all = Execute(conn,tx);
-" + state._2ResultClassName + @" returnVal;
+" + state._2ResultInterfaceName + @" returnVal;
 using (IEnumerator<" + state._2ResultInterfaceName + @"> iter = all.GetEnumerator())
 {
 iter.MoveNext();
