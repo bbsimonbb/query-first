@@ -19,29 +19,20 @@ namespace QueryFirst
         /// and so on up to the root directory. 
         /// 
         /// If the query specifies a QfDefaultConnection but no QfDefaultConnectionProviderName, "System.Data.SqlClient"
-        /// will be assumed.
+        /// will be used.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="queryText"></param>
         /// <returns></returns>
         public State Go(State state)
         {
-            QFConfigModel config = new QFConfigModel();
-            var configFileContents = _configFileReader.GetConfigFile(state._1CurrDir);
-            if (!string.IsNullOrEmpty(configFileContents))
+            // read the config file if there is one.
+            var config = _configFileReader.GetConfigObj(state._1CurrDir) ?? new QFConfigModel();
+
+            if (string.IsNullOrEmpty(config.provider))
             {
-                using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(configFileContents)))
-                {
-                    var ser = new DataContractJsonSerializer(typeof(QFConfigModel));
-                    config = ser.ReadObject(ms) as QFConfigModel;
-                    ms.Close();
-                }
-                if (string.IsNullOrEmpty(config.provider))
-                {
-                    config.provider = "System.Data.SqlClient";
-                }
-            }
-            // if the query defines a QfDefaultConnection, use it.
+                config.provider = "System.Data.SqlClient";
+            }           // if the query defines a QfDefaultConnection, use it.
             var match = Regex.Match(state._3InitialQueryText, "^--QfDefaultConnection(=|:)(?<cstr>[^\r\n]*)", RegexOptions.Multiline);
             if (match.Success)
             {

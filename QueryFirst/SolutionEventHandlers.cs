@@ -128,12 +128,17 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
         }
         private void myDocumentEvents_DocumentOpened(Document Document)
         {
-            // we need to let the window initialise, otherwise intellisense is broken
-            var t = new System.Threading.Thread(()=>connectEditorWindow2DB(Document));
-            t.Start();
+            if (!connecting)
+            {
+                // we need to let the window initialise, otherwise intellisense is broken
+                var t = new System.Threading.Thread(() => connectEditorWindow2DB(Document));
+                t.Start();
+            }
         }
+        private bool connecting = false;
         private void connectEditorWindow2DB(Document Document)
         {
+            connecting = true;
             // on my machine, delays less than 700ms hang the environment. Better not do that to folk.
             System.Threading.Thread.Sleep(1500);
             if (Document.FullName.EndsWith(".sql"))
@@ -147,7 +152,10 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                     var state = new State();
                     new Conductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document, ref state);
 
-                    if(_lastConnectedSqlWindow != Document.ActiveWindow && state._4Config.provider == "System.Data.SqlClient")
+                    if (_lastConnectedSqlWindow != Document.ActiveWindow 
+                        && state._4Config.provider == "System.Data.SqlClient"
+                        && state._4Config.connectEditor2DB
+                        )
                     {
                         _lastConnectedSqlWindow = Document.ActiveWindow;
 
@@ -187,6 +195,7 @@ https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst#review-
                     }
                 }
             }
+            connecting = false;
         }
         void myDocumentEvents_DocumentSaved(Document Document)
         {

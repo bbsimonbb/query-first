@@ -11,7 +11,6 @@ using TinyIoC;
 
 namespace QueryFirst
 {
-
     public class Conductor
     {
         private State _state;
