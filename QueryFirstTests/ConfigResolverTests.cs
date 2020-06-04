@@ -104,5 +104,15 @@ endDesignTime*/
 
 
         }
+
+        public QFConfigModel GetConfigObj(string filePath)
+        {
+            return new QFConfigModel
+            {
+                defaultConnection = "connectionFromFake",
+                provider = "providerFromFake",
+                helperAssembly = "helperAssemblyFromFake"
+            };
+        }
     }
 }

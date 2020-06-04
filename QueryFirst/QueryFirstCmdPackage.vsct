@@ -56,7 +56,7 @@
         <Parent guid="guidQueryFirstCmdPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="carrot" id="carrot1" />
         <Strings>
-          <ButtonText>Merde! Someone changed my schema</ButtonText>
+          <ButtonText>QueryFirst Regenerate All Queries</ButtonText>
         </Strings>
       </Button>
     </Buttons>
