@@ -108,6 +108,10 @@
     <Analyzer Include="..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\QueryFirstEngine\QueryFirstEngine.csproj">
+      <Project>{beebfee7-2e75-45c7-aba6-74af7ebc2343}</Project>
+      <Name>QueryFirstEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QueryFirstTests\QueryFirstTests.csproj">
       <Project>{f99b0827-b712-4d27-b908-2ad49bddc8bd}</Project>
       <Name>QueryFirstTests</Name>

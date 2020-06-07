@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryFirstTests", "QueryFir
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryFirstInMemoryCompilationTests", "QueryFirstInMemoryCompilationTests\QueryFirstInMemoryCompilationTests.csproj", "{551FC219-73D8-4926-9CE3-E3AB92611850}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryFirstEngine", "QueryFirstEngine\QueryFirstEngine.csproj", "{BEEBFEE7-2E75-45C7-ABA6-74AF7EBC2343}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{551FC219-73D8-4926-9CE3-E3AB92611850}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{551FC219-73D8-4926-9CE3-E3AB92611850}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{551FC219-73D8-4926-9CE3-E3AB92611850}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEEBFEE7-2E75-45C7-ABA6-74AF7EBC2343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEEBFEE7-2E75-45C7-ABA6-74AF7EBC2343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEEBFEE7-2E75-45C7-ABA6-74AF7EBC2343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEEBFEE7-2E75-45C7-ABA6-74AF7EBC2343}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

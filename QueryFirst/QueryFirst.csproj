@@ -85,36 +85,8 @@
   <ItemGroup>
     <Compile Include="CheckPrerequisites.cs" />
     <Compile Include="DesignTimeConnectionString.cs" />
-    <Compile Include="IConfigFileReader.cs" />
-    <Compile Include="Providers\SqlClient\SqlDbType2DbType.cs" />
-    <Compile Include="ConfigFileReader.cs" />
     <Compile Include="RegisterTypes.cs" />
-    <Compile Include="SchemaFetching\TypeMappings\IDB2CS.cs" />
-    <Compile Include="SchemaFetching\TypeMappings\Postgres2CS.cs" />
-    <Compile Include="SchemaFetching\TypeMappings\SqlServer2CS.cs" />
-    <Compile Include="StateAndTransitions\State.cs" />
-    <Compile Include="StateAndTransitions\_1ProcessQueryPath.cs" />
-    <Compile Include="StateAndTransitions\_2ExtractNamesFromUserPartialClass.cs" />
-    <Compile Include="StateAndTransitions\_3ReadQuery.cs" />
-    <Compile Include="StateAndTransitions\_4ResolveConfig.cs" />
-    <Compile Include="StateAndTransitions\_5ScaffoldUpdateOrInsert.cs" />
-    <Compile Include="StateAndTransitions\_6FindUndeclaredParameters.cs" />
-    <Compile Include="StateAndTransitions\_7RunQueryAndGetResultSchema.cs" />
-    <Compile Include="StateAndTransitions\_8ParseOrFindDeclaredParams.cs" />
     <Compile Include="VSOutputWindow.cs" />
-    <Compile Include="Providers\IProvider.cs" />
-    <Compile Include="Providers\MySqlClient.cs" />
-    <Compile Include="Providers\Npgsql.cs" />
-    <Compile Include="Providers\sp_describe_undeclared_parameters.gen.cs">
-      <DependentUpon>sp_describe_undeclared_parameters.sql</DependentUpon>
-    </Compile>
-    <Compile Include="Providers\sp_describe_undeclared_parametersResults.cs">
-      <DependentUpon>sp_describe_undeclared_parameters.sql</DependentUpon>
-    </Compile>
-    <Compile Include="Providers\SqlClient.cs" />
-    <Compile Include="SchemaFetching\AdoSchemaFetcher.cs" />
-    <Compile Include="SchemaFetching\TypeMappings\System2Alias.cs" />
-    <Compile Include="SchemaFetching\ISchemaFetcher.cs" />
     <Compile Include="IWrapperClassMaker.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -122,16 +94,13 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="QfRuntimeConnection.cs" />
-    <Compile Include="QueryParam.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResultFieldDetails.cs" />
     <Compile Include="QueryFirstCmd.cs" />
     <Compile Include="QueryFirstCmdPackage.cs" />
     <Compile Include="Conductor.cs" />
     <Compile Include="ResultClassMaker.cs" />
     <Compile Include="SolutionEventHandlers.cs" />
-    <Compile Include="TinyIoC.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WizardImplementationClass.cs" />
     <Compile Include="WrapperClassMaker.cs" />
@@ -157,7 +126,6 @@
     <VSCTCompile Include="QueryFirstCmdPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
-    <EmbeddedResource Include="Providers\sp_describe_undeclared_parameters.sql" />
     <Content Include="license.txt" />
     <Content Include="ReadMe.txt" />
     <Content Include="Resources\16.bmp" />
@@ -378,9 +346,6 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Npgsql, Version=3.2.1.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Npgsql.3.2.1\lib\net451\Npgsql.dll</HintPath>
-    </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -440,6 +405,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\QueryFirstEngine\QueryFirstEngine.csproj">
+      <Project>{beebfee7-2e75-45c7-aba6-74af7ebc2343}</Project>
+      <Name>QueryFirstEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QueryFirstQueryTemplate\QueryFirstQueryTemplate.csproj">
       <Project>{2D6B875E-27AB-401A-8D5F-0F085DE4CE0E}</Project>
       <Name>QueryFirstQueryTemplate</Name>

@@ -123,6 +123,10 @@
     <Analyzer Include="..\packages\Microsoft.VisualStudio.Threading.Analyzers.15.8.122\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\QueryFirstEngine\QueryFirstEngine.csproj">
+      <Project>{beebfee7-2e75-45c7-aba6-74af7ebc2343}</Project>
+      <Name>QueryFirstEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QueryFirst\QueryFirst.csproj">
       <Project>{b6a48b04-12db-43ce-8fad-b07bbb0198a6}</Project>
       <Name>QueryFirst</Name>
