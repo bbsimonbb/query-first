@@ -54,11 +54,12 @@ namespace QueryFirst
                 {
                     assemblies.Add(Assembly.LoadFrom(helperAssembly.Value));
                 }
+                var enginePath = Assembly.GetExecutingAssembly().Location.Replace("QueryFirst.dll", "QueryFirstEngine.dll");
+                assemblies.Add(Assembly.LoadFrom(enginePath));
                 assemblies.Add(Assembly.GetExecutingAssembly());
                 TinyIoCContainer.Current.AutoRegister(assemblies, DuplicateImplementationActions.RegisterSingle);
                 // IProvider, for instance, has multiple implementations. To resolve we use the provider name on the connection string, 
                 // which must correspond to the fully qualified name of the implementation. ie. QueryFirst.Providers.SqlClient for SqlServer
-
                 //_VSOutputWindow.Write("Registered types...\n");
             }
             catch (Exception ex)
