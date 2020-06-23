@@ -33,32 +33,33 @@ namespace QueryFirst
 
         public void ProcessOneQuery(Document queryDoc)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            _state = new State();
-            _queryDoc = queryDoc;
-            _item = queryDoc.ProjectItem;
-
-            ProcessUpToStep4(queryDoc, ref _state);
-
-            // Test this! If I can get source control exclusions working, team members won't get the generated file.
-            if (!File.Exists(_state._1GeneratedClassFullFilename))
-            {
-                var _ = File.Create(_state._1GeneratedClassFullFilename);
-                _.Dispose();
-            }
-            if (GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename) != null)
-                queryDoc.ProjectItem.Collection.AddFromFile(_state._1GeneratedClassFullFilename);
-
-            // We have the config, we can instantiate our provider...
-            if (_tiny.CanResolve<IProvider>(_state._4Config.provider))
-                _provider = _tiny.Resolve<IProvider>(_state._4Config.provider);
-            else
-                _vsOutputWindow.Write(@"After resolving the config, we have no provider\n");
-
-
             try
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                _state = new State();
+                _queryDoc = queryDoc;
+                _item = queryDoc.ProjectItem;
+
+                ProcessUpToStep4(queryDoc, ref _state);
+
+                // Test this! If I can get source control exclusions working, team members won't get the generated file.
+                if (!File.Exists(_state._1GeneratedClassFullFilename))
+                {
+                    var _ = File.Create(_state._1GeneratedClassFullFilename);
+                    _.Dispose();
+                }
+                if (GetItemByFilename(queryDoc.ProjectItem, _state._1GeneratedClassFullFilename) != null)
+                    queryDoc.ProjectItem.Collection.AddFromFile(_state._1GeneratedClassFullFilename);
+
+                // We have the config, we can instantiate our provider...
+                if (_tiny.CanResolve<IProvider>(_state._4Config.provider))
+                    _provider = _tiny.Resolve<IProvider>(_state._4Config.provider);
+                else
+                    _vsOutputWindow.Write(@"After resolving the config, we have no provider\n");
+
+
+
                 if (string.IsNullOrEmpty(_state._4Config.defaultConnection))
                 {
                     _vsOutputWindow.Write(@"No design time connection string. You need to create qfconfig.json beside or above your query 
