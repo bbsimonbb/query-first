@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,18 +29,36 @@ namespace QueryFirst
         }
         public QFConfigModel GetConfigObj(string filePath)
         {
-            var configFileContents = GetConfigFile(filePath);
-            if (!string.IsNullOrEmpty(configFileContents))
-            {                
-                using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(configFileContents)))
+            try
+            {
+                var configFileContents = GetConfigFile(filePath);
+                if (!string.IsNullOrEmpty(configFileContents))
                 {
-                    var ser = new DataContractJsonSerializer(typeof(QFConfigModel));
-                    var config = ser.ReadObject(ms) as QFConfigModel;
-                    ms.Close();
-                    return config;
+                    using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(configFileContents)))
+                    {
+                        var ser = new DataContractJsonSerializer(typeof(QFConfigModel));
+                        var config = ser.ReadObject(ms) as QFConfigModel;
+                        ms.Close();
+                        return config;
+                    }
                 }
+
+                else return null;
             }
-            else return null;
+            catch (Exception ex)
+            {
+                throw new Exception("Error deserializing qfconfig.json. Is there anything funny in there?", ex);
+            }
         }
     }
- }
+
+
+    public class QFConfigModel
+    {
+        public string defaultConnection { get; set; }
+        public string provider { get; set; }
+        public string helperAssembly { get; set; }
+        public bool makeSelfTest { get; set; }
+        public bool connectEditor2DB { get; set; }
+    }
+}
