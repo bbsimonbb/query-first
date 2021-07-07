@@ -25,33 +25,34 @@ namespace QueryFirst
 
         // This method is only called for item templates,
         // not for project templates.
-        public void ProjectItemFinishedGenerating(ProjectItem
-            item)
+        public void ProjectItemFinishedGenerating(ProjectItem item)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             string path = item.FileNames[0];
             string parentPath = null;
+
             if (path.EndsWith(".gen.cs"))
                 parentPath = path.Replace(".gen.cs", ".sql");
-            if (path.EndsWith("Results.cs"))
-            {
+            else if (path.EndsWith("Results.cs"))
                 parentPath = path.Replace("Results.cs", ".sql");
-                // correct class names
-                var _userPartialClass = File.ReadAllText(path);
-                _userPartialClass = _userPartialClass.Replace("Results","");
-                _userPartialClass = _userPartialClass.Replace("¤", "Results");
-                File.WriteAllText(path, _userPartialClass);
-            }
+
             if (!string.IsNullOrEmpty(parentPath))
             {
                 ProjectItem parent = item.DTE.Solution.FindProjectItem(parentPath);
                 if (parent == null)
                     return;
-                    item.Remove();
-                    parent.ProjectItems.AddFromFile(path);
+                item.Remove();
+                var newItem = parent.ProjectItems.AddFromFile(path);
+
+                if (path.EndsWith("Results.cs"))
+                {
+                    // correct class names
+                    var _userPartialClass = File.ReadAllText(path);
+                    _userPartialClass = _userPartialClass.Replace("Results¤", "");
+
+                    WriteAndFormat(newItem, _userPartialClass);
+                }
             }
-
-
         }
 
         // This method is called after the project is created.
@@ -87,6 +88,26 @@ namespace QueryFirst
         public bool ShouldAddProjectItem(string filePath)
         {
             return true;
+        }
+
+        private void WriteAndFormat(ProjectItem genFile, string code)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            bool rememberToClose = false;
+            if (!genFile.IsOpen)
+            {
+                genFile.Open();
+                rememberToClose = true;
+            }
+            var textDoc = ((TextDocument)genFile.Document.Object());
+            var ep = textDoc.CreateEditPoint();
+            ep.ReplaceText(textDoc.EndPoint, code, 0);
+            ep.SmartFormat(textDoc.EndPoint);
+            genFile.Save();
+            if (rememberToClose)
+            {
+                genFile.Document.Close();
+            }
         }
     }
 }
