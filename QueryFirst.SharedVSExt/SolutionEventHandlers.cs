@@ -34,11 +34,13 @@ namespace QueryFirst.VSExtension
         private VSOutputWindow _VSOutputWindow;
         private bool spammed = false;
         ProjectItemsEvents CSharpProjectItemsEvents;
+        private SynchronizationContext _uiSynchronizationContext;
         #endregion
         // constructor
         private SolutionEventHandlers(DTE dte, DTE2 dte2)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+            _uiSynchronizationContext = SynchronizationContext.Current;
             _dte = dte;
             _dte2 = dte2;
             myEvents = dte.Events;
@@ -153,13 +155,20 @@ $@"If you're using and enjoying QueryFirst.VSExtension, please leave a review!
 
 
                         new VsixConductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document.FullName, outerConfig, ref state);
-                        connectEditor2DbInner(Document, state._3Config.Provider, state._3Config.DefaultConnection);
+                        var provider = state._3Config.Provider;
+                        var connection = state._3Config.DefaultConnection;
+                        _uiSynchronizationContext.Post(_ =>
+                        {
+                            try { connectEditor2DbInner(Document, provider, connection); }
+                            catch (Exception ex) { Console.WriteLine(ex); }
+                        }, null);
                     }
                 }
             }
             catch (Exception ex)
             {
                 // in space no-one can hear you scream.
+                Console.WriteLine(ex);
             }
             finally
             {
@@ -195,8 +204,10 @@ $@"If you're using and enjoying QueryFirst.VSExtension, please leave a review!
                     var strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
                     if( strategyInfo == null) 
                         strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    if (strategyInfo == null)
+                        strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=18.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
 
-                var ctors = strategyInfo.GetConstructors(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Instance);
+                    var ctors = strategyInfo.GetConstructors(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Instance);
                     object strategyInstance;
                     try
                     {
