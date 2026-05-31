@@ -13,14 +13,14 @@
 
   <ItemGroup>
     <PackageReference Include="FastMember" Version="1.5.0" />
-    <PackageReference Include="FluentAssertions" Version="6.7.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.8" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46521.71" />
     <PackageReference Include="MySql.Data" Version="8.0.27" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Npgsql" Version="6.0.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="Npgsql" Version="8.0.9" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectCapability Include="DynamicDependentFile" />

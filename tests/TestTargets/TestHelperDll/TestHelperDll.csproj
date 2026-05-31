@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46521.71" />
-    <PackageReference Include="MySql.Data" Version="8.0.27" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Npgsql" Version="6.0.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
+    <PackageReference Include="MySql.Data" Version="9.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql" Version="9.0.5" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\QueryFirst.CommandLine\QueryFirst.CommandLine.csproj" />

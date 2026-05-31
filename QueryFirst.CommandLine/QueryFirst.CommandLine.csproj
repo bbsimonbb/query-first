@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>QueryFirst.CommandLine</RootNamespace>
     <AssemblyName>QueryFirst</AssemblyName>
     <PackAsTool>true</PackAsTool>
@@ -23,13 +23,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.44091.28" />
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" />
-    <PackageReference Include="MySql.Data" Version="8.0.22" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Npgsql" Version="5.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
+    <PackageReference Include="Mono.Options" Version="6.12.0.148" />
+    <PackageReference Include="MySql.Data" Version="9.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql" Version="9.0.5" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
 
   <ItemGroup>

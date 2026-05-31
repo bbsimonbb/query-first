@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryFirst", "QueryFirst\Qu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryFirstQueryTemplate", "QueryFirstQueryTemplate\QueryFirstQueryTemplate.csproj", "{2D6B875E-27AB-401A-8D5F-0F085DE4CE0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryFirst.VS16", "QueryFirst_VS16\QueryFirst.VS16.csproj", "{481ADC64-EF55-4E22-8BDB-24F5C0865161}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "QueryFirst.SharedAll", "QueryFirst.SharedAll\QueryFirst.SharedAll.shproj", "{F88A3934-065E-490C-A514-0B791E832170}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueryFirst.CommandLine", "QueryFirst.CommandLine\QueryFirst.CommandLine.csproj", "{EB15DF6D-00F5-4ABE-A1ED-FB19F06CAC68}"
@@ -51,14 +49,6 @@ Global
 		{2D6B875E-27AB-401A-8D5F-0F085DE4CE0E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2D6B875E-27AB-401A-8D5F-0F085DE4CE0E}.Release|x86.ActiveCfg = Release|x86
 		{2D6B875E-27AB-401A-8D5F-0F085DE4CE0E}.Release|x86.Build.0 = Release|x86
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Debug|x86.Build.0 = Debug|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Release|Any CPU.Build.0 = Release|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Release|x86.ActiveCfg = Release|Any CPU
-		{481ADC64-EF55-4E22-8BDB-24F5C0865161}.Release|x86.Build.0 = Release|Any CPU
 		{EB15DF6D-00F5-4ABE-A1ED-FB19F06CAC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EB15DF6D-00F5-4ABE-A1ED-FB19F06CAC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB15DF6D-00F5-4ABE-A1ED-FB19F06CAC68}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -113,8 +103,6 @@ Global
 		SolutionGuid = {2ABCACA7-B277-4E06-9277-A0AA508A3C5A}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		QueryFirst.SharedAll\QueryFirst.SharedAll.projitems*{481adc64-ef55-4e22-8bdb-24f5c0865161}*SharedItemsImports = 4
-		QueryFirst.SharedVSExt\QueryFirst.SharedVSExt.projitems*{481adc64-ef55-4e22-8bdb-24f5c0865161}*SharedItemsImports = 4
 		QueryFirst.SharedVSExt\QueryFirst.SharedVSExt.projitems*{7b88512e-3142-457d-b3b2-578aaf163999}*SharedItemsImports = 13
 		QueryFirst.SharedAll\QueryFirst.SharedAll.projitems*{b6a48b04-12db-43ce-8fad-b07bbb0198a6}*SharedItemsImports = 4
 		QueryFirst.SharedVSExt\QueryFirst.SharedVSExt.projitems*{b6a48b04-12db-43ce-8fad-b07bbb0198a6}*SharedItemsImports = 4

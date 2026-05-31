@@ -165,13 +165,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="envdte">
-      <Version>17.0.31902.203</Version>
+      <Version>17.14.40260</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Framework">
+      <Version>18.6.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.ConnectionUI">
-      <Version>17.0.31902.203</Version>
+      <Version>17.10.40152</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.SqlClient">
-      <Version>3.0.0</Version>
+      <Version>7.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects">
       <Version>161.46521.71</Version>
@@ -197,7 +200,7 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="Npgsql">
-      <Version>6.0.1</Version>
+      <Version>8.0.9</Version>
     </PackageReference>
     <PackageReference Include="StreamJsonRpc">
       <Version>2.9.85</Version>
