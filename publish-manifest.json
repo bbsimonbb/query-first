@@ -3,7 +3,7 @@
     "identity": {
         "internalName": "QueryFirst"
     },
-    "overview": "./QueryFirst/ReadMe.txt",
+    "overview": "./QueryFirst/ReadMe.md",
     "priceCategory": "free",
     "public": true,
     "categories": [ "Other" ],
