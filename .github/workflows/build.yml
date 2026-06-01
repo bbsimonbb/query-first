@@ -13,10 +13,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v2.0.0
 
       - name: Restore
         run: msbuild QueryFirst.sln /t:Restore /p:Configuration=Release /v:minimal /nologo
@@ -25,7 +25,7 @@ jobs:
         run: msbuild QueryFirst.sln /p:Configuration=Release /p:DeployExtension=false /v:minimal /nologo
 
       - name: Upload VSIX
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: QueryFirst.vsix
           path: QueryFirst/bin/Release/QueryFirst.vsix
