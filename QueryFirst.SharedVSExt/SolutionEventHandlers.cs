@@ -112,57 +112,60 @@ $@"If you're using and enjoying QueryFirst.VSExtension, please leave a review!
         }
         private void myDocumentEvents_DocumentOpened(Document Document)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (!connecting)
             {
+                // Capture COM data on the UI thread before handing off to background thread.
+                var fullName = Document.FullName;
+                string text = null;
+                if (fullName.EndsWith(".sql"))
+                {
+                    var textDoc = (TextDocument)Document.Object();
+                    text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
+                }
                 // we need to let the window initialise, otherwise intellisense is broken
-                var t = new System.Threading.Thread(() => connectEditorWindow2DB(Document));
+                var t = new System.Threading.Thread(() => connectEditorWindow2DB(Document, fullName, text));
                 t.Start();
             }
         }
         private bool connecting = false;
-        private void connectEditorWindow2DB(Document Document)
+        private void connectEditorWindow2DB(Document document, string fullName, string text)
         {
             try
             {
                 connecting = true;
                 // on my machine, delays less than 700ms hang the environment. Better not do that to folk.
                 System.Threading.Thread.Sleep(1500);
-                if (Document.FullName.EndsWith(".sql"))
+                if (text != null && text.ToLower().Contains("queryfirst"))
                 {
-                    var textDoc = ((TextDocument)Document.Object());
-                    var text = textDoc.CreateEditPoint().GetText(textDoc.EndPoint);
-                    if (text.ToLower().Contains("queryfirst"))
+                    RegisterTypes.Register(null);
+                    // get connection string
+                    var state = new State();
+
+                    // same drill as command line.
+                    // fetch config query/project/install
+                    var configFileReader = new ConfigFileReader();
+                    var projectConfig = configFileReader.GetProjectConfig(fullName);
+                    var installConfig = configFileReader.GetInstallConfig();
+
+                    var projectType = new ProjectType().DetectProjectType();
+
+                    // build config project-install
+                    var configBuilder = new ConfigBuilder();
+                    var outerConfig = configBuilder.Resolve2Configs(projectConfig, configBuilder.GetInstallConfigForProjectType(installConfig, projectType));
+
+                    // register types
+                    RegisterTypes.Register(outerConfig.HelperAssemblies);
+
+                    new VsixConductor(_VSOutputWindow, null, null).ProcessUpToStep4(fullName, outerConfig, ref state);
+                    var provider = state._3Config.Provider;
+                    var connection = state._3Config.DefaultConnection;
+                    _ = ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     {
-                        RegisterTypes.Register(null);
-                        // get connection string
-                        var state = new State();
-
-                        // same drill as command line.
-                        // fetch config query/project/install
-                        var configFileReader = new ConfigFileReader();
-                        var projectConfig = configFileReader.GetProjectConfig(Document.FullName);
-                        var installConfig = configFileReader.GetInstallConfig();
-
-                        var projectType = new ProjectType().DetectProjectType();
-
-                        // build config project-install
-                        var configBuilder = new ConfigBuilder();
-                        var outerConfig = configBuilder.Resolve2Configs(projectConfig, configBuilder.GetInstallConfigForProjectType(installConfig, projectType));
-
-                        // register types
-                        RegisterTypes.Register(outerConfig.HelperAssemblies);
-
-
-
-                        new VsixConductor(_VSOutputWindow, null, null).ProcessUpToStep4(Document.FullName, outerConfig, ref state);
-                        var provider = state._3Config.Provider;
-                        var connection = state._3Config.DefaultConnection;
-                        _uiSynchronizationContext.Post(_ =>
-                        {
-                            try { connectEditor2DbInner(Document, provider, connection); }
-                            catch (Exception ex) { Console.WriteLine(ex); }
-                        }, null);
-                    }
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        try { connectEditor2DbInner(document, provider, connection); }
+                        catch (Exception ex) { Console.WriteLine(ex); }
+                    });
                 }
             }
             catch (Exception ex)
@@ -177,6 +180,7 @@ $@"If you're using and enjoying QueryFirst.VSExtension, please leave a review!
         }
         private void connectEditor2DbInner(Document Document, string provider, string connectionString)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (_lastConnectedSqlWindow != Document.ActiveWindow
                 && provider == "System.Data.SqlClient"
             )
