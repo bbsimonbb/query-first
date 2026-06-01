@@ -133,7 +133,7 @@ namespace MyProjectNamespace
                     if (item.Kind == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}" && item.ProjectItems != null) //folder
                         checkInFolder(item.ProjectItems, ref foundConfig, ref foundQfRuntimeConnection);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }

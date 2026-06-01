@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <NoWarn>$(NoWarn);SYSLIB0051</NoWarn>
   </PropertyGroup>
 </Project>

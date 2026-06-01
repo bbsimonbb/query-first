@@ -18,12 +18,6 @@ namespace QueryFirst
                 {
                     ctr.Dispose();
                 }
-                else if (false)//TinyIoCContainer.Current.CanResolve<IWrapperClassMaker>())
-                {
-                    //_VSOutputWindow.Write("Already registered\n");
-                    return;
-                }
-
                 List<Assembly> assemblies = new List<Assembly>();
                 if (helperAssemblies != null)
                 {

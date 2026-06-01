@@ -269,7 +269,6 @@ namespace MyProjectNamespace
 
             // these are the available options, note that they set the variables
             commandLineConfig.Generators = new List<Generator>();
-            int verbosity = 0;
             var shouldShowHelp = false;
             var options = new OptionSet {
                 {"c|qfDefaultConnection=", "Connection string for query generation, overrides config files.", c => commandLineConfig.DefaultConnection = c },
