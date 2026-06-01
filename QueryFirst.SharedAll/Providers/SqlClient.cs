@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
@@ -10,14 +10,14 @@ using System.Text.RegularExpressions;
 
 namespace QueryFirst.Providers
 {
-    [RegistrationName("System.Data.SqlClient")]
+    [RegistrationName("Microsoft.Data.SqlClient")]
     public class SqlClient : IProvider
     {
-        public virtual IDbConnection GetConnection(string connectionString)
+        public IDbConnection GetConnection(string connectionString)
         {
-            return new System.Data.SqlClient.SqlConnection(connectionString);
+            return new Microsoft.Data.SqlClient.SqlConnection(connectionString);
         }
-        public virtual List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
+        public List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
             var textParams = ExtractParamsFromText(queryText);
             var queryParams = new List<QueryParamInfo>();
@@ -181,7 +181,7 @@ namespace QueryFirst.Providers
                 throw new TypeNotMatchedException("No user defined type to match " + paramType);
             }
         }
-        public virtual List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
+        public List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
         {
             outputMessage = null;
             var myParams = new List<QueryParamInfo>();
@@ -223,7 +223,7 @@ namespace QueryFirst.Providers
             }
             return myParams;
         }
-        public virtual void PrepareParametersForSchemaFetching(IDbCommand cmd)
+        public void PrepareParametersForSchemaFetching(IDbCommand cmd)
         {
             // nothing to do here.
         }
@@ -252,7 +252,7 @@ namespace QueryFirst.Providers
             }
             return bldr.ToString();
         }
-        public virtual string MakeAddAParameter(State state)
+        public string MakeAddAParameter(State state)
         {
             StringBuilder code = new StringBuilder();
             code.Append(@"
@@ -293,7 +293,7 @@ namespace QueryFirst.Providers
 
             return code.ToString();
         }
-        public virtual string TypeMapDB2CS(string DBType, out string DBTypeNormalized, bool nullable = true)
+        public string TypeMapDB2CS(string DBType, out string DBTypeNormalized, bool nullable = true)
         {
             switch (DBType.ToLower())
             {
@@ -445,19 +445,19 @@ namespace QueryFirst.Providers
             }
         }
 
-        public virtual string HookUpForExecutionMessages()
+        public string HookUpForExecutionMessages()
         {
-            return $@"// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+            return $@"// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  {{ AppendExececutionMessage(e.Message); }});";
         }
 
-        public virtual string GetProviderSpecificUsings()
-            => @"using System.Data.SqlClient;
+        public string GetProviderSpecificUsings()
+            => @"using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 ";
 
-        private class ParamFromText
+    private class ParamFromText
         {
             public string SqlName { get; set; }
             public string SqlTypeAndLength { get; set; }
