@@ -78,7 +78,7 @@ public static int ExecuteNonQueryStatic(IDbConnection conn, IDbTransaction tx = 
 public virtual int ExecuteNonQuery(IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -126,7 +126,7 @@ public static async Task<int> ExecuteNonQueryStaticAsync(IDbConnection conn, IDb
 
 public virtual async Task<int> ExecuteNonQueryAsync(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(DbCommand cmd = ((SqlConnection)conn).CreateCommand())
@@ -180,7 +180,7 @@ public static IEnumerable<GetOneRowAsyncQfDto> ExecuteStatic(IDbConnection conn,
 
 public virtual IEnumerable<GetOneRowAsyncQfDto> Execute(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -221,7 +221,7 @@ public static GetOneRowAsyncQfDto GetOneStatic(IDbConnection conn, IDbTransactio
 => inst.GetOne(conn, tx);
 public virtual GetOneRowAsyncQfDto GetOne(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 {
@@ -256,7 +256,7 @@ public static System.String ExecuteScalarStatic(IDbConnection conn, IDbTransacti
 => inst.ExecuteScalar(conn, tx);
 public virtual System.String ExecuteScalar(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -304,7 +304,7 @@ public static async Task<IEnumerable<GetOneRowAsyncQfDto>> ExecuteStaticAsync( I
 => await inst.ExecuteAsync(conn, tx);
 
 public virtual async Task<IEnumerable<GetOneRowAsyncQfDto>> ExecuteAsync( IDbConnection conn, IDbTransaction tx = null){
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using (DbCommand cmd = ((SqlConnection)conn).CreateCommand())
@@ -352,7 +352,7 @@ public static async Task<GetOneRowAsyncQfDto> GetOneStaticAsync(IDbConnection co
 
 public virtual async Task<GetOneRowAsyncQfDto> GetOneAsync(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 var all = await ExecuteAsync( conn,tx);

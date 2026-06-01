@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using static DeleteAllQfRepo;
 
 
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
 public interface IDeleteAllQfRepo{
@@ -59,7 +59,7 @@ public static int ExecuteNonQueryStatic(IDbConnection conn, IDbTransaction tx = 
 public virtual int ExecuteNonQuery(IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });
 using(IDbCommand cmd = conn.CreateCommand())

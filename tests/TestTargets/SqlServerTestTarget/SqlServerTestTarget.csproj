@@ -21,7 +21,6 @@
     <PackageReference Include="MySql.Data" Version="8.0.27" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql" Version="8.0.9" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectCapability Include="DynamicDependentFile" />

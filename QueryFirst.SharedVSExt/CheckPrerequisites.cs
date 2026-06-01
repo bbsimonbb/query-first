@@ -60,7 +60,7 @@ Would you like us to create this for you? You will need to modify the connection
                     File.WriteAllText(configFileNameAndPath,
 @"{
   ""defaultConnection"": ""Server=localhost\\SQLEXPRESS;Database=NORTHWND;Trusted_Connection=True;"",
-  ""provider"": ""System.Data.SqlClient"",
+  ""provider"": ""Microsoft.Data.SqlClient"",
   ""connectEditor2DB"":true
 }"
                 );
@@ -96,7 +96,7 @@ namespace QueryFirst
 
 namespace MyProjectNamespace
 {{
-    using System.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
     using QueryFirst;
 
     /// <summary>

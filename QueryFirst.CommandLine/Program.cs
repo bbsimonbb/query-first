@@ -37,7 +37,7 @@ namespace QueryFirst.CommandLine
                 File.WriteAllText(fileToCreate,
 $@"{{
   ""defaultConnection"": ""Server = localhost\\SQLEXPRESS; Database = NORTHWND; Trusted_Connection = True; "",
-  ""provider"": ""System.Data.SqlClient"",
+  ""provider"": ""Microsoft.Data.SqlClient"",
   ""namespace"": ""MyNamespaceForCodeGeneration""
 }}
             "
@@ -67,7 +67,7 @@ namespace QueryFirst.CommandLine
 
 namespace MyProjectNamespace
 {{
-    using System.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
     using QueryFirst.CommandLine;
 
     /// <summary>

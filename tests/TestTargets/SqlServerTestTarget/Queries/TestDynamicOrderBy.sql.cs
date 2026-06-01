@@ -67,7 +67,7 @@ public static int ExecuteNonQueryStatic((Cols col, bool descending)[] orderBy,ID
 public virtual int ExecuteNonQuery((Cols col, bool descending)[] orderBy,IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -161,7 +161,7 @@ public static IEnumerable<TestDynamicOrderByQfDto> ExecuteStatic((Cols col, bool
 
 public virtual IEnumerable<TestDynamicOrderByQfDto> Execute((Cols col, bool descending)[] orderBy,IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -202,7 +202,7 @@ public static TestDynamicOrderByQfDto GetOneStatic((Cols col, bool descending)[]
 => inst.GetOne(orderBy,conn, tx);
 public virtual TestDynamicOrderByQfDto GetOne((Cols col, bool descending)[] orderBy,IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 {
@@ -237,7 +237,7 @@ public static System.Int32? ExecuteScalarStatic((Cols col, bool descending)[] or
 => inst.ExecuteScalar(orderBy,conn, tx);
 public virtual System.Int32? ExecuteScalar((Cols col, bool descending)[] orderBy,IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())

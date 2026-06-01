@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="2.0.5" Language="en-US" Publisher="bbsimonbb" />
+        <Identity Id="QueryFirst.Boddy Simon.0ddf49a0-289f-40e8-b2ab-f6a4f80a4a1d" Version="2.0.6" Language="en-US" Publisher="bbsimonbb" />
         <DisplayName>QueryFirst</DisplayName>
         <Description xml:space="preserve">Frictionless data access for C# projects</Description>
         <MoreInfo>https://marketplace.visualstudio.com/items?itemName=bbsimonbb.QueryFirst</MoreInfo>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,18.0)">
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,)">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
     </Installation>
@@ -20,6 +20,6 @@
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" AssemblyName="|%CurrentProject%;AssemblyName|" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" />
     </Prerequisites>
 </PackageManifest>

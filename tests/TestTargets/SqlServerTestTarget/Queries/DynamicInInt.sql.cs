@@ -67,7 +67,7 @@ public static int ExecuteNonQueryStatic(List<int?> listOfIds,IDbConnection conn,
 public virtual int ExecuteNonQuery(List<int?> listOfIds,IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -121,7 +121,7 @@ public static IEnumerable<DynamicInIntQfDto> ExecuteStatic(List<int?> listOfIds,
 
 public virtual IEnumerable<DynamicInIntQfDto> Execute(List<int?> listOfIds,IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -162,7 +162,7 @@ public static DynamicInIntQfDto GetOneStatic(List<int?> listOfIds,IDbConnection 
 => inst.GetOne(listOfIds, conn, tx);
 public virtual DynamicInIntQfDto GetOne(List<int?> listOfIds,IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 {
@@ -197,7 +197,7 @@ public static System.Int32? ExecuteScalarStatic(List<int?> listOfIds,IDbConnecti
 => inst.ExecuteScalar(listOfIds, conn, tx);
 public virtual System.Int32? ExecuteScalar(List<int?> listOfIds,IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())

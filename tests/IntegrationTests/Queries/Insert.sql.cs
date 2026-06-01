@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using static InsertQfRepo;
 
 
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
 public interface IInsertQfRepo{
@@ -67,7 +67,7 @@ public static int ExecuteNonQueryStatic(long? myBigint, bool? myBit, decimal? my
 public virtual int ExecuteNonQuery(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime2, DateTime? myDatetime, string myChar, string myVarchar, string myNchar, string myNvarchar, System.Byte[] myBinary, System.Byte[] myVarbinary, IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });
 using(IDbCommand cmd = conn.CreateCommand())
@@ -182,7 +182,7 @@ public static IEnumerable<InsertQfDto> ExecuteStatic(long? myBigint, bool? myBit
 
 public virtual IEnumerable<InsertQfDto> Execute(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime2, DateTime? myDatetime, string myChar, string myVarchar, string myNchar, string myNvarchar, System.Byte[] myBinary, System.Byte[] myVarbinary, IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });
 using(IDbCommand cmd = conn.CreateCommand())
@@ -223,7 +223,7 @@ public static InsertQfDto GetOneStatic(long? myBigint, bool? myBit, decimal? myD
 => inst.GetOne(myBigint, myBit, myDecimal, myInt, myMoney, mySmallint, myTinyint, myFloat, myReal, myDate, myDatetime2, myDatetime, myChar, myVarchar, myNchar, myNvarchar, myBinary, myVarbinary, conn, tx);
 public virtual InsertQfDto GetOne(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime2, DateTime? myDatetime, string myChar, string myVarchar, string myNchar, string myNvarchar, System.Byte[] myBinary, System.Byte[] myVarbinary, IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });
 {
@@ -258,7 +258,7 @@ public static System.Int32? ExecuteScalarStatic(long? myBigint, bool? myBit, dec
 => inst.ExecuteScalar(myBigint, myBit, myDecimal, myInt, myMoney, mySmallint, myTinyint, myFloat, myReal, myDate, myDatetime2, myDatetime, myChar, myVarchar, myNchar, myNvarchar, myBinary, myVarbinary, conn, tx);
 public virtual System.Int32? ExecuteScalar(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime2, DateTime? myDatetime, string myChar, string myVarchar, string myNchar, string myNvarchar, System.Byte[] myBinary, System.Byte[] myVarbinary, IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });
 using(IDbCommand cmd = conn.CreateCommand())

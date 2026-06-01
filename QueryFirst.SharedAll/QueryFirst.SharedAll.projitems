@@ -35,7 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Generators\TypescriptInterfaceFromDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Providers\IProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IQfDbConnectionFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Providers\MicrosoftDataSqlClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Providers\MySqlClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Providers\Npgsql.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Providers\sp_describe_undeclared_parameters.gen.cs" />

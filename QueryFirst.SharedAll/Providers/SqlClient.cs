@@ -13,11 +13,11 @@ namespace QueryFirst.Providers
     [RegistrationName("Microsoft.Data.SqlClient")]
     public class SqlClient : IProvider
     {
-        public IDbConnection GetConnection(string connectionString)
+        public virtual IDbConnection GetConnection(string connectionString)
         {
-            return new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+            return new SqlConnection(connectionString);
         }
-        public List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
+        public virtual List<QueryParamInfo> ParseDeclaredParameters(string queryText, string connectionString)
         {
             var textParams = ExtractParamsFromText(queryText);
             var queryParams = new List<QueryParamInfo>();
@@ -181,7 +181,7 @@ namespace QueryFirst.Providers
                 throw new TypeNotMatchedException("No user defined type to match " + paramType);
             }
         }
-        public List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
+        public virtual List<QueryParamInfo> FindUndeclaredParameters(string queryText, string connectionString, out string outputMessage)
         {
             outputMessage = null;
             var myParams = new List<QueryParamInfo>();
@@ -252,7 +252,7 @@ namespace QueryFirst.Providers
             }
             return bldr.ToString();
         }
-        public string MakeAddAParameter(State state)
+        public virtual string MakeAddAParameter(State state)
         {
             StringBuilder code = new StringBuilder();
             code.Append(@"
@@ -445,7 +445,7 @@ namespace QueryFirst.Providers
             }
         }
 
-        public string HookUpForExecutionMessages()
+        public virtual string HookUpForExecutionMessages()
         {
             return $@"// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(

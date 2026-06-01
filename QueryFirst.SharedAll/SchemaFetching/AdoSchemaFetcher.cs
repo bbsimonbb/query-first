@@ -38,7 +38,7 @@ namespace QueryFirst
             IProvider prov = null;
             switch (provider)
             {
-                case "System.Data.SqlClient":
+                case "Microsoft..Data.SqlClient":
                     prov = new SqlClient();
                     break;
                 case "Npgsql":

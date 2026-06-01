@@ -67,7 +67,7 @@ public static int ExecuteNonQueryStatic(IDbConnection conn, IDbTransaction tx = 
 public virtual int ExecuteNonQuery(IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -121,7 +121,7 @@ public static IEnumerable<GetOneRowQfDto> ExecuteStatic(IDbConnection conn, IDbT
 
 public virtual IEnumerable<GetOneRowQfDto> Execute(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -162,7 +162,7 @@ public static GetOneRowQfDto GetOneStatic(IDbConnection conn, IDbTransaction tx 
 => inst.GetOne(conn, tx);
 public virtual GetOneRowQfDto GetOne(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 {
@@ -197,7 +197,7 @@ public static System.Int32? ExecuteScalarStatic(IDbConnection conn, IDbTransacti
 => inst.ExecuteScalar(conn, tx);
 public virtual System.Int32? ExecuteScalar(IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())

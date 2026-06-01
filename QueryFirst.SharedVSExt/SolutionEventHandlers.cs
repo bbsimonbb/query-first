@@ -3,12 +3,10 @@ using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using TinyIoC;
 
 namespace QueryFirst.VSExtension
 {
@@ -182,7 +180,7 @@ $@"If you're using and enjoying QueryFirst.VSExtension, please leave a review!
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (_lastConnectedSqlWindow != Document.ActiveWindow
-                && provider == "System.Data.SqlClient"
+                && provider == "Microsoft.Data.SqlClient"
             )
             {
                 _lastConnectedSqlWindow = Document.ActiveWindow;
@@ -210,6 +208,12 @@ $@"If you're using and enjoying QueryFirst.VSExtension, please leave a review!
                         strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
                     if (strategyInfo == null)
                         strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=18.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    if (strategyInfo == null)
+                        strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=19.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    if (strategyInfo == null)
+                        strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=20.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    if (strategyInfo == null)
+                        strategyInfo = Type.GetType("Microsoft.VisualStudio.Data.Tools.SqlEditor.DataModel.DefaultSqlEditorStrategy, Microsoft.VisualStudio.Data.Tools.SqlEditor, Version=21.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
 
                     var ctors = strategyInfo.GetConstructors(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Instance);
                     var builderType = ctors[3].GetParameters()[0].ParameterType;

@@ -175,7 +175,7 @@
       <Version>17.10.40152</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.SqlClient">
-      <Version>7.0.1</Version>
+      <Version>5.2.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects">
       <Version>161.46521.71</Version>

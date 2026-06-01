@@ -1,0 +1,46 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
+        run: msbuild QueryFirst.sln /t:Restore /p:Configuration=Release /v:minimal /nologo
+
+      - name: Build
+        run: msbuild QueryFirst.sln /p:Configuration=Release /p:DeployExtension=false /v:minimal /nologo
+
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: QueryFirst.vsix
+          path: QueryFirst/bin/Release/QueryFirst.vsix
+          if-no-files-found: error
+
+      - name: Publish to Visual Studio Marketplace
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          MARKETPLACE_PAT: ${{ secrets.MARKETPLACE_PAT }}
+        run: |
+          $vsixPublisher = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+            -latest -find "**\VsixPublisher.exe" -nologo
+          if (-not $vsixPublisher) { throw "VsixPublisher.exe not found" }
+          & $vsixPublisher publish `
+            -payload "QueryFirst/bin/Release/QueryFirst.vsix" `
+            -publishManifest "publish-manifest.json" `
+            -personalAccessToken $env:MARKETPLACE_PAT

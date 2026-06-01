@@ -121,7 +121,7 @@ namespace QueryFirst
             // Sql server is the default IF connection string is provided.
             if (!string.IsNullOrEmpty(config.DefaultConnection) && string.IsNullOrEmpty(config.Provider))
             {
-                config.Provider = "System.Data.SqlClient";
+                config.Provider = "Microsoft.Data.SqlClient";
             }
             return config;
         }

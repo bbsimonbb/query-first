@@ -67,7 +67,7 @@ public static int ExecuteNonQueryStatic(long? myBigint, bool? myBit, decimal? my
 public virtual int ExecuteNonQuery(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime, DateTime? myDatetime2, string myChar, string myVarchar, string myNchar, string myNvarchar, IDbConnection conn, IDbTransaction tx = null)
 {
 
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -154,7 +154,7 @@ public static IEnumerable<LoadsaParametersQfDto> ExecuteStatic(long? myBigint, b
 
 public virtual IEnumerable<LoadsaParametersQfDto> Execute(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime, DateTime? myDatetime2, string myChar, string myVarchar, string myNchar, string myNvarchar, IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())
@@ -195,7 +195,7 @@ public static LoadsaParametersQfDto GetOneStatic(long? myBigint, bool? myBit, de
 => inst.GetOne(myBigint, myBit, myDecimal, myInt, myMoney, mySmallint, myTinyint, myFloat, myReal, myDate, myDatetime, myDatetime2, myChar, myVarchar, myNchar, myNvarchar, conn, tx);
 public virtual LoadsaParametersQfDto GetOne(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime, DateTime? myDatetime2, string myChar, string myVarchar, string myNchar, string myNvarchar, IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 {
@@ -230,7 +230,7 @@ public static System.String ExecuteScalarStatic(long? myBigint, bool? myBit, dec
 => inst.ExecuteScalar(myBigint, myBit, myDecimal, myInt, myMoney, mySmallint, myTinyint, myFloat, myReal, myDate, myDatetime, myDatetime2, myChar, myVarchar, myNchar, myNvarchar, conn, tx);
 public virtual System.String ExecuteScalar(long? myBigint, bool? myBit, decimal? myDecimal, int? myInt, decimal? myMoney, short? mySmallint, byte? myTinyint, double? myFloat, float? myReal, DateTime? myDate, DateTime? myDatetime, DateTime? myDatetime2, string myChar, string myVarchar, string myNchar, string myNvarchar, IDbConnection conn, IDbTransaction tx = null)
 {
-// this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+// this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
 ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
     delegate (object sender, SqlInfoMessageEventArgs e)  { AppendExececutionMessage(e.Message); });// hello from MyGroovyProvider
 using(IDbCommand cmd = conn.CreateCommand())

@@ -13,7 +13,7 @@ namespace QueryFirst
         /// Returns the QueryFirst config for a given query file. Values specified directly in 
         /// the query's qfconfig.json file will override values specified in the project and install qfconfig.json files.
         /// 
-        /// If the config specifies a QfDefaultConnection but no QfDefaultConnectionProviderName, "System.Data.SqlClient"
+        /// If the config specifies a QfDefaultConnection but no QfDefaultConnectionProviderName, "Microsoft.Data.SqlClient"
         /// will be used.
         /// </summary>
         /// <param name="filePath"></param>
@@ -39,7 +39,7 @@ namespace QueryFirst
             //    }
             //    else
             //    {
-            //        queryConfig.Provider = "System.Data.SqlClient";
+            //        queryConfig.Provider = "Microsoft.Data.SqlClient";
             //    }
 
             //}

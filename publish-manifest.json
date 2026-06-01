@@ -1,0 +1,11 @@
+{
+    "publisher": "bbsimonbb",
+    "identity": {
+        "internalName": "QueryFirst"
+    },
+    "overview": "./QueryFirst/ReadMe.txt",
+    "priceCategory": "free",
+    "public": true,
+    "categories": [ "Other" ],
+    "tags": [ "sql", "code generation", "data access" ]
+}

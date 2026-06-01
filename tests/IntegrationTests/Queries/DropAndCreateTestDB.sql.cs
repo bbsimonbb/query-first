@@ -13,7 +13,7 @@ namespace QueryFirst.IntegrationTests.Queries
     using static DropAndCreateTestDBQfRepo;
 
 
-    using System.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
     using System.Threading.Tasks;
 
     public interface IDropAndCreateTestDBQfRepo
@@ -71,7 +71,7 @@ namespace QueryFirst.IntegrationTests.Queries
         public virtual int ExecuteNonQuery(IDbConnection conn, IDbTransaction tx = null)
         {
 
-            // this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+            // this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
             ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
                 delegate (object sender, SqlInfoMessageEventArgs e) { AppendExececutionMessage(e.Message); });
             using (IDbCommand cmd = conn.CreateCommand())
@@ -195,7 +195,7 @@ sp_who2
 
         public virtual IEnumerable<DropAndCreateTestDBQfDto> Execute(IDbConnection conn, IDbTransaction tx = null)
         {
-            // this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+            // this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
             ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
                 delegate (object sender, SqlInfoMessageEventArgs e) { AppendExececutionMessage(e.Message); });
             using (IDbCommand cmd = conn.CreateCommand())
@@ -236,7 +236,7 @@ sp_who2
         => inst.GetOne(conn, tx);
         public virtual DropAndCreateTestDBQfDto GetOne(IDbConnection conn, IDbTransaction tx = null)
         {
-            // this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+            // this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
             ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
                 delegate (object sender, SqlInfoMessageEventArgs e) { AppendExececutionMessage(e.Message); });
             {
@@ -271,7 +271,7 @@ sp_who2
         => inst.ExecuteScalar(conn, tx);
         public virtual System.Int32? ExecuteScalar(IDbConnection conn, IDbTransaction tx = null)
         {
-            // this line will not compile in .net core unless you install the System.Data.SqlClient nuget package.
+            // this line will not compile in .net core unless you install the Microsoft.Data.SqlClient nuget package.
             ((SqlConnection)conn).InfoMessage += new SqlInfoMessageEventHandler(
                 delegate (object sender, SqlInfoMessageEventArgs e) { AppendExececutionMessage(e.Message); });
             using (IDbCommand cmd = conn.CreateCommand())
