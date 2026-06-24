@@ -234,7 +234,7 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="Npgsql">
-      <Version>3.2.1</Version>
+      <Version>8.0.3</Version>
     </PackageReference>
     <PackageReference Include="StreamJsonRpc">
       <Version>1.5.43</Version>
